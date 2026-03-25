@@ -1,0 +1,264 @@
+<mvc:View controllerName="helphub.controller.Dashboard"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+    xmlns:u="sap.ui.unified"
+    xmlns:l="sap.ui.layout" displayBlock="true">
+
+    <NavContainer id="navContainer">
+
+        <!-- PAGE 1: CATEGORY SELECTION -->
+        <Page id="dashboardPage" title="HelpHub" showHeader="true">
+            <customHeader>
+                <Bar>
+                    <contentLeft>
+                        <HBox alignItems="Center">
+                            <Title text="HelpHub" level="H3" class="sapUiTinyMarginBegin"/>
+                        </HBox>
+                    </contentLeft>
+                    <contentRight>
+                        <HBox alignItems="Center">
+                            <Avatar initials="{appData>/user/avatar}"/>
+                            <Button icon="sap-icon://customer" press="onEditProfile" type="Transparent"/>
+                            <Button icon="sap-icon://log" press="onLogout" type="Transparent"/>
+                        </HBox>
+                    </contentRight>
+                </Bar>
+            </customHeader>
+
+            <content>
+                <IconTabBar expandable="false">
+
+                    <!-- TAB 1: Find Help -->
+                    <items>
+                        <IconTabFilter text="Find Help" icon="sap-icon://question-mark">
+                            <VBox class="sapUiSmallMargin mainContent">
+                                <Title text="How can we help you today?" level="H2" class="sapUiLargeMarginBottom"/>
+                                <Text text="Choose a service below to find trusted helpers near you." class="grayText sapUiSmallMarginBottom"/>
+
+                                <!-- Service tiles -->
+                                <FlexBox class="serviceTilesContainer" direction="Row" wrap="Wrap" justifyContent="Center" items="{appData>/services}">
+                                    <items>
+                                        <CustomListItem class="" type="Active" press=".onServicePress">
+                                            <HBox direction="Column">
+                                                <VBox class="circleButton" core:style="background-color:{appData>color}">
+                                                    <Text text="{appData>icon}" class="serviceIcon"/>
+                                                </VBox>
+                                                <Text text="{appData>name}" class="serviceName"/>
+                                            </HBox>
+                                        </CustomListItem>
+                                    </items>
+                                </FlexBox>
+
+                            </VBox>
+                        </IconTabFilter>
+
+                        <!-- TAB 2: My Schedule -->
+                        <IconTabFilter text="My Schedule" icon="sap-icon://calendar">
+                            <VBox class="sapUiMediumMarginTop">
+                                <HBox class="sapUiSmallMarginTop" justifyContent="SpaceAround">
+                                    <Button text="Today" type="Transparent" press="onFilterToday"/>
+                                    <Button text="This week" type="Transparent" press="onFilterThisWeek"/>
+                                    <Button text="Available now" type="Transparent" press="onFilterNow"/>
+                                </HBox>
+                                <Title text="Your upcoming bookings" level="H4" class="sapUiMediumMarginTop"/>
+                                <List items="{appData>/upcomingBookings}" noDataText="No upcoming bookings yet.">
+                                    <StandardListItem title="{appData>service}" description="{appData>providerName}, {appData>dateTime}" info="{appData>status}" infoState="Success"/>
+                                </List>
+                            </VBox>
+                        </IconTabFilter>
+                    </items>
+
+                </IconTabBar>
+            </content>
+        </Page>
+
+        <!-- PAGE 2: Search & Results -->
+        <Page id="searchPage" title="Local Experts" showNavButton="true" navButtonPress="onNavBack">
+            <content>
+                <VBox height="100%">
+                    <VBox id="mapContainer" height="35vh" width="100%" class="mapPlaceholder">
+                        <core:HTML content='&lt;div id="googleMap" class="mapDiv"&gt;Map View Centered on You&lt;/div&gt;'/>
+                    </VBox>
+
+                    <VBox class="sapUiSmallMargin flexBasis65">
+                        <HBox justifyContent="SpaceBetween" alignItems="Center" class="sapUiSmallMarginBottom">
+                            <Title text="{appData>/selectedCategoryName} Experts Nearby" level="H3"/>
+                        </HBox>
+
+                        <VBox class="sapUiTinyMarginBottom">
+                            <HBox justifyContent="SpaceBetween" alignItems="Center">
+                                <Text text="Search radius (km)" class="smallText grayText"/>
+                                <Text text="{appData>/filters/distanceLabel}" class="smallText blueText"/>
+                            </HBox>
+                            <Slider min="1" max="50" step="1" value="{appData>/filters/distance}" liveChange="onDistanceChange"/>
+                        </VBox>
+
+                        <HBox class="sapUiTinyMarginBottom" justifyContent="Start">
+                            <Button text="All" type="Transparent" press="onFilterAll"/>
+                            <Button text="Top rated" type="Transparent" press="onFilterTopRated"/>
+                            <Button text="Budget friendly" type="Transparent" press="onFilterBudget"/>
+                        </HBox>
+
+                        <List items="{appData>/filteredProviders}" noDataText="No helpers nearby yet. Showing more helpers as they join.">
+                            <CustomListItem>
+                                <HBox class="sapUiSmallMargin" justifyContent="SpaceBetween" alignItems="Center">
+                                    <VBox>
+                                        <HBox alignItems="Center">
+                                            <Avatar displaySize="S" src="{appData>photo}" initials="P" backgroundColor="Accent1" class="sapUiTinyMarginEnd"/>
+                                            <VBox>
+                                                <Title text="{appData>name}" level="H4"/>
+                                                <Text text="{appData>address}" class="grayText smallText"/>
+                                            </VBox>
+                                        </HBox>
+                                        <HBox class="sapUiTinyMarginTop" alignItems="Center">
+                                            <RatingIndicator value="{appData>rating}" displayOnly="true" iconSize="14px" class="sapUiTinyMarginEnd"/>
+                                            <Text text="{path:'appData>', formatter:'.formatDistance'}" class="blueText fontBold smallText"/>
+                                        </HBox>
+                                        <HBox class="sapUiTinyMarginTop" wrap="Wrap">
+                                            <ObjectStatus text="{appData>years} yrs experience" state="Information" class="smallText sapUiTinyMarginEnd"/>
+                                            <ObjectStatus text="{appData>languages}" state="None" class="smallText"/>
+                                        </HBox>
+                                    </VBox>
+                                    <VBox alignItems="End" wrap="NoWrap">
+                                        <ObjectStatus text="{path:'appData>', formatter:'.formatAvailabilityStatus'}" state="{path:'appData>', formatter:'.formatAvailabilityState'}" class="fontBold"/>
+                                        <Title text="{path:'appData>', formatter:'.formatPriceDisplay'}" level="H4" class="sapUiTinyMarginTop"/>
+                                        <Button text="View Profile" type="Emphasized" class="sapUiTinyMarginTop" press="onViewProfile"/>
+                                    </VBox>
+                                </HBox>
+                            </CustomListItem>
+                        </List>
+                    </VBox>
+                </VBox>
+            </content>
+        </Page>
+
+        <!-- PAGE 3: Edit Profile -->
+        <Page id="editPage" title="Provider Settings" showNavButton="true" navButtonPress="onNavBack">
+            <content>
+                <VBox class="sapUiSmallMargin mainContent maxWidth800">
+
+    <!-- PROFILE PHOTO -->
+    <VBox alignItems="Center" class="sapUiSmallMarginBottom">
+        <Avatar
+            src="{appData>/user/photo}"
+            displaySize="L"
+            backgroundColor="Accent6"/>
+
+        <u:FileUploader
+            buttonText="Upload profile photo"
+            fileType="jpg,png"
+            change="onPhotoUpload"
+            uploadOnChange="false"/>
+    </VBox>
+
+    <f:SimpleForm editable="true" layout="ResponsiveGridLayout">
+
+        <Label text="Display Name"/>
+        <Input
+            value="{appData>/user/name}"
+            valueState="{appData>/validation/name}"
+            valueStateText="Display name is required"/>
+
+        <Label text="Service Categories"/>
+        <MultiComboBox
+            selectedKeys="{appData>/user/serviceCategories}"
+            items="{appData>/services}">
+            <core:Item key="{appData>name}" text="{appData>name}"/>
+        </MultiComboBox>
+
+        <Label text="Bio"/>
+        <TextArea
+            rows="4"
+            value="{appData>/user/bio}"
+            placeholder="Tell clients about your experience, skills, and approach"/>
+
+        <Label text="Hourly Rate (EUR)"/>
+        <Input
+            value="{appData>/user/rate}"
+            type="Number"
+            valueState="{appData>/validation/rate}"
+            valueStateText="Hourly rate must be greater than 0"/>
+
+        <Label text="Availability"/>
+        <MultiComboBox selectedKeys="{appData>/user/availability}">
+            <core:Item key="weekday_morning" text="Weekdays – Morning"/>
+            <core:Item key="weekday_evening" text="Weekdays – Evening"/>
+            <core:Item key="weekend" text="Weekends"/>
+        </MultiComboBox>
+
+        <Label text="Years of Experience"/>
+        <Input value="{appData>/user/years}" type="Number"/>
+
+        <Label text="Languages"/>
+        <Input value="{appData>/user/languages}" placeholder="e.g. EN, DE"/>
+
+        <Label text="Phone Number"/>
+        <Input value="{appData>/user/phone}" type="Tel"/>
+
+        <Label text="Address"/>
+        <Input
+            value="{appData>/user/address}"
+            liveChange="onAddressChange"/>
+
+    </f:SimpleForm>
+
+    <Button
+        text="Save Profile Changes"
+        type="Emphasized"
+        press="onSaveProfile"
+        class="sapUiLargeMarginTop"
+        width="100%"/>
+
+</VBox>
+
+
+                <!-- Profile dialog -->
+                <Dialog id="profileDialog" title="Helper profile" stretch="true" contentHeight="70%" contentWidth="90%" horizontalScrolling="false" verticalScrolling="true">
+                    <VBox class="sapUiMediumMargin">
+                        <HBox alignItems="Center" class="sapUiSmallMarginBottom">
+                            <Avatar src="{appData>/selectedProfile/photo}" initials="{appData>/selectedProfile/initials}" displaySize="L" class="sapUiTinyMarginEnd"/>
+                            <VBox>
+                                <Title text="{appData>/selectedProfile/name}" level="H2"/>
+                                <Text text="{appData>/selectedProfile/address}" class="grayText smallText"/>
+                                <Text text="{appData>/selectedProfile/serviceType}" class="smallText"/>
+                            </VBox>
+                        </HBox>
+
+                        <HBox alignItems="Center" class="sapUiSmallMarginBottom">
+                            <RatingIndicator value="{appData>/selectedProfile/rating}" maxValue="5" visualMode="Half" displayOnly="true" class="sapUiTinyMarginEnd"/>
+                            <Text text="{= ${appData>/selectedProfile/rating} ? ${appData>/selectedProfile/rating} + ' / 5.0 rating' : 'No rating'}" class="smallText"/>
+                        </HBox>
+
+                        <Title text="About &amp; hobbies" level="H4" class="sapUiSmallMarginBottom"/>
+                        <Text text="{appData>/selectedProfile/hobbies}" class="smallText sapUiTinyMarginBottom"/>
+
+                        <HBox class="sapUiTinyMarginBottom" justifyContent="Start" wrap="Wrap">
+                            <ObjectStatus text="{appData>/selectedProfile/years} yrs experience" state="Information" class="smallText sapUiTinyMarginEnd"/>
+                            <ObjectStatus text="{appData>/selectedProfile/languages}" state="None" class="smallText sapUiTinyMarginEnd"/>
+                            <ObjectStatus text="{appData>/selectedProfile/rate} {appData>/selectedProfile/currency}/hr" state="None" class="smallText"/>
+                        </HBox>
+
+                        <Title text="What other people say" level="H4" class="sapUiSmallMarginBottom"/>
+                        <List items="{appData>/selectedProfile/reviews}">
+                            <CustomListItem>
+                                <VBox class="sapUiTinyMargin">
+                                    <Text text="{appData>user}" class="fontBold"/>
+                                    <Text text="{appData>comment}" class="smallText"/>
+                                    <Text text="{appData>stars} ★" class="smallText blueText"/>
+                                </VBox>
+                            </CustomListItem>
+                        </List>
+                    </VBox>
+
+                    <endButton>
+                        <Button text="Close" press="onCloseProfile"/>
+                    </endButton>
+                </Dialog>
+
+            </content>
+        </Page>
+
+    </NavContainer>
+</mvc:View>

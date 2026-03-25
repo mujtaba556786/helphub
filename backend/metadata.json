@@ -1,0 +1,5 @@
+{
+  "name": "ServiceLink Admin Marketplace",
+  "description": "A comprehensive administration dashboard for a service marketplace, featuring user management, booking tracking, service orchestration, and AI-powered marketplace insights using Gemini.",
+  "requestFramePermissions": []
+}

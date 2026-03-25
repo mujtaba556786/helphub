@@ -1,0 +1,46 @@
+<mvc:View
+    controllerName="helphub.controller.Login"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    displayBlock="true">
+    
+    <Page showHeader="false">
+        <FlexBox height="100vh" alignItems="Center" justifyContent="Center" direction="Column" class="loginBg">
+            <VBox width="90%" class="loginCard maxWidth400">
+                <VBox alignItems="Center" class="sapUiMediumMargin">
+                    <Avatar displaySize="XL" backgroundColor="Accent6" initials="❤️" class="sapUiSmallMarginBottom"/>
+                    <Title text="HelpHub" level="H1" class="sapUiTinyMarginBottom"/>
+                    <Text text="Neighborhood Help Network" class="grayText"/>
+                    <!-- NEW: value proposition line -->
+                    <Text text="Get everyday tasks done by trusted neighbors." class="grayText textCenter"/>
+                    <!-- NEW: small trust indicators -->
+                    <HBox class="sapUiTinyMarginTop" justifyContent="Center">
+                        <Text text="• Verified reviews" class="smallText grayText"/>
+                        <Text text="   • Secure payments" class="smallText grayText sapUiTinyMarginBegin"/>
+                    </HBox>
+                </VBox>
+                
+                <VBox class="sapUiMediumMargin">
+                    <Label text="Email"/>
+                    <Input id="emailInput" type="Email" placeholder="user@example.com" class="sapUiSmallMarginBottom"/>
+                    
+                    <Label text="Password"/>
+                    <Input id="passwordInput" type="Password" placeholder="••••••••" class="sapUiMediumMarginBottom"/>
+                    
+                    <Button text="Sign In" type="Emphasized" width="100%" press="onEmailLogin"/>
+
+                    <!-- Divider -->
+                    <HBox justifyContent="Center" alignItems="Center" class="sapUiSmallMarginTop sapUiSmallMarginBottom">
+                        <Text text="── or continue with ──" class="grayText smallText"/>
+                    </HBox>
+
+                    <!-- Google login -->
+                    <Button text="Sign in with Google" icon="sap-icon://world" width="100%" press="onGoogleLogin"/>
+
+                    <!-- Facebook login -->
+                    <Button text="Sign in with Facebook" icon="sap-icon://share-2" width="100%" class="sapUiSmallMarginTop" press="onFacebookLogin"/>
+                </VBox>
+            </VBox>
+        </FlexBox>
+    </Page>
+</mvc:View>
