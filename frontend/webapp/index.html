@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,17 +12,19 @@
     </style>
     <script
         id="sap-ui-bootstrap"
-        src="resources/sap-ui-core.js"
-        data-sap-ui-theme="sap_horizon"
+        src="https://ui5.sap.com/resources/sap-ui-core.js"
+        data-sap-ui-theme="maicatch"
+        data-sap-ui-theme-roots='{
+            "maicatch": "../themes/"
+        }'
         data-sap-ui-resource-roots='{
-            "helphub": "./"
+            "helphub": ""
         }'
         data-sap-ui-on-init="module:sap/ui/core/ComponentSupport"
         data-sap-ui-compat-version="edge"
         data-sap-ui-async="true"
         data-sap-ui-frame-options="trusted"
     ></script>
-    <script src="Cordova.js"></script>
 
     <!-- ── Google Identity Services ── -->
     <!-- Replace YOUR_GOOGLE_CLIENT_ID with the value from Google Cloud Console -->

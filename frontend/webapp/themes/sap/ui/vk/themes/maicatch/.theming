@@ -1,0 +1,15 @@
+{
+	"mVersionDependency": {
+		"UI5.sap/ui/vk.sap_fiori_3": "1.143.0",
+		"UI5.sap/ui/vk": "1.143.0",
+		"UI5": "1.143.2"
+	},
+	"sEntity": "Theme",
+	"sId": "maicatch",
+	"sLabel": "Custom Quartz Light",
+	"oExtends": "UI5.sap/ui/vk.sap_fiori_3",
+	"sTextDirections": "LTR",
+	"sType": "STANDARD",
+	"sThemability": "PUBLIC",
+	"sReleaseStage": "GENERAL_AVAILABILITY"
+}

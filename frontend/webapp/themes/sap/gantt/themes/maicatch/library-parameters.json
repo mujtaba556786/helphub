@@ -1,0 +1,11 @@
+{
+	"_sap_gantt_Gantt_HeaderHeight": "101px",
+	"_sap_gantt_Gantt_CompactHeaderHeight": "71px",
+	"_sap_gantt_Gantt_CursorLineStroke": "#286eb4",
+	"_sap_gantt_Gantt_NowLineStroke": "#c0399f",
+	"_sap_gantt_Gantt_VerticalLineStroke": "#e5e5e5",
+	"_sap_gantt_Gantt_ExpandChartBG": "#f2f2f2",
+	"_sap_gantt_Gantt_ExpandChartLine": "#e1e3e5",
+	"_sap_gantt_Gantt_ExpandChartText": "#bac1c4",
+	"_sap_gantt_Gantt_TimelineZoomColor": "#8a81da"
+}
