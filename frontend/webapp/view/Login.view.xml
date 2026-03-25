@@ -39,6 +39,9 @@
 
                     <!-- Facebook login -->
                     <Button text="Sign in with Facebook" icon="sap-icon://share-2" width="100%" class="sapUiSmallMarginTop" press="onFacebookLogin"/>
+
+                    <!-- Demo login -->
+                    <Button text="Demo Login" icon="sap-icon://person-placeholder" width="100%" type="Ghost" class="sapUiSmallMarginTop" press="onDemoLogin"/>
                 </VBox>
             </VBox>
         </FlexBox>

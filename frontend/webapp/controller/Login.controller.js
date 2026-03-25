@@ -115,7 +115,15 @@ sap.ui.define([
             }, { scope: "public_profile,email" });
         },
 
-        // ── Email / Password Sign-In (legacy, connects to backend) ─────────────
+        // ── Demo Login (one-click, no credentials needed) ──────────────────────
+        onDemoLogin: function () {
+            this._postToBackend("/api/auth/passwordless", {
+                email: "demo@helphub.app",
+                provider: "Email"
+            });
+        },
+
+        // ── Email / Password Sign-In ────────────────────────────────────────────
         onEmailLogin: function () {
             var sEmail = this.byId("emailInput").getValue();
 
