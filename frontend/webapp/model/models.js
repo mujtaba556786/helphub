@@ -15,22 +15,43 @@ sap.ui.define([
     return new JSONModel({
         isLoggedIn: false,
         user: {
-        name: "",
-        email: "",
-        avatar: "👤",
+            id: "",
+            name: "",
+            email: "",
+            avatar: "👤",
+            initials: "",
+            photo: "",
 
-        // provider profile
-        bio: "",
-        rate: 0,
-        currency: "EUR",
-        serviceCategories: [],     // MultiComboBox
-        availability: [],          // MultiComboBox
-        years: 0,
-        languages: "",
-        address: "",
-        phone: "",
-        photo: ""
-    },
+            // provider profile
+            bio: "",
+            rate: 0,
+            currency: "EUR",
+            serviceCategories: [],
+            availability: [],
+            years: 0,
+            languages: "",
+            phone: "",
+
+            // structured address
+            address: {
+                street: "",
+                houseNumber: "",
+                city: "",
+                state: "",
+                postalCode: "",
+                country: ""
+            },
+
+            // geo location (set on GPS fix or default Berlin)
+            location: { lat: 52.52, lng: 13.405 }
+        },
+        // country/state dropdowns
+        countries: [],
+        stateOptions: [],
+        validation: {
+            street: "None", houseNumber: "None", city: "None",
+            state: "None", postalCode: "None", country: "None", name: "None"
+        },
         mode: "find",
         selectedCategoryName: "",
 
@@ -159,6 +180,7 @@ sap.ui.define([
             }
         ],
 
+        chatMessages: [],
         filteredProviders: [],
 
         filters: {

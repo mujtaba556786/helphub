@@ -4,11 +4,49 @@ const express = require('express');
 const mysql = require('mysql2/promise');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
+const rateLimit = require('express-rate-limit');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+const { v4: uuidv4 } = require('uuid');
 const { OAuth2Client } = require('google-auth-library');
+const Anthropic = require('@anthropic-ai/sdk').default;
+
+const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
+// ── Uploads directory ─────────────────────────────────────────────────────────
+const UPLOADS_DIR = path.join(__dirname, 'uploads');
+if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+
+const ALLOWED_MIME = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+const avatarUpload = multer({
+    storage: multer.diskStorage({
+        destination: UPLOADS_DIR,
+        filename: (req, file, cb) => {
+            const ext = path.extname(file.originalname).toLowerCase();
+            cb(null, `avatar_${req.params.id}_${uuidv4()}${ext}`);
+        }
+    }),
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
+    fileFilter: (req, file, cb) => {
+        ALLOWED_MIME.includes(file.mimetype)
+            ? cb(null, true)
+            : cb(new Error('Only image files (jpg, png, gif, webp) are allowed'));
+    }
+});
 
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
-const FACEBOOK_APP_SECRET = process.env.FACEBOOK_APP_SECRET;
 const JWT_SECRET = process.env.JWT_SECRET || 'helphub-dev-secret';
+const REFRESH_SECRET = process.env.REFRESH_SECRET || 'helphub-refresh-secret';
+
+// Rate limiter: max 10 requests per 15 min per IP on auth routes
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 10,
+    message: { success: false, error: 'Too many attempts. Please try again in 15 minutes.' },
+    standardHeaders: true,
+    legacyHeaders: false
+});
 
 const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
 
@@ -19,6 +57,7 @@ const app = express();
 app.use(cors());
 
 app.use(express.json());
+app.use('/uploads', express.static(UPLOADS_DIR));
 
 const dbConfig = {
     host: process.env.DB_HOST || '127.0.0.1',
@@ -67,11 +106,20 @@ async function initDb() {
             )
         `);
 
-        // Migration check for professional fields
+        // Migration check for all required columns
         const requiredCols = [
-            { name: 'rate', type: 'FLOAT DEFAULT 0.0' },
-            { name: 'availability', type: 'TEXT' },
-            { name: 'service_categories', type: 'TEXT' }
+            { name: 'rate',               type: 'FLOAT DEFAULT 0.0' },
+            { name: 'availability',       type: 'TEXT' },
+            { name: 'service_categories', type: 'TEXT' },
+            { name: 'password',           type: 'VARCHAR(255)' },
+            { name: 'state',              type: 'VARCHAR(100)' },
+            { name: 'street_name',        type: 'VARCHAR(100)' },
+            { name: 'street_number',      type: 'VARCHAR(20)' },
+            { name: 'city',               type: 'VARCHAR(100)' },
+            { name: 'country',            type: 'VARCHAR(100)' },
+            { name: 'pincode',            type: 'VARCHAR(20)' },
+            { name: 'lat',                type: 'FLOAT' },
+            { name: 'lng',                type: 'FLOAT' }
         ];
 
         for (const col of requiredCols) {
@@ -80,6 +128,31 @@ async function initDb() {
                 await connection.query(`ALTER TABLE users ADD COLUMN ${col.name} ${col.type}`);
             }
         }
+
+        await connection.query(`
+            CREATE TABLE IF NOT EXISTS refresh_tokens (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                user_id VARCHAR(50) NOT NULL,
+                token_hash VARCHAR(255) NOT NULL,
+                expires_at DATETIME NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_user_id (user_id),
+                INDEX idx_token_hash (token_hash)
+            )
+        `);
+
+        await connection.query(`
+            CREATE TABLE IF NOT EXISTS ratings (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                provider_id VARCHAR(50) NOT NULL,
+                user_id VARCHAR(50),
+                reviewer_name VARCHAR(100),
+                stars INT NOT NULL,
+                comment TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_provider (provider_id)
+            )
+        `);
 
         await connection.query(`
             CREATE TABLE IF NOT EXISTS services (
@@ -91,6 +164,36 @@ async function initDb() {
                 status VARCHAR(20) DEFAULT 'Active'
             )
         `);
+
+        // Seed provider lat/lng and service_categories if missing
+        const providerSeeds = [
+            { id: 'p1',  service_categories: 'Gardening',    lat: 52.5250, lng: 13.4100 },
+            { id: 'p2',  service_categories: 'Babysitting',  lat: 52.5100, lng: 13.3900 },
+            { id: 'p3',  service_categories: 'Cooking',      lat: 52.5155, lng: 13.4020 },
+            { id: 'p4',  service_categories: 'IT Support',   lat: 52.5300, lng: 13.3800 },
+            { id: 'p5',  service_categories: 'Moving',       lat: 52.5000, lng: 13.4200 },
+            { id: 'p6',  service_categories: 'Cleaning',     lat: 52.5180, lng: 13.4250 },
+            { id: 'p7',  service_categories: 'Handyman',     lat: 52.5070, lng: 13.4150 },
+            { id: 'p8',  service_categories: 'Driver',       lat: 52.5220, lng: 13.3950 },
+            { id: 'p9',  service_categories: 'Pet Care',     lat: 52.5130, lng: 13.4300 },
+            { id: 'p10', service_categories: 'Math Tuition', lat: 52.5080, lng: 13.3850 },
+            { id: 'p11', service_categories: 'Groceries',    lat: 52.5190, lng: 13.4050 }
+        ];
+        for (const s of providerSeeds) {
+            await connection.query(
+                'UPDATE users SET service_categories = ?, lat = ?, lng = ? WHERE id = ? AND (service_categories IS NULL OR service_categories = "None" OR lat IS NULL)',
+                [s.service_categories, s.lat, s.lng, s.id]
+            );
+        }
+
+        // Seed lat/lng for any user that has a city but no lat/lng (rough city centres)
+        const cityCoords = { 'Berlin': [52.52, 13.405], 'London': [51.5074, -0.1278] };
+        for (const [city, [lat, lng]] of Object.entries(cityCoords)) {
+            await connection.query(
+                'UPDATE users SET lat = ?, lng = ? WHERE city = ? AND lat IS NULL',
+                [lat, lng, city]
+            );
+        }
 
         connection.release();
         return true;
@@ -113,16 +216,200 @@ app.get('/api/users', handleAsync(async (req, res) => {
 
 app.put('/api/users/:id', handleAsync(async (req, res) => {
     const { id } = req.params;
-    const { name, bio, languages, years, phone, rate, availability, serviceCategories } = req.body;
-    
-    const availStr = Array.isArray(availability) ? availability.join(',') : (availability || "");
-    const catStr = Array.isArray(serviceCategories) ? serviceCategories.join(',') : (serviceCategories || "");
+    const b = req.body;
+
+    // Postal code format validation
+    if (b.pincode && !/^[A-Za-z0-9\s\-]{3,10}$/.test(b.pincode.trim())) {
+        return res.status(400).json({ success: false, error: 'Invalid postal code format' });
+    }
+
+    // Build dynamic SET clause — only update fields that were actually sent
+    const fields = [];
+    const values = [];
+
+    const add = (col, val) => { fields.push(`${col} = ?`); values.push(val); };
+
+    if (b.name        !== undefined) add('name',              b.name || null);
+    if (b.bio         !== undefined) add('bio',               b.bio || null);
+    if (b.languages   !== undefined) add('languages',         b.languages || null);
+    if (b.years       !== undefined) add('years',             parseInt(b.years || 0));
+    if (b.phone       !== undefined) add('phone',             b.phone || null);
+    if (b.rate        !== undefined) add('rate',              parseFloat(b.rate || 0));
+    if (b.availability !== undefined) {
+        add('availability', Array.isArray(b.availability) ? b.availability.join(',') : (b.availability || ''));
+    }
+    if (b.serviceCategories !== undefined) {
+        add('service_categories', Array.isArray(b.serviceCategories) ? b.serviceCategories.join(',') : (b.serviceCategories || ''));
+    }
+    if (b.street_name   !== undefined) add('street_name',   b.street_name || null);
+    if (b.street_number !== undefined) add('street_number', b.street_number || null);
+    if (b.city          !== undefined) add('city',          b.city || null);
+    if (b.state         !== undefined) add('state',         b.state || null);
+    if (b.country       !== undefined) add('country',       b.country || null);
+    if (b.pincode       !== undefined) add('pincode',       b.pincode || null);
+
+    if (fields.length === 0) return res.status(400).json({ success: false, error: 'No fields to update' });
+
+    values.push(id);
+    await pool.execute(`UPDATE users SET ${fields.join(', ')} WHERE id = ?`, values);
+    res.json({ success: true });
+}));
+
+// ── POST /api/users/:id/avatar ────────────────────────────────────────────────
+app.post('/api/users/:id/avatar', avatarUpload.single('avatar'), handleAsync(async (req, res) => {
+    if (!req.file) return res.status(400).json({ success: false, error: 'No file uploaded' });
+
+    const { id } = req.params;
+
+    // Delete previous uploaded avatar (skip external URLs like dicebear/randomuser)
+    const [existing] = await pool.query('SELECT avatar FROM users WHERE id = ?', [id]);
+    const oldAvatar = existing[0]?.avatar;
+    if (oldAvatar && oldAvatar.startsWith('/uploads/')) {
+        const oldPath = path.join(UPLOADS_DIR, path.basename(oldAvatar));
+        if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+    }
+
+    const avatarUrl = `/uploads/${req.file.filename}`;
+    await pool.execute('UPDATE users SET avatar = ? WHERE id = ?', [avatarUrl, id]);
+    res.json({ success: true, avatarUrl });
+}));
+
+// GET /api/providers — returns all users who have a service_category set
+// Optional ?category=Driver to filter by specific service
+app.get('/api/providers', handleAsync(async (req, res) => {
+    const { category } = req.query;
+    let sql = `SELECT id, name, avatar, bio, rating, rate, city, state, country,
+                      lat, lng, languages, years, availability, service_categories, phone
+               FROM users
+               WHERE service_categories IS NOT NULL
+                 AND service_categories != ''
+                 AND service_categories != 'None'
+                 AND lat IS NOT NULL`;
+    const params = [];
+    if (category) {
+        sql += ' AND FIND_IN_SET(?, service_categories)';
+        params.push(category);
+    }
+    sql += ' ORDER BY rating DESC';
+    const [rows] = await pool.query(sql, params);
+
+    // Shape into the format the frontend expects
+    const providers = rows.map(u => ({
+        id: u.id,
+        name: u.name,
+        photo: u.avatar && u.avatar.startsWith('/uploads/') ? `http://localhost:3000${u.avatar}` : (u.avatar || ''),
+        bio: u.bio || '',
+        rating: u.rating || 5.0,
+        rate: u.rate || 0,
+        currency: 'EUR',
+        city: u.city || '',
+        lat: u.lat,
+        lng: u.lng,
+        languages: u.languages || '',
+        years: u.years || 0,
+        availability: u.availability || 'Available Now',
+        serviceType: u.service_categories ? u.service_categories.split(',')[0].trim() : '',
+        phone: u.phone || ''
+    }));
+
+    res.json({ success: true, providers });
+}));
+
+// ── GET /api/providers/:id/ratings ───────────────────────────────────────────
+app.get('/api/providers/:id/ratings', handleAsync(async (req, res) => {
+    const [rows] = await pool.query(
+        `SELECT r.id, r.stars, r.comment, r.created_at,
+                COALESCE(u.name, r.reviewer_name, 'Anonymous') AS reviewer_name,
+                u.avatar AS reviewer_avatar
+         FROM ratings r
+         LEFT JOIN users u ON u.id = r.user_id
+         WHERE r.provider_id = ?
+         ORDER BY r.created_at DESC`,
+        [req.params.id]
+    );
+    res.json({ success: true, ratings: rows });
+}));
+
+// ── POST /api/ratings ─────────────────────────────────────────────────────────
+app.post('/api/ratings', handleAsync(async (req, res) => {
+    const { provider_id, user_id, reviewer_name, stars, comment } = req.body;
+    if (!provider_id) return res.status(400).json({ success: false, error: 'provider_id is required' });
+    const iStars = parseInt(stars);
+    if (!iStars || iStars < 1 || iStars > 5) {
+        return res.status(400).json({ success: false, error: 'stars must be 1–5' });
+    }
 
     await pool.execute(
-        'UPDATE users SET name = ?, bio = ?, languages = ?, years = ?, phone = ?, rate = ?, availability = ?, service_categories = ? WHERE id = ?',
-        [name, bio, languages, parseInt(years || 0), phone, parseFloat(rate || 0), availStr, catStr, id]
+        'INSERT INTO ratings (provider_id, user_id, reviewer_name, stars, comment) VALUES (?, ?, ?, ?, ?)',
+        [provider_id, user_id || null, reviewer_name || 'Anonymous', iStars, comment || null]
     );
-    res.json({ success: true });
+
+    // Recalculate provider average rating
+    const [[{ avg }]] = await pool.query(
+        'SELECT ROUND(AVG(stars), 1) AS avg FROM ratings WHERE provider_id = ?',
+        [provider_id]
+    );
+    await pool.execute('UPDATE users SET rating = ? WHERE id = ?', [avg, provider_id]);
+
+    res.json({ success: true, newAverage: avg });
+}));
+
+// ── POST /api/chat ────────────────────────────────────────────────────────────
+// AI chat with a provider's profile context. Uses SSE streaming.
+app.post('/api/chat', handleAsync(async (req, res) => {
+    const { provider_id, messages } = req.body;
+    if (!provider_id || !Array.isArray(messages)) {
+        return res.status(400).json({ success: false, error: 'provider_id and messages[] required' });
+    }
+
+    // Fetch provider from DB for context
+    const [rows] = await pool.query(
+        `SELECT name, bio, rating, rate, city, country, languages, years,
+                availability, service_categories, phone
+         FROM users WHERE id = ?`, [provider_id]
+    );
+    const p = rows[0];
+    if (!p) return res.status(404).json({ success: false, error: 'Provider not found' });
+
+    const systemPrompt = `You are an AI assistant for ${p.name}, a service provider on HelpHub.
+
+Here is ${p.name}'s profile:
+- Service: ${p.service_categories || 'General'}
+- Rating: ${p.rating || 5}/5
+- Rate: €${p.rate || 0}/hr
+- Experience: ${p.years || 0} years
+- Location: ${[p.city, p.country].filter(Boolean).join(', ') || 'Not specified'}
+- Languages: ${p.languages || 'Not specified'}
+- Availability: ${p.availability || 'Flexible'}
+- About: ${p.bio || 'Professional service provider on HelpHub.'}
+
+Your job is to help users learn about ${p.name}, answer questions about their services, availability, and pricing. Be friendly, professional, and helpful. If asked about booking, tell them to use the HelpHub booking system. Do not make up information not provided above.`;
+
+    // Set up SSE for streaming
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.flushHeaders();
+
+    try {
+        const stream = await anthropic.messages.stream({
+            model: 'claude-opus-4-6',
+            max_tokens: 1024,
+            system: systemPrompt,
+            messages: messages.map(m => ({ role: m.role, content: m.content }))
+        });
+
+        for await (const event of stream) {
+            if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
+                res.write(`data: ${JSON.stringify({ text: event.delta.text })}\n\n`);
+            }
+        }
+        res.write('data: [DONE]\n\n');
+    } catch (err) {
+        console.error('Chat AI error:', err.message);
+        res.write(`data: ${JSON.stringify({ error: err.message })}\n\n`);
+    }
+    res.end();
 }));
 
 app.get('/api/services', handleAsync(async (req, res) => {
@@ -135,14 +422,34 @@ app.get('/api/bookings', handleAsync(async (req, res) => {
     res.json(rows);
 }));
 
-// ─── Helper: upsert a social-login user and return a signed JWT ──────────────
+// ─── Token helpers ────────────────────────────────────────────────────────────
+function issueAccessToken(user) {
+    return jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, { expiresIn: '15m' });
+}
+
+async function issueRefreshToken(user) {
+    const token = jwt.sign({ userId: user.id }, REFRESH_SECRET, { expiresIn: '30d' });
+    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+    await pool.execute(
+        'INSERT INTO refresh_tokens (user_id, token_hash, expires_at) VALUES (?, ?, ?)',
+        [user.id, token, expiresAt]
+    );
+    return token;
+}
+
+async function issueTokens(user) {
+    const accessToken = issueAccessToken(user);
+    const refreshToken = await issueRefreshToken(user);
+    return { accessToken, refreshToken };
+}
+
+// ─── Helper: upsert a social-login user and return tokens ────────────────────
 async function upsertSocialUser({ email, name, avatar, provider }) {
     const [rows] = await pool.query('SELECT * FROM users WHERE email = ?', [email]);
     let user;
 
     if (rows.length > 0) {
         user = rows[0];
-        // Keep avatar fresh if it changed
         if (avatar && user.avatar !== avatar) {
             await pool.execute('UPDATE users SET avatar = ? WHERE id = ?', [avatar, user.id]);
             user.avatar = avatar;
@@ -158,16 +465,11 @@ async function upsertSocialUser({ email, name, avatar, provider }) {
         user = newRows[0];
     }
 
-    const token = jwt.sign(
-        { userId: user.id, email: user.email },
-        JWT_SECRET,
-        { expiresIn: '7d' }
-    );
-    return { user, token };
+    return { user, ...(await issueTokens(user)) };
 }
 
 // ─── POST /api/auth/google ────────────────────────────────────────────────────
-app.post('/api/auth/google', handleAsync(async (req, res) => {
+app.post('/api/auth/google', authLimiter, handleAsync(async (req, res) => {
     const { idToken } = req.body;
     if (!idToken) return res.status(400).json({ success: false, error: 'idToken is required' });
 
@@ -185,21 +487,19 @@ app.post('/api/auth/google', handleAsync(async (req, res) => {
     }
 
     const { email, name, picture } = payload;
-    const { user, token } = await upsertSocialUser({ email, name, avatar: picture, provider: 'Google' });
-    res.json({ success: true, user, token });
+    const { user, accessToken, refreshToken } = await upsertSocialUser({ email, name, avatar: picture, provider: 'Google' });
+    res.json({ success: true, user, accessToken, refreshToken });
 }));
 
 // ─── POST /api/auth/facebook ──────────────────────────────────────────────────
-app.post('/api/auth/facebook', handleAsync(async (req, res) => {
-    const { accessToken } = req.body;
-    if (!accessToken) return res.status(400).json({ success: false, error: 'accessToken is required' });
+app.post('/api/auth/facebook', authLimiter, handleAsync(async (req, res) => {
+    const { accessToken: fbAccessToken } = req.body;
+    if (!fbAccessToken) return res.status(400).json({ success: false, error: 'accessToken is required' });
 
-    // Verify token via Facebook Graph API
-    // Using Node 18+ native fetch; if on older Node, install node-fetch
     let fbData;
     try {
         const fbRes = await fetch(
-            `https://graph.facebook.com/me?fields=id,name,email,picture.type(large)&access_token=${encodeURIComponent(accessToken)}`
+            `https://graph.facebook.com/me?fields=id,name,email,picture.type(large)&access_token=${encodeURIComponent(fbAccessToken)}`
         );
         fbData = await fbRes.json();
     } catch (err) {
@@ -214,18 +514,22 @@ app.post('/api/auth/facebook', handleAsync(async (req, res) => {
 
     const email = fbData.email || `fb_${fbData.id}@facebook.com`;
     const avatar = fbData.picture?.data?.url || null;
-    const { user, token } = await upsertSocialUser({ email, name: fbData.name, avatar, provider: 'Facebook' });
-    res.json({ success: true, user, token });
+    const { user, accessToken, refreshToken } = await upsertSocialUser({ email, name: fbData.name, avatar, provider: 'Facebook' });
+    res.json({ success: true, user, accessToken, refreshToken });
 }));
 
 // ─── POST /api/auth/passwordless ─────────────────────────────────────────────
-app.post('/api/auth/passwordless', handleAsync(async (req, res) => {
+// Option A: instant login if email exists in DB (no password needed)
+app.post('/api/auth/passwordless', authLimiter, handleAsync(async (req, res) => {
     if (!pool) throw new Error("Database pool not ready");
     const { email, role, provider } = req.body;
-    
+    if (!email) return res.status(400).json({ success: false, error: 'email is required' });
+
     const [users] = await pool.query('SELECT * FROM users WHERE email = ?', [email]);
+    let user;
+
     if (users.length > 0) {
-        return res.json({ success: true, user: users[0] });
+        user = users[0];
     } else {
         const id = 'U' + Date.now();
         const avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${email}`;
@@ -234,8 +538,63 @@ app.post('/api/auth/passwordless', handleAsync(async (req, res) => {
             [id, email.split('@')[0], email, role || 'Customer', avatar, provider || 'Email']
         );
         const [newUser] = await pool.query('SELECT * FROM users WHERE id = ?', [id]);
-        return res.json({ success: true, user: newUser[0] });
+        user = newUser[0];
     }
+
+    const { accessToken, refreshToken } = await issueTokens(user);
+    return res.json({ success: true, user, accessToken, refreshToken });
+}));
+
+// ─── GET /api/auth/me ─────────────────────────────────────────────────────────
+// Returns the logged-in user from a valid JWT access token
+app.get('/api/auth/me', handleAsync(async (req, res) => {
+    const auth = req.headers.authorization || '';
+    const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
+    if (!token) return res.status(401).json({ success: false, error: 'No token provided' });
+
+    let payload;
+    try { payload = jwt.verify(token, JWT_SECRET); }
+    catch { return res.status(401).json({ success: false, error: 'Invalid or expired token' }); }
+
+    const [rows] = await pool.query('SELECT * FROM users WHERE id = ?', [payload.userId]);
+    if (!rows.length) return res.status(404).json({ success: false, error: 'User not found' });
+
+    res.json({ success: true, user: rows[0] });
+}));
+
+// ─── POST /api/auth/refresh ───────────────────────────────────────────────────
+// Swap a valid refresh token for a new access token
+app.post('/api/auth/refresh', handleAsync(async (req, res) => {
+    const { refreshToken } = req.body;
+    if (!refreshToken) return res.status(400).json({ success: false, error: 'refreshToken is required' });
+
+    let payload;
+    try {
+        payload = jwt.verify(refreshToken, REFRESH_SECRET);
+    } catch {
+        return res.status(401).json({ success: false, error: 'Invalid or expired refresh token' });
+    }
+
+    const [rows] = await pool.query(
+        'SELECT * FROM refresh_tokens WHERE user_id = ? AND token_hash = ? AND expires_at > NOW()',
+        [payload.userId, refreshToken]
+    );
+    if (rows.length === 0) return res.status(401).json({ success: false, error: 'Refresh token revoked or expired' });
+
+    const [users] = await pool.query('SELECT * FROM users WHERE id = ?', [payload.userId]);
+    if (users.length === 0) return res.status(401).json({ success: false, error: 'User not found' });
+
+    const accessToken = issueAccessToken(users[0]);
+    res.json({ success: true, accessToken });
+}));
+
+// ─── POST /api/auth/logout ────────────────────────────────────────────────────
+app.post('/api/auth/logout', handleAsync(async (req, res) => {
+    const { refreshToken } = req.body;
+    if (refreshToken) {
+        await pool.execute('DELETE FROM refresh_tokens WHERE token_hash = ?', [refreshToken]);
+    }
+    res.json({ success: true, message: 'Logged out' });
 }));
 
 // Global Catch-all for /api

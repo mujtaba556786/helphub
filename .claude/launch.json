@@ -4,8 +4,9 @@
     {
       "name": "frontend",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["serve", "-p", "8080", "frontend/webapp"],
-      "port": 8080
+      "runtimeArgs": ["serve", "frontend/webapp"],
+      "port": 8080,
+      "autoPort": false
     }
   ]
 }

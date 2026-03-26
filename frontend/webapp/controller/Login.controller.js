@@ -21,15 +21,50 @@ sap.ui.define([
 
         // ── Internal: apply user data from backend response to the app model ──
         _applySession: function (oData) {
-            sessionStorage.setItem("helphub_token", oData.token);
+            // Backend returns accessToken + refreshToken (or legacy token field)
+            var sAccessToken = oData.accessToken || oData.token;
+            sessionStorage.setItem("helphub_token", sAccessToken);
+            if (oData.refreshToken) {
+                sessionStorage.setItem("helphub_refresh_token", oData.refreshToken);
+            }
+            if (oData.user && oData.user.id) {
+                sessionStorage.setItem("helphub_user_id", oData.user.id);
+            }
 
             var oModel = this.getModel("appData");
-            oModel.setProperty("/user/name",   oData.user.name);
-            oModel.setProperty("/user/email",  oData.user.email);
-            oModel.setProperty("/user/avatar", oData.user.avatar || oData.user.name.substring(0, 2).toUpperCase());
-            oModel.setProperty("/isLoggedIn",  true);
+            var oUser  = oData.user || {};
 
-            MessageToast.show("Welcome, " + oData.user.name + "!");
+            oModel.setProperty("/user/id",    oUser.id    || "");
+            oModel.setProperty("/user/name",  oUser.name  || "");
+            oModel.setProperty("/user/email", oUser.email || "");
+            var sAvatar = oUser.avatar || "";
+            if (sAvatar && sAvatar.startsWith("/uploads/")) sAvatar = API_BASE + sAvatar;
+            oModel.setProperty("/user/photo", sAvatar);
+            // Compute initials from name (e.g. "John Doe" → "JD")
+            var sInitials = (oUser.name || "?")
+                .split(" ").filter(Boolean)
+                .map(function(w) { return w[0]; })
+                .join("").substring(0, 2).toUpperCase();
+            oModel.setProperty("/user/initials", sInitials);
+            oModel.setProperty("/user/bio",      oUser.bio       || "");
+            oModel.setProperty("/user/phone",    oUser.phone     || "");
+            oModel.setProperty("/user/languages", oUser.languages || "");
+            oModel.setProperty("/user/years",    oUser.years     || 0);
+            oModel.setProperty("/user/rate",     oUser.rate      || 0);
+            oModel.setProperty("/user/availability",     (oUser.availability     || "").split(",").filter(Boolean));
+            oModel.setProperty("/user/serviceCategories",(oUser.service_categories || "").split(",").filter(Boolean));
+
+            // Structured address from DB columns
+            oModel.setProperty("/user/address/street",     oUser.street_name   || "");
+            oModel.setProperty("/user/address/houseNumber", oUser.street_number || "");
+            oModel.setProperty("/user/address/city",       oUser.city          || "");
+            oModel.setProperty("/user/address/state",      oUser.state         || "");
+            oModel.setProperty("/user/address/country",    oUser.country       || "");
+            oModel.setProperty("/user/address/postalCode", oUser.pincode       || "");
+
+            oModel.setProperty("/isLoggedIn", true);
+
+            MessageToast.show("Welcome, " + (oUser.name || "User") + "!");
             this.navTo("dashboard");
         },
 
