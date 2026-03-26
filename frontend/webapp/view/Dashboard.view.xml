@@ -18,10 +18,15 @@
                         </HBox>
                     </contentLeft>
                     <contentRight>
-                        <HBox alignItems="Center">
-                            <Avatar initials="{appData>/user/avatar}"/>
-                            <Button icon="sap-icon://customer" press="onEditProfile" type="Transparent"/>
-                            <Button icon="sap-icon://log" press="onLogout" type="Transparent"/>
+                        <HBox alignItems="Center" class="sapUiTinyMarginEnd">
+                            <Avatar
+                                src="{appData>/user/photo}"
+                                initials="{appData>/user/initials}"
+                                displaySize="XS"
+                                backgroundColor="Accent6"
+                                press="onEditProfile"
+                                class="sapUiTinyMarginEnd" />
+                            <Button icon="sap-icon://log" press="onLogout" type="Transparent" tooltip="Sign out"/>
                         </HBox>
                     </contentRight>
                 </Bar>
@@ -150,7 +155,7 @@
     <f:SimpleForm editable="true" layout="ResponsiveGridLayout" columnsL="2" columnsM="2">
 
         <!-- Basic Info -->
-        <f:title><core:Title text="Basic Information"/></f:title>
+        <core:Title text="Basic Information"/>
 
         <Label text="Display Name" required="true"/>
         <Input value="{appData>/user/name}" valueState="{appData>/validation/name}" valueStateText="Display name is required"/>
@@ -165,7 +170,7 @@
         <TextArea rows="3" value="{appData>/user/bio}" placeholder="Tell clients about your experience…"/>
 
         <!-- Provider Info -->
-        <f:title><core:Title text="Provider Settings"/></f:title>
+        <core:Title text="Provider Settings"/>
 
         <Label text="Service Categories"/>
         <MultiComboBox selectedKeys="{appData>/user/serviceCategories}" items="{appData>/services}">
@@ -186,7 +191,7 @@
         <Input value="{appData>/user/years}" type="Number"/>
 
         <!-- Address -->
-        <f:title><core:Title text="Address"/></f:title>
+        <core:Title text="Address"/>
 
         <Label text="Country" required="true"/>
         <Select id="countrySelect" change="onCountryChange"
@@ -251,20 +256,56 @@
                             <ObjectStatus text="{appData>/selectedProfile/rate} {appData>/selectedProfile/currency}/hr" state="None" class="smallText"/>
                         </HBox>
 
-                        <Title text="What other people say" level="H4" class="sapUiSmallMarginBottom"/>
-                        <List items="{appData>/selectedProfile/reviews}">
+                        <Title text="Reviews" level="H4" class="sapUiSmallMarginBottom"/>
+                        <List id="reviewsList" items="{appData>/selectedProfile/reviews}" noDataText="No reviews yet — be the first!">
                             <CustomListItem>
                                 <VBox class="sapUiTinyMargin">
-                                    <Text text="{appData>user}" class="fontBold"/>
-                                    <Text text="{appData>comment}" class="smallText"/>
-                                    <Text text="{appData>stars} ★" class="smallText blueText"/>
+                                    <HBox alignItems="Center" class="sapUiTinyMarginBottom">
+                                        <RatingIndicator value="{appData>stars}" maxValue="5" displayOnly="true" iconSize="12px" class="sapUiTinyMarginEnd"/>
+                                        <Text text="{appData>reviewer_name}" class="fontBold smallText"/>
+                                    </HBox>
+                                    <Text text="{appData>comment}" class="smallText grayText"/>
                                 </VBox>
                             </CustomListItem>
                         </List>
+
+                        <!-- Rate this helper -->
+                        <Panel headerText="Rate this helper" expandable="true" expanded="false" class="sapUiSmallMarginTop">
+                            <VBox class="sapUiSmallMargin">
+                                <Label text="Your rating" required="true"/>
+                                <RatingIndicator id="newRatingStars" maxValue="5" value="0" class="sapUiTinyMarginBottom"/>
+                                <Label text="Your comment (optional)"/>
+                                <TextArea id="newRatingComment" rows="3" width="100%" placeholder="Tell others about your experience…" class="sapUiTinyMarginBottom"/>
+                                <Button text="Submit Rating" type="Emphasized" press="onSubmitRating" class="sapUiTinyMarginTop"/>
+                            </VBox>
+                        </Panel>
+                    </VBox>
+
+                    <beginButton>
+                        <Button text="💬 Chat with Helper" type="Accept" press="onOpenChat"/>
+                    </beginButton>
+                    <endButton>
+                        <Button text="Close" press="onCloseProfile"/>
+                    </endButton>
+                </Dialog>
+
+                <!-- AI Chat Dialog -->
+                <Dialog id="chatDialog" title="AI Chat" contentWidth="95%" contentHeight="75%" verticalScrolling="true">
+                    <VBox>
+                        <!-- Messages rendered as HTML by controller into this container -->
+                        <core:HTML id="chatMessagesHtml" content="&lt;div id='chatBubbles' style='padding:8px;min-height:200px'&gt;&lt;/div&gt;"/>
+                        <!-- Typing indicator -->
+                        <core:HTML id="chatTypingHtml" content="&lt;div id='chatTyping' style='display:none;padding:4px 8px'&gt;&lt;span style='background:#f1f5f9;color:#64748b;padding:6px 12px;border-radius:12px;font-size:13px'&gt;typing…&lt;/span&gt;&lt;/div&gt;"/>
+                        <!-- Input row -->
+                        <HBox alignItems="Center" class="sapUiSmallMargin">
+                            <Input id="chatInput" placeholder="Ask about availability, pricing, services…"
+                                   width="100%" submit="onChatSend" class="sapUiTinyMarginEnd"/>
+                            <Button id="chatSendBtn" icon="sap-icon://paper-plane" type="Emphasized" press="onChatSend"/>
+                        </HBox>
                     </VBox>
 
                     <endButton>
-                        <Button text="Close" press="onCloseProfile"/>
+                        <Button text="Close" press="onCloseChat"/>
                     </endButton>
                 </Dialog>
 

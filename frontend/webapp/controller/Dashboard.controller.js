@@ -35,14 +35,19 @@ sap.ui.define([
 
         _onRouteMatched: function() {
             this._oModel = this.getModel("appData");
+            this._loadProvidersFromApi();
+        },
 
-            // ✅ initialize provider list ONCE
-            if (!this._oModel.getProperty("/filteredProviders").length) {
-                this._oModel.setProperty(
-                    "/filteredProviders",
-                    this._oModel.getProperty("/providers")
-                );
-            }
+        _loadProvidersFromApi: function() {
+            var oModel = this.getModel("appData");
+            fetch(API_BASE + "/api/providers")
+                .then(function(r) { return r.json(); })
+                .then(function(oData) {
+                    if (oData.success && oData.providers.length) {
+                        oModel.setProperty("/providers", oData.providers);
+                    }
+                })
+                .catch(function() { /* keep mock data on network error */ });
         },
 
         onLogout: function () {
@@ -135,19 +140,21 @@ sap.ui.define([
         },
 
         onChangePhoto: function() {
+            var that = this;
             var oInput = document.getElementById("avatarFileInput");
-            if (!oInput) return;
+            if (!oInput) { MessageToast.show("File input not ready."); return; }
 
-            oInput.onchange = function(oEvt) {
+            // Replace input to reset any previous selection
+            var oNewInput = oInput.cloneNode(true);
+            oInput.parentNode.replaceChild(oNewInput, oInput);
+
+            oNewInput.addEventListener("change", function(oEvt) {
                 var oFile = oEvt.target.files && oEvt.target.files[0];
                 if (!oFile) return;
 
                 var aAllowed = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"];
                 if (!aAllowed.includes(oFile.type)) {
-                    var oErrText = sap.ui.getCore().byId(
-                        this.getView().createId("photoError")
-                    );
-                    if (oErrText) { oErrText.setText("Only JPG, PNG, GIF or WebP images are allowed."); oErrText.setVisible(true); }
+                    MessageToast.show("Only JPG, PNG, GIF or WebP images are allowed.");
                     return;
                 }
                 if (oFile.size > 5 * 1024 * 1024) {
@@ -158,12 +165,12 @@ sap.ui.define([
                 // Immediate local preview
                 var oReader = new FileReader();
                 oReader.onload = function(e) {
-                    this.getModel("appData").setProperty("/user/photo", e.target.result);
-                }.bind(this);
+                    that.getModel("appData").setProperty("/user/photo", e.target.result);
+                };
                 oReader.readAsDataURL(oFile);
 
                 // Upload to server
-                var sUserId = this.getModel("appData").getProperty("/user/id");
+                var sUserId = that.getModel("appData").getProperty("/user/id") || sessionStorage.getItem("helphub_user_id");
                 if (!sUserId) { MessageToast.show("Please log in again to upload a photo."); return; }
 
                 var oForm = new FormData();
@@ -171,22 +178,21 @@ sap.ui.define([
 
                 fetch(API_BASE + "/api/users/" + encodeURIComponent(sUserId) + "/avatar", {
                     method: "POST",
-                    headers: { "Authorization": "Bearer " + (sessionStorage.getItem("helphub_token") || "") },
                     body: oForm
                 })
                 .then(function(r) { return r.json(); })
                 .then(function(oData) {
                     if (oData.success) {
-                        this.getModel("appData").setProperty("/user/photo", API_BASE + oData.avatarUrl);
+                        that.getModel("appData").setProperty("/user/photo", API_BASE + oData.avatarUrl);
                         MessageToast.show("Profile photo updated.");
                     } else {
                         MessageToast.show("Upload failed: " + (oData.error || "Unknown error"));
                     }
-                }.bind(this))
+                })
                 .catch(function() { MessageToast.show("Could not reach the server."); });
-            }.bind(this);
+            });
 
-            oInput.click();
+            oNewInput.click();
         },
 
         onNavBack: function() {
@@ -226,7 +232,7 @@ sap.ui.define([
                 return;
             }
 
-            var sUserId = oUser.id;
+            var sUserId = oUser.id || sessionStorage.getItem("helphub_user_id");
             if (!sUserId) { MessageToast.show("Session expired. Please log in again."); return; }
 
             fetch(API_BASE + "/api/users/" + encodeURIComponent(sUserId), {
@@ -336,10 +342,7 @@ sap.ui.define([
             });
 
             if (!aFiltered.length) {
-                aFiltered = aAll.filter(function(p) {
-                    return p.serviceType === sServiceName;
-                });
-                oModel.setProperty("/filters/distanceLabel", "Showing all helpers (no one close yet)");
+                oModel.setProperty("/filters/distanceLabel", "No helpers within " + oFilters.distance + " km — try increasing the radius");
             }
 
             aFiltered.sort(function(a, b) {
@@ -470,31 +473,197 @@ sap.ui.define([
         },
 
         onViewProfile: function (oEvent) {
-            var oListItem = oEvent.getSource().getParent().getParent(); 
+            // Button → VBox → HBox → CustomListItem
+            var oListItem = oEvent.getSource().getParent().getParent().getParent();
             var oCtx = oListItem.getBindingContext("appData");
             if (!oCtx) return;
 
             var oProvider = Object.assign({}, oCtx.getObject());
-
             if (oProvider.name && !oProvider.initials) {
                 oProvider.initials = oProvider.name
-                    .split(" ")
-                    .map(p => p[0])
-                    .join("")
-                    .substring(0, 2)
-                    .toUpperCase();
+                    .split(" ").map(function(p) { return p[0]; })
+                    .join("").substring(0, 2).toUpperCase();
             }
+            oProvider.reviews = [];
 
             var oModel = this.getModel("appData");
             oModel.setProperty("/selectedProfile", oProvider);
 
+            // Reset rating input
+            var oStars = this.byId("newRatingStars");
+            var oComment = this.byId("newRatingComment");
+            if (oStars) oStars.setValue(0);
+            if (oComment) oComment.setValue("");
+
             var oDialog = this.byId("profileDialog");
-            oDialog.bindElement("appData>/selectedProfile");
             oDialog.open();
+
+            // Load real ratings from backend
+            fetch(API_BASE + "/api/providers/" + encodeURIComponent(oProvider.id) + "/ratings")
+                .then(function(r) { return r.json(); })
+                .then(function(oData) {
+                    if (oData.success) {
+                        oModel.setProperty("/selectedProfile/reviews", oData.ratings);
+                    }
+                })
+                .catch(function() { /* keep empty */ });
+        },
+
+        onSubmitRating: function() {
+            var oModel   = this.getModel("appData");
+            var oStars   = this.byId("newRatingStars");
+            var oComment = this.byId("newRatingComment");
+            var iStars   = oStars ? oStars.getValue() : 0;
+
+            if (!iStars || iStars < 1) {
+                MessageToast.show("Please select at least 1 star.");
+                return;
+            }
+
+            var sProviderId = oModel.getProperty("/selectedProfile/id");
+            var sUserId     = oModel.getProperty("/user/id") || sessionStorage.getItem("helphub_user_id");
+            var sName       = oModel.getProperty("/user/name") || "Anonymous";
+            var sComment    = oComment ? oComment.getValue().trim() : "";
+
+            fetch(API_BASE + "/api/ratings", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    provider_id:   sProviderId,
+                    user_id:       sUserId,
+                    reviewer_name: sName,
+                    stars:         iStars,
+                    comment:       sComment
+                })
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(oData) {
+                if (oData.success) {
+                    MessageToast.show("Thank you for your rating!");
+                    // Refresh reviews list
+                    if (oStars) oStars.setValue(0);
+                    if (oComment) oComment.setValue("");
+                    // Update displayed average
+                    if (oData.newAverage) {
+                        oModel.setProperty("/selectedProfile/rating", oData.newAverage);
+                    }
+                    // Append new review locally
+                    var aReviews = oModel.getProperty("/selectedProfile/reviews") || [];
+                    aReviews.unshift({ reviewer_name: sName, stars: iStars, comment: sComment });
+                    oModel.setProperty("/selectedProfile/reviews", aReviews);
+                } else {
+                    MessageToast.show("Could not submit: " + (oData.error || "Unknown error"));
+                }
+            }.bind(this))
+            .catch(function() { MessageToast.show("Could not reach the server."); });
         },
 
         onCloseProfile: function() {
             this.byId("profileDialog").close();
+        },
+
+        _renderChatBubbles: function(aMessages) {
+            var oBubbles = document.getElementById("chatBubbles");
+            if (!oBubbles) return;
+            oBubbles.innerHTML = aMessages.map(function(m) {
+                var sEsc = (m.content || "").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, "<br>");
+                if (m.role === "user") {
+                    return '<div style="text-align:right;margin:4px 0"><span style="background:#3b82f6;color:white;padding:8px 12px;border-radius:16px 16px 4px 16px;display:inline-block;max-width:80%;word-wrap:break-word;text-align:left">' + sEsc + '</span></div>';
+                }
+                return '<div style="text-align:left;margin:4px 0"><span style="background:#f1f5f9;color:#1e293b;padding:8px 12px;border-radius:16px 16px 16px 4px;display:inline-block;max-width:80%;word-wrap:break-word">' + sEsc + '</span></div>';
+            }).join("");
+            // Scroll to bottom
+            oBubbles.scrollIntoView && oBubbles.lastElementChild && oBubbles.lastElementChild.scrollIntoView({ behavior: "smooth" });
+        },
+
+        onOpenChat: function() {
+            var oModel = this.getModel("appData");
+            var sName  = oModel.getProperty("/selectedProfile/name") || "Helper";
+
+            this._chatMessages = [{
+                role: "assistant",
+                content: "Hi! I'm here to help you learn about " + sName + ". Ask me anything — availability, pricing, services, or anything else!"
+            }];
+
+            this.byId("profileDialog").close();
+            var oDialog = this.byId("chatDialog");
+            oDialog.setTitle("Chat with " + sName);
+            oDialog.open();
+
+            var that = this;
+            setTimeout(function() { that._renderChatBubbles(that._chatMessages); }, 100);
+        },
+
+        onChatSend: function() {
+            var oModel      = this.getModel("appData");
+            var oInput      = this.byId("chatInput");
+            var sText       = oInput.getValue().trim();
+            if (!sText) return;
+
+            var sProviderId = oModel.getProperty("/selectedProfile/id");
+            if (!this._chatMessages) this._chatMessages = [];
+
+            this._chatMessages.push({ role: "user", content: sText });
+            this._renderChatBubbles(this._chatMessages);
+            oInput.setValue("");
+
+            var oTyping  = document.getElementById("chatTyping");
+            var oSendBtn = this.byId("chatSendBtn");
+            if (oTyping)  oTyping.style.display = "block";
+            if (oSendBtn) oSendBtn.setEnabled(false);
+
+            var aApiMessages = this._chatMessages.map(function(m) {
+                return { role: m.role, content: m.content };
+            });
+
+            var that = this;
+            var sFullReply   = "";
+            var iPlaceholder = this._chatMessages.length;
+            this._chatMessages.push({ role: "assistant", content: "" });
+
+            fetch(API_BASE + "/api/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ provider_id: sProviderId, messages: aApiMessages })
+            })
+            .then(function(res) {
+                var oReader  = res.body.getReader();
+                var oDecoder = new TextDecoder();
+                function pump() {
+                    return oReader.read().then(function(chunk) {
+                        if (chunk.done) {
+                            if (oTyping)  oTyping.style.display = "none";
+                            if (oSendBtn) oSendBtn.setEnabled(true);
+                            return;
+                        }
+                        oDecoder.decode(chunk.value, { stream: true }).split("\n").forEach(function(sLine) {
+                            if (!sLine.startsWith("data: ")) return;
+                            var sData = sLine.slice(6).trim();
+                            if (sData === "[DONE]") return;
+                            try {
+                                var o = JSON.parse(sData);
+                                if (o.text) {
+                                    sFullReply += o.text;
+                                    that._chatMessages[iPlaceholder].content = sFullReply;
+                                    that._renderChatBubbles(that._chatMessages);
+                                }
+                            } catch (e) { /* skip */ }
+                        });
+                        return pump();
+                    });
+                }
+                return pump();
+            })
+            .catch(function() {
+                if (oTyping)  oTyping.style.display = "none";
+                if (oSendBtn) oSendBtn.setEnabled(true);
+                that._chatMessages[iPlaceholder].content = "Sorry, I couldn't reach the server. Please try again.";
+                that._renderChatBubbles(that._chatMessages);
+            });
+        },
+
+        onCloseChat: function() {
+            this.byId("chatDialog").close();
         }
     });
 });

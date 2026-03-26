@@ -19,6 +19,7 @@ sap.ui.define([
             name: "",
             email: "",
             avatar: "👤",
+            initials: "",
             photo: "",
 
             // provider profile
@@ -39,7 +40,10 @@ sap.ui.define([
                 state: "",
                 postalCode: "",
                 country: ""
-            }
+            },
+
+            // geo location (set on GPS fix or default Berlin)
+            location: { lat: 52.52, lng: 13.405 }
         },
         // country/state dropdowns
         countries: [],
@@ -176,6 +180,7 @@ sap.ui.define([
             }
         ],
 
+        chatMessages: [],
         filteredProviders: [],
 
         filters: {

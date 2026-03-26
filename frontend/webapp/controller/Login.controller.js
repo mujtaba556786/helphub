@@ -27,6 +27,9 @@ sap.ui.define([
             if (oData.refreshToken) {
                 sessionStorage.setItem("helphub_refresh_token", oData.refreshToken);
             }
+            if (oData.user && oData.user.id) {
+                sessionStorage.setItem("helphub_user_id", oData.user.id);
+            }
 
             var oModel = this.getModel("appData");
             var oUser  = oData.user || {};
@@ -34,8 +37,15 @@ sap.ui.define([
             oModel.setProperty("/user/id",    oUser.id    || "");
             oModel.setProperty("/user/name",  oUser.name  || "");
             oModel.setProperty("/user/email", oUser.email || "");
-            oModel.setProperty("/user/photo", oUser.avatar || "");
-            oModel.setProperty("/user/avatar", oUser.avatar || (oUser.name || "?").substring(0, 2).toUpperCase());
+            var sAvatar = oUser.avatar || "";
+            if (sAvatar && sAvatar.startsWith("/uploads/")) sAvatar = API_BASE + sAvatar;
+            oModel.setProperty("/user/photo", sAvatar);
+            // Compute initials from name (e.g. "John Doe" → "JD")
+            var sInitials = (oUser.name || "?")
+                .split(" ").filter(Boolean)
+                .map(function(w) { return w[0]; })
+                .join("").substring(0, 2).toUpperCase();
+            oModel.setProperty("/user/initials", sInitials);
             oModel.setProperty("/user/bio",      oUser.bio       || "");
             oModel.setProperty("/user/phone",    oUser.phone     || "");
             oModel.setProperty("/user/languages", oUser.languages || "");
