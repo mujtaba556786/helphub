@@ -15,22 +15,39 @@ sap.ui.define([
     return new JSONModel({
         isLoggedIn: false,
         user: {
-        name: "",
-        email: "",
-        avatar: "👤",
+            id: "",
+            name: "",
+            email: "",
+            avatar: "👤",
+            photo: "",
 
-        // provider profile
-        bio: "",
-        rate: 0,
-        currency: "EUR",
-        serviceCategories: [],     // MultiComboBox
-        availability: [],          // MultiComboBox
-        years: 0,
-        languages: "",
-        address: "",
-        phone: "",
-        photo: ""
-    },
+            // provider profile
+            bio: "",
+            rate: 0,
+            currency: "EUR",
+            serviceCategories: [],
+            availability: [],
+            years: 0,
+            languages: "",
+            phone: "",
+
+            // structured address
+            address: {
+                street: "",
+                houseNumber: "",
+                city: "",
+                state: "",
+                postalCode: "",
+                country: ""
+            }
+        },
+        // country/state dropdowns
+        countries: [],
+        stateOptions: [],
+        validation: {
+            street: "None", houseNumber: "None", city: "None",
+            state: "None", postalCode: "None", country: "None", name: "None"
+        },
         mode: "find",
         selectedCategoryName: "",
 

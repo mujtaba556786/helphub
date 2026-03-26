@@ -1,9 +1,12 @@
 sap.ui.define([
     "helphub/controller/BaseController",
     "sap/m/MessageToast",
-    "sap/m/MessageBox"
-], function (BaseController, MessageToast, MessageBox) {
+    "sap/m/MessageBox",
+    "helphub/model/countryStates"
+], function (BaseController, MessageToast, MessageBox, CountryStates) {
     "use strict";
+
+    var API_BASE = "http://localhost:3000";
 
     return BaseController.extend("helphub.controller.Dashboard", {
 
@@ -25,10 +28,7 @@ sap.ui.define([
                         };
                     });
 
-                    if (!this._mapInitialized) {
-                        this._initMap();
-                        this._mapInitialized = true;
-                    }
+                    // Map is initialized lazily on first navigate to searchPage
                 }.bind(this)
             }, this);
         },
@@ -83,16 +83,110 @@ sap.ui.define([
             var aFiltered = this._applyFiltersForService(oService.name);
             oModel.setProperty("/filteredProviders", aFiltered);
 
-            this._updateProviderMarkers(aFiltered);
-
             var oNav = this.byId("navContainer");
             if (oNav) {
                 oNav.to(this.byId("searchPage"));
+                // Init map after SAP UI5 renders + slide animation completes (~400ms)
+                if (!this._mapInitialized) {
+                    setTimeout(function() {
+                        this._initMap();
+                        this._mapInitialized = true;
+                        this._updateProviderMarkers(aFiltered);
+                        // Fix grey tiles caused by container size change during animation
+                        if (this._oMap) {
+                            setTimeout(function() {
+                                this._oMap.invalidateSize();
+                            }.bind(this), 200);
+                        }
+                    }.bind(this), 400);
+                } else {
+                    this._updateProviderMarkers(aFiltered);
+                }
             }
         },
 
         onEditProfile: function() {
+            var oModel = this.getModel("appData");
+
+            // Load countries if not yet loaded
+            if (!oModel.getProperty("/countries").length) {
+                oModel.setProperty("/countries", CountryStates.getCountries());
+            }
+
+            // Auto-detect country if not already set
+            var sCountry = oModel.getProperty("/user/address/country");
+            if (!sCountry) {
+                sCountry = CountryStates.detectCountryCode();
+                oModel.setProperty("/user/address/country", sCountry);
+            }
+
+            // Populate states for detected/saved country
+            oModel.setProperty("/stateOptions", CountryStates.getStates(sCountry));
+
             this.byId("navContainer").to(this.byId("editPage"));
+        },
+
+        onCountryChange: function(oEvent) {
+            var sCode = oEvent.getParameter("selectedItem").getKey();
+            var oModel = this.getModel("appData");
+            oModel.setProperty("/user/address/country", sCode);
+            oModel.setProperty("/stateOptions", CountryStates.getStates(sCode));
+            oModel.setProperty("/user/address/state", "");
+        },
+
+        onChangePhoto: function() {
+            var oInput = document.getElementById("avatarFileInput");
+            if (!oInput) return;
+
+            oInput.onchange = function(oEvt) {
+                var oFile = oEvt.target.files && oEvt.target.files[0];
+                if (!oFile) return;
+
+                var aAllowed = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"];
+                if (!aAllowed.includes(oFile.type)) {
+                    var oErrText = sap.ui.getCore().byId(
+                        this.getView().createId("photoError")
+                    );
+                    if (oErrText) { oErrText.setText("Only JPG, PNG, GIF or WebP images are allowed."); oErrText.setVisible(true); }
+                    return;
+                }
+                if (oFile.size > 5 * 1024 * 1024) {
+                    MessageToast.show("Image must be smaller than 5 MB.");
+                    return;
+                }
+
+                // Immediate local preview
+                var oReader = new FileReader();
+                oReader.onload = function(e) {
+                    this.getModel("appData").setProperty("/user/photo", e.target.result);
+                }.bind(this);
+                oReader.readAsDataURL(oFile);
+
+                // Upload to server
+                var sUserId = this.getModel("appData").getProperty("/user/id");
+                if (!sUserId) { MessageToast.show("Please log in again to upload a photo."); return; }
+
+                var oForm = new FormData();
+                oForm.append("avatar", oFile);
+
+                fetch(API_BASE + "/api/users/" + encodeURIComponent(sUserId) + "/avatar", {
+                    method: "POST",
+                    headers: { "Authorization": "Bearer " + (sessionStorage.getItem("helphub_token") || "") },
+                    body: oForm
+                })
+                .then(function(r) { return r.json(); })
+                .then(function(oData) {
+                    if (oData.success) {
+                        this.getModel("appData").setProperty("/user/photo", API_BASE + oData.avatarUrl);
+                        MessageToast.show("Profile photo updated.");
+                    } else {
+                        MessageToast.show("Upload failed: " + (oData.error || "Unknown error"));
+                    }
+                }.bind(this))
+                .catch(function() { MessageToast.show("Could not reach the server."); });
+            }.bind(this);
+
+            oInput.click();
         },
 
         onNavBack: function() {
@@ -107,8 +201,67 @@ sap.ui.define([
         },
 
         onSaveProfile: function() {
-            MessageToast.show("Your profile has been updated.");
-            this.onNavBack();
+            var oModel = this.getModel("appData");
+            var oUser  = oModel.getProperty("/user");
+            var oAddr  = oUser.address || {};
+
+            // Reset validation
+            var oVal = { name: "None", street: "None", houseNumber: "None", city: "None", state: "None", postalCode: "None", country: "None" };
+            var bValid = true;
+
+            if (!oUser.name || !oUser.name.trim()) { oVal.name = "Error"; bValid = false; }
+            if (!oAddr.street || !oAddr.street.trim()) { oVal.street = "Error"; bValid = false; }
+            if (!oAddr.houseNumber || !oAddr.houseNumber.trim()) { oVal.houseNumber = "Error"; bValid = false; }
+            if (!oAddr.city || !oAddr.city.trim()) { oVal.city = "Error"; bValid = false; }
+            if (!oAddr.state || !oAddr.state.trim()) { oVal.state = "Error"; bValid = false; }
+            if (!oAddr.country || !oAddr.country.trim()) { oVal.country = "Error"; bValid = false; }
+
+            var sPostal = (oAddr.postalCode || "").trim();
+            if (!sPostal || !/^[A-Za-z0-9\s\-]{3,10}$/.test(sPostal)) { oVal.postalCode = "Error"; bValid = false; }
+
+            oModel.setProperty("/validation", oVal);
+
+            if (!bValid) {
+                MessageToast.show("Please fill in all required fields correctly.");
+                return;
+            }
+
+            var sUserId = oUser.id;
+            if (!sUserId) { MessageToast.show("Session expired. Please log in again."); return; }
+
+            fetch(API_BASE + "/api/users/" + encodeURIComponent(sUserId), {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + (sessionStorage.getItem("helphub_token") || "")
+                },
+                body: JSON.stringify({
+                    name:             oUser.name,
+                    bio:              oUser.bio,
+                    languages:        oUser.languages,
+                    years:            oUser.years,
+                    phone:            oUser.phone,
+                    rate:             oUser.rate,
+                    availability:     oUser.availability,
+                    serviceCategories: oUser.serviceCategories,
+                    street_name:      oAddr.street,
+                    street_number:    oAddr.houseNumber,
+                    city:             oAddr.city,
+                    state:            oAddr.state,
+                    country:          oAddr.country,
+                    pincode:          oAddr.postalCode
+                })
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(oData) {
+                if (oData.success) {
+                    MessageToast.show("Profile saved successfully.");
+                    this.onNavBack();
+                } else {
+                    MessageToast.show("Save failed: " + (oData.error || "Unknown error"));
+                }
+            }.bind(this))
+            .catch(function() { MessageToast.show("Could not reach the server."); });
         },
 
         // FILTER HANDLERS
@@ -117,6 +270,11 @@ sap.ui.define([
             var oModel = this.getModel("appData");
             oModel.setProperty("/filters/distance", iVal);
             oModel.setProperty("/filters/distanceLabel", "Within " + iVal + " km");
+
+            // Update circle radius live
+            if (this._oRadiusCircle) {
+                this._oRadiusCircle.setRadius(iVal * 1000);
+            }
 
             this._refreshCurrentFilters();
         },
@@ -206,39 +364,76 @@ sap.ui.define([
         },
 
         _initMap: function () {
-            if (!window.google || !google.maps) return;
+            if (!window.L) return;
 
-            var oModel = this.getModel("appData");
-            var oUserLoc = oModel.getProperty("/user/location");
+            var oModel  = this.getModel("appData");
+            var oUserLoc = oModel.getProperty("/user/location") || { lat: 52.52, lng: 13.405 };
+            var iRadius  = (oModel.getProperty("/filters/distance") || 10) * 1000; // km → metres
 
-            this._oMap = new google.maps.Map(document.getElementById("googleMap"), {
-                center: { lat: oUserLoc.lat, lng: oUserLoc.lng },
-                zoom: 12
-            });
+            // Build the map
+            this._oMap = L.map("googleMap", { zoomControl: true }).setView(
+                [oUserLoc.lat, oUserLoc.lng], 13
+            );
 
-            this._oUserMarker = new google.maps.Marker({
-                position: oUserLoc,
-                map: this._oMap,
-                label: "You"
-            });
+            L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                attribution: "© OpenStreetMap contributors",
+                maxZoom: 19
+            }).addTo(this._oMap);
+
+            // "You are here" marker
+            this._oUserMarker = L.marker([oUserLoc.lat, oUserLoc.lng])
+                .addTo(this._oMap)
+                .bindPopup("<b>You are here</b>")
+                .openPopup();
+
+            // Radius circle
+            this._oRadiusCircle = L.circle([oUserLoc.lat, oUserLoc.lng], {
+                radius: iRadius,
+                color: "#3b82f6",
+                fillColor: "#3b82f6",
+                fillOpacity: 0.08,
+                weight: 2
+            }).addTo(this._oMap);
 
             this._aProviderMarkers = [];
+
+            // Try to get real GPS position
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(pos) {
+                    var oRealLoc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                    oModel.setProperty("/user/location", oRealLoc);
+                    this._oMap.setView([oRealLoc.lat, oRealLoc.lng], 13);
+                    this._oUserMarker.setLatLng([oRealLoc.lat, oRealLoc.lng]);
+                    this._oRadiusCircle.setLatLng([oRealLoc.lat, oRealLoc.lng]);
+                }.bind(this), function() {
+                    // Permission denied or unavailable — keep Berlin default
+                });
+            }
         },
 
         _updateProviderMarkers: function(aProviders) {
-            if (!this._oMap || !window.google || !google.maps) return;
+            if (!this._oMap || !window.L) return;
 
-            if (this._aProviderMarkers) {
-                this._aProviderMarkers.forEach(function(m) { m.setMap(null); });
-            }
+            // Remove old markers
+            (this._aProviderMarkers || []).forEach(function(m) { m.remove(); });
             this._aProviderMarkers = [];
 
+            // Update radius circle size
+            var oModel  = this.getModel("appData");
+            var iRadius = (oModel.getProperty("/filters/distance") || 10) * 1000;
+            if (this._oRadiusCircle) {
+                this._oRadiusCircle.setRadius(iRadius);
+            }
+
+            // Add new markers
             (aProviders || []).forEach(function(p) {
-                var oMarker = new google.maps.Marker({
-                    position: { lat: p.lat, lng: p.lng },
-                    map: this._oMap,
-                    title: p.name
-                });
+                var oMarker = L.marker([p.lat, p.lng])
+                    .addTo(this._oMap)
+                    .bindPopup(
+                        "<b>" + p.name + "</b><br>" +
+                        (p.serviceType || "") + "<br>" +
+                        "$" + (p.rate || 0) + "/hr • ⭐ " + (p.rating || "")
+                    );
                 this._aProviderMarkers.push(oMarker);
             }.bind(this));
         },

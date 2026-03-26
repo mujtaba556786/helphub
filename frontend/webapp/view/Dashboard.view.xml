@@ -135,51 +135,45 @@
         </Page>
 
         <!-- PAGE 3: Edit Profile -->
-        <Page id="editPage" title="Provider Settings" showNavButton="true" navButtonPress="onNavBack">
+        <Page id="editPage" title="My Profile" showNavButton="true" navButtonPress="onNavBack">
             <content>
                 <VBox class="sapUiSmallMargin mainContent maxWidth800">
 
     <!-- PROFILE PHOTO -->
-    <VBox alignItems="Center" class="sapUiSmallMarginBottom">
-        <Avatar
-            src="{appData>/user/photo}"
-            displaySize="L"
-            backgroundColor="Accent6"/>
-
-        <u:FileUploader
-            buttonText="Upload profile photo"
-            fileType="jpg,png"
-            change="onPhotoUpload"
-            uploadOnChange="false"/>
+    <VBox alignItems="Center" class="sapUiMediumMarginBottom">
+        <Avatar id="profileAvatar" src="{appData>/user/photo}" displaySize="XL" backgroundColor="Accent6" initials="{appData>/user/avatar}" class="sapUiSmallMarginBottom"/>
+        <Button text="Change Photo" icon="sap-icon://camera" press="onChangePhoto" type="Transparent"/>
+        <core:HTML id="avatarInputHtml" content='&lt;input id="avatarFileInput" type="file" accept="image/jpeg,image/jpg,image/png,image/gif,image/webp" style="display:none"/&gt;'/>
+        <Text id="photoError" text="" class="errorText" visible="false"/>
     </VBox>
 
-    <f:SimpleForm editable="true" layout="ResponsiveGridLayout">
+    <f:SimpleForm editable="true" layout="ResponsiveGridLayout" columnsL="2" columnsM="2">
 
-        <Label text="Display Name"/>
-        <Input
-            value="{appData>/user/name}"
-            valueState="{appData>/validation/name}"
-            valueStateText="Display name is required"/>
+        <!-- Basic Info -->
+        <f:title><core:Title text="Basic Information"/></f:title>
+
+        <Label text="Display Name" required="true"/>
+        <Input value="{appData>/user/name}" valueState="{appData>/validation/name}" valueStateText="Display name is required"/>
+
+        <Label text="Phone Number"/>
+        <Input value="{appData>/user/phone}" type="Tel"/>
+
+        <Label text="Languages"/>
+        <Input value="{appData>/user/languages}" placeholder="e.g. EN, DE"/>
+
+        <Label text="Bio"/>
+        <TextArea rows="3" value="{appData>/user/bio}" placeholder="Tell clients about your experience…"/>
+
+        <!-- Provider Info -->
+        <f:title><core:Title text="Provider Settings"/></f:title>
 
         <Label text="Service Categories"/>
-        <MultiComboBox
-            selectedKeys="{appData>/user/serviceCategories}"
-            items="{appData>/services}">
+        <MultiComboBox selectedKeys="{appData>/user/serviceCategories}" items="{appData>/services}">
             <core:Item key="{appData>name}" text="{appData>name}"/>
         </MultiComboBox>
 
-        <Label text="Bio"/>
-        <TextArea
-            rows="4"
-            value="{appData>/user/bio}"
-            placeholder="Tell clients about your experience, skills, and approach"/>
-
         <Label text="Hourly Rate (EUR)"/>
-        <Input
-            value="{appData>/user/rate}"
-            type="Number"
-            valueState="{appData>/validation/rate}"
-            valueStateText="Hourly rate must be greater than 0"/>
+        <Input value="{appData>/user/rate}" type="Number"/>
 
         <Label text="Availability"/>
         <MultiComboBox selectedKeys="{appData>/user/availability}">
@@ -191,25 +185,42 @@
         <Label text="Years of Experience"/>
         <Input value="{appData>/user/years}" type="Number"/>
 
-        <Label text="Languages"/>
-        <Input value="{appData>/user/languages}" placeholder="e.g. EN, DE"/>
+        <!-- Address -->
+        <f:title><core:Title text="Address"/></f:title>
 
-        <Label text="Phone Number"/>
-        <Input value="{appData>/user/phone}" type="Tel"/>
+        <Label text="Country" required="true"/>
+        <Select id="countrySelect" change="onCountryChange"
+            selectedKey="{appData>/user/address/country}"
+            items="{appData>/countries}">
+            <core:Item key="{appData>code}" text="{appData>name}"/>
+        </Select>
 
-        <Label text="Address"/>
-        <Input
-            value="{appData>/user/address}"
-            liveChange="onAddressChange"/>
+        <Label text="State / Province" required="true"/>
+        <Select id="stateSelect"
+            selectedKey="{appData>/user/address/state}"
+            items="{appData>/stateOptions}">
+            <core:Item key="{appData>name}" text="{appData>name}"/>
+        </Select>
+
+        <Label text="City" required="true"/>
+        <Input id="cityInput" value="{appData>/user/address/city}"
+            valueState="{appData>/validation/city}" valueStateText="City is required"/>
+
+        <Label text="Street" required="true"/>
+        <Input id="streetInput" value="{appData>/user/address/street}"
+            valueState="{appData>/validation/street}" valueStateText="Street is required"/>
+
+        <Label text="House Number" required="true"/>
+        <Input id="houseInput" value="{appData>/user/address/houseNumber}"
+            valueState="{appData>/validation/houseNumber}" valueStateText="House number is required"/>
+
+        <Label text="Postal Code" required="true"/>
+        <Input id="postalInput" value="{appData>/user/address/postalCode}"
+            valueState="{appData>/validation/postalCode}" valueStateText="Enter a valid postal code (3–10 characters)"/>
 
     </f:SimpleForm>
 
-    <Button
-        text="Save Profile Changes"
-        type="Emphasized"
-        press="onSaveProfile"
-        class="sapUiLargeMarginTop"
-        width="100%"/>
+    <Button text="Save Profile Changes" type="Emphasized" press="onSaveProfile" class="sapUiLargeMarginTop" width="100%"/>
 
 </VBox>
 

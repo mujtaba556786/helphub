@@ -22,12 +22,9 @@
                 
                 <VBox class="sapUiMediumMargin">
                     <Label text="Email"/>
-                    <Input id="emailInput" type="Email" placeholder="user@example.com" class="sapUiSmallMarginBottom"/>
-                    
-                    <Label text="Password"/>
-                    <Input id="passwordInput" type="Password" placeholder="••••••••" class="sapUiMediumMarginBottom"/>
-                    
-                    <Button text="Sign In" type="Emphasized" width="100%" press="onEmailLogin"/>
+                    <Input id="emailInput" type="Email" placeholder="user@example.com" class="sapUiMediumMarginBottom"/>
+
+                    <Button text="Continue with Email" type="Emphasized" width="100%" press="onEmailLogin"/>
 
                     <!-- Divider -->
                     <HBox justifyContent="Center" alignItems="Center" class="sapUiSmallMarginTop sapUiSmallMarginBottom">
