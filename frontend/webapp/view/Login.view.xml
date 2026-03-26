@@ -3,7 +3,7 @@
     xmlns:mvc="sap.ui.core.mvc"
     xmlns="sap.m"
     displayBlock="true">
-    
+
     <Page showHeader="false">
         <FlexBox height="100vh" alignItems="Center" justifyContent="Center" direction="Column" class="loginBg">
             <VBox width="90%" class="loginCard maxWidth400">
@@ -11,34 +11,33 @@
                     <Avatar displaySize="XL" backgroundColor="Accent6" initials="❤️" class="sapUiSmallMarginBottom"/>
                     <Title text="HelpHub" level="H1" class="sapUiTinyMarginBottom"/>
                     <Text text="Neighborhood Help Network" class="grayText"/>
-                    <!-- NEW: value proposition line -->
                     <Text text="Get everyday tasks done by trusted neighbors." class="grayText textCenter"/>
-                    <!-- NEW: small trust indicators -->
                     <HBox class="sapUiTinyMarginTop" justifyContent="Center">
                         <Text text="• Verified reviews" class="smallText grayText"/>
                         <Text text="   • Secure payments" class="smallText grayText sapUiTinyMarginBegin"/>
                     </HBox>
                 </VBox>
-                
-                <VBox class="sapUiMediumMargin">
-                    <Label text="Email"/>
-                    <Input id="emailInput" type="Email" placeholder="user@example.com" class="sapUiMediumMarginBottom"/>
 
-                    <Button text="Continue with Email" type="Emphasized" width="100%" press="onEmailLogin"/>
-
-                    <!-- Divider -->
-                    <HBox justifyContent="Center" alignItems="Center" class="sapUiSmallMarginTop sapUiSmallMarginBottom">
-                        <Text text="── or continue with ──" class="grayText smallText"/>
-                    </HBox>
-
-                    <!-- Google login -->
-                    <Button text="Sign in with Google" icon="sap-icon://world" width="100%" press="onGoogleLogin"/>
-
-                    <!-- Facebook login -->
-                    <Button text="Sign in with Facebook" icon="sap-icon://share-2" width="100%" class="sapUiSmallMarginTop" press="onFacebookLogin"/>
-
+                <!-- Step 1: Enter Email -->
+                <VBox id="stepEmail" class="sapUiMediumMargin">
+                    <Label text="Email Address"/>
+                    <Input id="emailInput" type="Email" placeholder="you@example.com" class="sapUiSmallMarginBottom"/>
+                    <Button text="Send Verification Code" type="Emphasized" width="100%" press="onSendOtp"/>
                     <!-- Demo login -->
                     <Button text="Demo Login" icon="sap-icon://person-placeholder" width="100%" type="Ghost" class="sapUiSmallMarginTop" press="onDemoLogin"/>
+                </VBox>
+
+                <!-- Step 2: Enter OTP -->
+                <VBox id="stepOtp" class="sapUiMediumMargin" visible="false">
+                    <VBox alignItems="Center" class="sapUiSmallMarginBottom">
+                        <Title id="otpHintTitle" text="Check your inbox" level="H3"/>
+                        <Text id="otpHintText" text="" class="grayText textCenter sapUiTinyMarginTop"/>
+                    </VBox>
+                    <Label text="Verification Code"/>
+                    <Input id="otpInput" placeholder="6-digit code" maxLength="6" class="sapUiSmallMarginBottom" type="Number"/>
+                    <Button text="Verify &amp; Sign In" type="Emphasized" width="100%" press="onVerifyOtp"/>
+                    <Button text="Resend Code" type="Transparent" width="100%" class="sapUiSmallMarginTop" press="onResendOtp"/>
+                    <Button text="← Back" type="Ghost" width="100%" class="sapUiTinyMarginTop" press="onBackToEmail"/>
                 </VBox>
             </VBox>
         </FlexBox>
