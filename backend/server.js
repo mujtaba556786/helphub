@@ -11,6 +11,11 @@ const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 const { OAuth2Client } = require('google-auth-library');
 const Anthropic = require('@anthropic-ai/sdk').default;
+const nodemailer = require('nodemailer');
+
+// ─── OTP store (in-memory, keyed by email) ────────────────────────────────────
+// { email: { otp, expiresAt } }
+const otpStore = {};
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
@@ -696,6 +701,89 @@ app.post('/api/auth/passwordless', authLimiter, handleAsync(async (req, res) => 
         await pool.execute(
             'INSERT INTO users (id, name, email, role, status, avatar, onboarded, provider) VALUES (?, ?, ?, ?, "Active", ?, 1, ?)',
             [id, email.split('@')[0], email, role || 'Customer', avatar, provider || 'Email']
+        );
+        const [newUser] = await pool.query('SELECT * FROM users WHERE id = ?', [id]);
+        user = newUser[0];
+    }
+
+    const { accessToken, refreshToken } = await issueTokens(user);
+    return res.json({ success: true, user, accessToken, refreshToken });
+}));
+
+// ─── POST /api/auth/send-otp ──────────────────────────────────────────────────
+app.post('/api/auth/send-otp', authLimiter, handleAsync(async (req, res) => {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ success: false, error: 'email is required' });
+
+    // Generate 6-digit OTP
+    const otp = String(Math.floor(100000 + Math.random() * 900000));
+    otpStore[email] = { otp, expiresAt: Date.now() + 10 * 60 * 1000 }; // 10 min
+
+    // Send email via nodemailer (configure SMTP via .env)
+    const transporter = nodemailer.createTransport({
+        host:   process.env.SMTP_HOST   || 'smtp.gmail.com',
+        port:   parseInt(process.env.SMTP_PORT || '587'),
+        secure: process.env.SMTP_SECURE === 'true',
+        auth: {
+            user: process.env.SMTP_USER,
+            pass: process.env.SMTP_PASS
+        }
+    });
+
+    try {
+        await transporter.sendMail({
+            from: process.env.SMTP_FROM || `"HelpHub" <${process.env.SMTP_USER}>`,
+            to: email,
+            subject: 'Your HelpHub verification code',
+            html: `
+                <div style="font-family:sans-serif;max-width:400px;margin:auto">
+                    <h2 style="color:#2563eb">HelpHub</h2>
+                    <p>Your one-time verification code is:</p>
+                    <h1 style="letter-spacing:8px;color:#111">${otp}</h1>
+                    <p style="color:#666;font-size:13px">This code expires in 10 minutes. If you didn't request this, ignore this email.</p>
+                </div>
+            `
+        });
+        console.log(`OTP sent to ${email}`);
+    } catch (err) {
+        console.error('Failed to send OTP email:', err.message);
+        // In dev: log OTP to console so you can still test
+        console.log(`[DEV] OTP for ${email}: ${otp}`);
+    }
+
+    return res.json({ success: true, message: 'Verification code sent' });
+}));
+
+// ─── POST /api/auth/verify-otp ────────────────────────────────────────────────
+app.post('/api/auth/verify-otp', authLimiter, handleAsync(async (req, res) => {
+    if (!pool) throw new Error("Database pool not ready");
+    const { email, otp } = req.body;
+    if (!email || !otp) return res.status(400).json({ success: false, error: 'email and otp are required' });
+
+    const record = otpStore[email];
+    if (!record) return res.status(400).json({ success: false, error: 'No code found for this email. Please request a new one.' });
+    if (Date.now() > record.expiresAt) {
+        delete otpStore[email];
+        return res.status(400).json({ success: false, error: 'Code expired. Please request a new one.' });
+    }
+    if (record.otp !== String(otp)) {
+        return res.status(400).json({ success: false, error: 'Incorrect code. Please try again.' });
+    }
+
+    // OTP is valid — consume it
+    delete otpStore[email];
+
+    // Find or create user
+    const [users] = await pool.query('SELECT * FROM users WHERE email = ?', [email]);
+    let user;
+    if (users.length > 0) {
+        user = users[0];
+    } else {
+        const id = 'U' + Date.now();
+        const avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${email}`;
+        await pool.execute(
+            'INSERT INTO users (id, name, email, role, status, avatar, onboarded, provider) VALUES (?, ?, ?, "Customer", "Active", ?, 1, "Email")',
+            [id, email.split('@')[0], email, avatar]
         );
         const [newUser] = await pool.query('SELECT * FROM users WHERE id = ?', [id]);
         user = newUser[0];

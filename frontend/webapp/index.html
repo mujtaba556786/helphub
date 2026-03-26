@@ -30,25 +30,12 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-    <!-- ── Google Identity Services ── -->
-    <!-- Replace YOUR_GOOGLE_CLIENT_ID with the value from Google Cloud Console -->
-    <meta name="google-signin-client_id" content="YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com">
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-
-    <!-- ── Facebook SDK ── -->
-    <!-- Replace YOUR_FACEBOOK_APP_ID with the value from developers.facebook.com -->
-    <script>
-        window.fbAsyncInit = function () {
-            FB.init({
-                appId: 'YOUR_FACEBOOK_APP_ID',
-                cookie: true,
-                xfbml: true,
-                version: 'v19.0'
-            });
-        };
-    </script>
-    <script async defer crossorigin="anonymous"
-        src="https://connect.facebook.net/en_US/sdk.js"></script>
+    <!-- ── Google AdSense ── -->
+    <!-- Replace ca-pub-XXXXXXXXXXXXXXXX with your AdSense Publisher ID -->
+    <!-- Content restrictions configured in AdSense dashboard:          -->
+    <!--   Sensitive Categories → Block: Gambling, Adult, Finance/Loans -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX"
+        crossorigin="anonymous"></script>
 </head>
 <body class="sapUiBody sapUiSizeCompact" id="content">
     <div
