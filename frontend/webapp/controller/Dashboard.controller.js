@@ -670,6 +670,33 @@ sap.ui.define([
             this.byId("chatDialog").close();
         },
 
+        // Quick actions directly from the provider card (no profile dialog needed)
+        _getProviderFromEvent: function(oEvent) {
+            var oListItem = oEvent.getSource().getParent().getParent();
+            var oCtx = oListItem.getBindingContext("appData");
+            if (!oCtx) return null;
+            var oProvider = Object.assign({}, oCtx.getObject());
+            if (oProvider.name && !oProvider.initials) {
+                oProvider.initials = oProvider.name.split(" ").map(function(p) { return p[0]; }).join("").substring(0, 2).toUpperCase();
+            }
+            return oProvider;
+        },
+
+        onQuickBook: function(oEvent) {
+            var oProvider = this._getProviderFromEvent(oEvent);
+            if (!oProvider) return;
+            this.getModel("appData").setProperty("/selectedProfile", oProvider);
+            this.onOpenBooking();
+        },
+
+        onQuickChat: function(oEvent) {
+            var oProvider = this._getProviderFromEvent(oEvent);
+            if (!oProvider) return;
+            oProvider.reviews = [];
+            this.getModel("appData").setProperty("/selectedProfile", oProvider);
+            this.onOpenChat();
+        },
+
         // ── BOOKING ───────────────────────────────────────────────────────────
         onOpenBooking: function() {
             var oModel = this.getModel("appData");

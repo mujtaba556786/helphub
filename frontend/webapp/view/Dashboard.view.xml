@@ -143,7 +143,9 @@
                                     <VBox alignItems="End" wrap="NoWrap">
                                         <ObjectStatus text="{path:'appData>', formatter:'.formatAvailabilityStatus'}" state="{path:'appData>', formatter:'.formatAvailabilityState'}" class="fontBold"/>
                                         <Title text="{path:'appData>', formatter:'.formatPriceDisplay'}" level="H4" class="sapUiTinyMarginTop"/>
-                                        <Button text="View Profile" type="Emphasized" class="sapUiTinyMarginTop" press="onViewProfile"/>
+                                        <Button text="Profile" type="Transparent" class="sapUiTinyMarginTop" press="onViewProfile"/>
+                                        <Button text="📅 Book" type="Emphasized" class="sapUiTinyMarginTop" press="onQuickBook"/>
+                                        <Button text="💬 Chat" type="Accept" class="sapUiTinyMarginTop" press="onQuickChat"/>
                                     </VBox>
                                 </HBox>
                             </CustomListItem>
