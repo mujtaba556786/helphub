@@ -183,28 +183,22 @@ sap.ui.define([
         chatMessages: [],
         filteredProviders: [],
 
+        notifications: [],
+        unreadCount: 0,
+
+        bookingForm: {
+            date: "",
+            time: "",
+            message: ""
+        },
+
         filters: {
             distance: 10,
             distanceLabel: "Within 10 km",
             priceCategory: "all" // all | budget | top
         },
 
-        upcomingBookings: [
-            {
-                id: "b1",
-                service: "Babysitting",
-                providerName: "Emma Johnson",
-                dateTime: "Tomorrow, 9:00 AM",
-                status: "Confirmed"
-            },
-            {
-                id: "b2",
-                service: "Gardening",
-                providerName: "Sarah Martinez",
-                dateTime: "Sat, 15:00",
-                status: "Pending"
-            }
-        ],
+        upcomingBookings: [],
 
         // selected profile for dialog
         selectedProfile: {}

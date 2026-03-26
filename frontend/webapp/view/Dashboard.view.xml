@@ -19,6 +19,7 @@
                     </contentLeft>
                     <contentRight>
                         <HBox alignItems="Center" class="sapUiTinyMarginEnd">
+                            <Button id="notifBtn" icon="sap-icon://bell" type="Transparent" press="onShowNotifications" tooltip="Notifications"/>
                             <Avatar
                                 src="{appData>/user/photo}"
                                 initials="{appData>/user/initials}"
@@ -60,16 +61,29 @@
                         </IconTabFilter>
 
                         <!-- TAB 2: My Schedule -->
-                        <IconTabFilter text="My Schedule" icon="sap-icon://calendar">
-                            <VBox class="sapUiMediumMarginTop">
-                                <HBox class="sapUiSmallMarginTop" justifyContent="SpaceAround">
-                                    <Button text="Today" type="Transparent" press="onFilterToday"/>
-                                    <Button text="This week" type="Transparent" press="onFilterThisWeek"/>
-                                    <Button text="Available now" type="Transparent" press="onFilterNow"/>
-                                </HBox>
-                                <Title text="Your upcoming bookings" level="H4" class="sapUiMediumMarginTop"/>
-                                <List items="{appData>/upcomingBookings}" noDataText="No upcoming bookings yet.">
-                                    <StandardListItem title="{appData>service}" description="{appData>providerName}, {appData>dateTime}" info="{appData>status}" infoState="Success"/>
+                        <IconTabFilter text="My Schedule" icon="sap-icon://calendar" count="{appData>/unreadCount}">
+                            <VBox class="sapUiSmallMargin">
+                                <Title text="Your Bookings" level="H4" class="sapUiSmallMarginBottom"/>
+                                <List id="bookingsList" items="{appData>/upcomingBookings}" noDataText="No bookings yet. Book a helper to get started!">
+                                    <CustomListItem>
+                                        <VBox class="sapUiSmallMargin">
+                                            <HBox justifyContent="SpaceBetween" alignItems="Center">
+                                                <VBox>
+                                                    <Title text="{appData>service}" level="H5"/>
+                                                    <Text text="{appData>provider_name}" class="grayText smallText"/>
+                                                    <Text text="{appData>scheduled_date} {appData>scheduled_time}" class="smallText blueText"/>
+                                                </VBox>
+                                                <VBox alignItems="End">
+                                                    <ObjectStatus text="{appData>status}" state="{path:'appData>status', formatter:'.formatBookingState'}"/>
+                                                    <HBox class="sapUiTinyMarginTop" visible="{= ${appData>status} === 'pending' &amp;&amp; ${appData>/user/id} === ${appData>provider_id}}">
+                                                        <Button text="✓ Accept" type="Accept" press="onAcceptBooking" class="sapUiTinyMarginEnd"/>
+                                                        <Button text="✗ Decline" type="Reject" press="onDeclineBooking"/>
+                                                    </HBox>
+                                                </VBox>
+                                            </HBox>
+                                            <Text text="{appData>message}" class="smallText grayText sapUiTinyMarginTop" visible="{= !!${appData>message}}"/>
+                                        </VBox>
+                                    </CustomListItem>
                                 </List>
                             </VBox>
                         </IconTabFilter>
@@ -281,11 +295,55 @@
                         </Panel>
                     </VBox>
 
+                    <buttons>
+                        <Button text="📅 Book Helper" type="Emphasized" press="onOpenBooking"/>
+                        <Button text="💬 Chat" type="Accept" press="onOpenChat"/>
+                        <Button text="Close" press="onCloseProfile"/>
+                    </buttons>
+                </Dialog>
+
+                <!-- Booking Dialog -->
+                <Dialog id="bookingDialog" title="Book a Helper" contentWidth="90%">
+                    <VBox class="sapUiMediumMargin">
+                        <Title text="{= 'Book ' + ${appData>/selectedProfile/name}}" level="H4" class="sapUiSmallMarginBottom"/>
+                        <Label text="Service" required="true"/>
+                        <Text text="{appData>/selectedProfile/serviceType}" class="sapUiTinyMarginBottom fontBold"/>
+                        <Label text="Preferred Date" required="true"/>
+                        <DatePicker id="bookingDate" value="{appData>/bookingForm/date}" valueFormat="yyyy-MM-dd" displayFormat="MMM dd, yyyy" width="100%" class="sapUiTinyMarginBottom"/>
+                        <Label text="Preferred Time"/>
+                        <Input id="bookingTime" value="{appData>/bookingForm/time}" placeholder="e.g. 09:00 AM" width="100%" class="sapUiTinyMarginBottom"/>
+                        <Label text="Message to Helper"/>
+                        <TextArea value="{appData>/bookingForm/message}" rows="3" width="100%" placeholder="Describe what you need…" class="sapUiTinyMarginBottom"/>
+                    </VBox>
                     <beginButton>
-                        <Button text="💬 Chat with Helper" type="Accept" press="onOpenChat"/>
+                        <Button text="Send Booking Request" type="Emphasized" press="onConfirmBooking"/>
                     </beginButton>
                     <endButton>
-                        <Button text="Close" press="onCloseProfile"/>
+                        <Button text="Cancel" press="onCloseBooking"/>
+                    </endButton>
+                </Dialog>
+
+                <!-- Notifications Dialog -->
+                <Dialog id="notificationsDialog" title="Notifications" contentWidth="95%" contentHeight="60%">
+                    <VBox class="sapUiSmallMargin">
+                        <HBox justifyContent="End" class="sapUiTinyMarginBottom">
+                            <Button text="Mark all read" type="Transparent" press="onMarkAllRead"/>
+                        </HBox>
+                        <List id="notificationsList" items="{appData>/notifications}" noDataText="No notifications yet.">
+                            <CustomListItem>
+                                <VBox class="sapUiSmallMargin">
+                                    <HBox justifyContent="SpaceBetween" alignItems="Center">
+                                        <Title text="{appData>title}" level="H5"/>
+                                        <core:HTML content="{= ${appData>is_read} ? '' : '&lt;span style=&quot;width:8px;height:8px;border-radius:50%;background:#3b82f6;display:inline-block&quot;&gt;&lt;/span&gt;'}"/>
+                                    </HBox>
+                                    <Text text="{appData>message}" class="smallText grayText"/>
+                                    <Text text="{appData>created_at}" class="smallText grayText"/>
+                                </VBox>
+                            </CustomListItem>
+                        </List>
+                    </VBox>
+                    <endButton>
+                        <Button text="Close" press="onCloseNotifications"/>
                     </endButton>
                 </Dialog>
 

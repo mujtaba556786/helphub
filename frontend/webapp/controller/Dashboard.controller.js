@@ -36,6 +36,10 @@ sap.ui.define([
         _onRouteMatched: function() {
             this._oModel = this.getModel("appData");
             this._loadProvidersFromApi();
+            this._loadSchedule();
+            if (!this._notifInterval) {
+                this._startNotificationPolling();
+            }
         },
 
         _loadProvidersFromApi: function() {
@@ -664,6 +668,187 @@ sap.ui.define([
 
         onCloseChat: function() {
             this.byId("chatDialog").close();
+        },
+
+        // ── BOOKING ───────────────────────────────────────────────────────────
+        onOpenBooking: function() {
+            var oModel = this.getModel("appData");
+            oModel.setProperty("/bookingForm/date", "");
+            oModel.setProperty("/bookingForm/time", "");
+            oModel.setProperty("/bookingForm/message", "");
+            this.byId("profileDialog").close();
+            this.byId("bookingDialog").open();
+        },
+
+        onCloseBooking: function() {
+            this.byId("bookingDialog").close();
+        },
+
+        onConfirmBooking: function() {
+            var oModel      = this.getModel("appData");
+            var sDate       = oModel.getProperty("/bookingForm/date");
+            var sTime       = oModel.getProperty("/bookingForm/time");
+            var sMessage    = oModel.getProperty("/bookingForm/message");
+            var sProviderId = oModel.getProperty("/selectedProfile/id");
+            var sService    = oModel.getProperty("/selectedProfile/serviceType");
+            var sCustomerId = oModel.getProperty("/user/id") || sessionStorage.getItem("helphub_user_id");
+
+            if (!sDate) { MessageToast.show("Please select a date."); return; }
+            if (!sCustomerId) { MessageToast.show("Please log in to book a helper."); return; }
+
+            fetch(API_BASE + "/api/bookings", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    customer_id:    sCustomerId,
+                    provider_id:    sProviderId,
+                    service:        sService,
+                    scheduled_date: sDate,
+                    scheduled_time: sTime,
+                    message:        sMessage
+                })
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(oData) {
+                if (oData.success) {
+                    this.byId("bookingDialog").close();
+                    MessageBox.success("Booking request sent! The helper will confirm shortly.", {
+                        title: "Request Sent",
+                        onClose: function() {
+                            this._loadSchedule();
+                        }.bind(this)
+                    });
+                } else {
+                    MessageToast.show("Booking failed: " + (oData.error || "Unknown error"));
+                }
+            }.bind(this))
+            .catch(function() { MessageToast.show("Could not reach the server."); });
+        },
+
+        onAcceptBooking: function(oEvent) {
+            this._updateBookingStatus(oEvent, "confirmed");
+        },
+
+        onDeclineBooking: function(oEvent) {
+            this._updateBookingStatus(oEvent, "declined");
+        },
+
+        _updateBookingStatus: function(oEvent, sStatus) {
+            var oCtx = oEvent.getSource().getParent().getParent().getBindingContext("appData");
+            if (!oCtx) return;
+            var sBookingId = oCtx.getObject().id;
+            var sUserId    = this.getModel("appData").getProperty("/user/id");
+
+            fetch(API_BASE + "/api/bookings/" + encodeURIComponent(sBookingId) + "/status", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ status: sStatus, user_id: sUserId })
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(oData) {
+                if (oData.success) {
+                    MessageToast.show("Booking " + sStatus + ".");
+                    this._loadSchedule();
+                }
+            }.bind(this))
+            .catch(function() { MessageToast.show("Could not update booking."); });
+        },
+
+        _loadSchedule: function() {
+            var oModel   = this.getModel("appData");
+            var sUserId  = oModel.getProperty("/user/id") || sessionStorage.getItem("helphub_user_id");
+            if (!sUserId) return;
+
+            fetch(API_BASE + "/api/bookings/user/" + encodeURIComponent(sUserId))
+                .then(function(r) { return r.json(); })
+                .then(function(oData) {
+                    if (oData.success) {
+                        oModel.setProperty("/upcomingBookings", oData.bookings);
+                    }
+                })
+                .catch(function() { /* keep empty */ });
+        },
+
+        formatBookingState: function(sStatus) {
+            switch (sStatus) {
+                case "confirmed":  return "Success";
+                case "declined":   return "Error";
+                case "completed":  return "None";
+                default:           return "Warning"; // pending
+            }
+        },
+
+        // ── NOTIFICATIONS ─────────────────────────────────────────────────────
+        _startNotificationPolling: function() {
+            var that = this;
+            this._loadNotificationCount();
+            this._notifInterval = setInterval(function() {
+                that._loadNotificationCount();
+            }, 60000); // poll every 60s
+        },
+
+        _loadNotificationCount: function() {
+            var oModel  = this.getModel("appData");
+            var sUserId = oModel.getProperty("/user/id") || sessionStorage.getItem("helphub_user_id");
+            if (!sUserId) return;
+
+            fetch(API_BASE + "/api/notifications/" + encodeURIComponent(sUserId) + "/unread-count")
+                .then(function(r) { return r.json(); })
+                .then(function(oData) {
+                    if (oData.success) {
+                        oModel.setProperty("/unreadCount", oData.count || 0);
+                        // Highlight bell button if unread
+                        var oBtn = this.byId("notifBtn");
+                        if (oBtn) {
+                            oBtn.setType(oData.count > 0 ? "Emphasized" : "Transparent");
+                        }
+                    }
+                }.bind(this))
+                .catch(function() { /* silent */ });
+        },
+
+        onShowNotifications: function() {
+            var oModel  = this.getModel("appData");
+            var sUserId = oModel.getProperty("/user/id") || sessionStorage.getItem("helphub_user_id");
+            if (!sUserId) { MessageToast.show("Please log in first."); return; }
+
+            fetch(API_BASE + "/api/notifications/" + encodeURIComponent(sUserId))
+                .then(function(r) { return r.json(); })
+                .then(function(oData) {
+                    if (oData.success) {
+                        oModel.setProperty("/notifications", oData.notifications);
+                    }
+                    this.byId("notificationsDialog").open();
+                }.bind(this))
+                .catch(function() { this.byId("notificationsDialog").open(); }.bind(this));
+        },
+
+        onMarkAllRead: function() {
+            var oModel  = this.getModel("appData");
+            var sUserId = oModel.getProperty("/user/id") || sessionStorage.getItem("helphub_user_id");
+            if (!sUserId) return;
+
+            fetch(API_BASE + "/api/notifications/read-all/" + encodeURIComponent(sUserId), {
+                method: "PUT"
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(oData) {
+                if (oData.success) {
+                    // Mark all as read in model
+                    var aNotifs = oModel.getProperty("/notifications") || [];
+                    aNotifs.forEach(function(n) { n.is_read = 1; });
+                    oModel.setProperty("/notifications", aNotifs);
+                    oModel.setProperty("/unreadCount", 0);
+                    var oBtn = this.byId("notifBtn");
+                    if (oBtn) oBtn.setType("Transparent");
+                    MessageToast.show("All notifications marked as read.");
+                }
+            }.bind(this))
+            .catch(function() { /* silent */ });
+        },
+
+        onCloseNotifications: function() {
+            this.byId("notificationsDialog").close();
         }
     });
 });
