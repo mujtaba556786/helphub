@@ -165,6 +165,43 @@ async function initDb() {
             )
         `);
 
+        // Drop old bookings table if it has wrong schema, then recreate
+        const [bCols] = await connection.query(`SHOW COLUMNS FROM bookings`).catch(() => [[]]);
+        const bColNames = bCols.map(c => c.Field);
+        if (bColNames.length > 0 && !bColNames.includes('customer_id')) {
+            await connection.query('DROP TABLE bookings');
+        }
+        await connection.query(`
+            CREATE TABLE IF NOT EXISTS bookings (
+                id VARCHAR(50) PRIMARY KEY,
+                customer_id VARCHAR(50) NOT NULL,
+                provider_id VARCHAR(50) NOT NULL,
+                service VARCHAR(100),
+                scheduled_date DATE,
+                scheduled_time VARCHAR(20),
+                message TEXT,
+                status VARCHAR(20) DEFAULT 'pending',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_customer (customer_id),
+                INDEX idx_provider (provider_id)
+            )
+        `);
+
+        await connection.query(`
+            CREATE TABLE IF NOT EXISTS notifications (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                user_id VARCHAR(50) NOT NULL,
+                type VARCHAR(50) NOT NULL,
+                title VARCHAR(200),
+                message TEXT,
+                booking_id VARCHAR(50),
+                is_read TINYINT(1) DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_user (user_id),
+                INDEX idx_unread (user_id, is_read)
+            )
+        `);
+
         // Seed provider lat/lng and service_categories if missing
         const providerSeeds = [
             { id: 'p1',  service_categories: 'Gardening',    lat: 52.5250, lng: 13.4100 },
@@ -417,9 +454,120 @@ app.get('/api/services', handleAsync(async (req, res) => {
     res.json(rows);
 }));
 
-app.get('/api/bookings', handleAsync(async (req, res) => {
-    const [rows] = await pool.query('SELECT * FROM bookings ORDER BY date DESC');
-    res.json(rows);
+// ── POST /api/bookings ────────────────────────────────────────────────────────
+app.post('/api/bookings', handleAsync(async (req, res) => {
+    const { customer_id, provider_id, service, scheduled_date, scheduled_time, message } = req.body;
+    if (!customer_id || !provider_id) {
+        return res.status(400).json({ success: false, error: 'customer_id and provider_id are required' });
+    }
+
+    const id = 'B' + Date.now();
+    await pool.execute(
+        'INSERT INTO bookings (id, customer_id, provider_id, service, scheduled_date, scheduled_time, message) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [id, customer_id, provider_id, service || null, scheduled_date || null, scheduled_time || null, message || null]
+    );
+
+    // Fetch customer name for notification
+    const [[customer]] = await pool.query('SELECT name FROM users WHERE id = ?', [customer_id]);
+    const [[provider]] = await pool.query('SELECT name FROM users WHERE id = ?', [provider_id]);
+    const customerName = customer?.name || 'Someone';
+    const providerName = provider?.name || 'you';
+
+    // Notify provider
+    await pool.execute(
+        'INSERT INTO notifications (user_id, type, title, message, booking_id) VALUES (?, ?, ?, ?, ?)',
+        [
+            provider_id,
+            'booking_request',
+            `New booking request from ${customerName}`,
+            `${customerName} wants to book ${service || 'your service'}${scheduled_date ? ' on ' + scheduled_date : ''}${scheduled_time ? ' at ' + scheduled_time : ''}.`,
+            id
+        ]
+    );
+
+    res.json({ success: true, bookingId: id });
+}));
+
+// ── GET /api/bookings/user/:id ────────────────────────────────────────────────
+app.get('/api/bookings/user/:id', handleAsync(async (req, res) => {
+    const [rows] = await pool.query(
+        `SELECT b.*,
+                c.name AS customer_name, c.avatar AS customer_avatar,
+                p.name AS provider_name, p.avatar AS provider_avatar,
+                p.service_categories AS provider_service
+         FROM bookings b
+         LEFT JOIN users c ON c.id = b.customer_id
+         LEFT JOIN users p ON p.id = b.provider_id
+         WHERE b.customer_id = ? OR b.provider_id = ?
+         ORDER BY b.created_at DESC`,
+        [req.params.id, req.params.id]
+    );
+    res.json({ success: true, bookings: rows });
+}));
+
+// ── PUT /api/bookings/:id/status ──────────────────────────────────────────────
+app.put('/api/bookings/:id/status', handleAsync(async (req, res) => {
+    const { status, user_id } = req.body; // user_id = provider making the decision
+    if (!['confirmed', 'declined', 'completed'].includes(status)) {
+        return res.status(400).json({ success: false, error: 'Invalid status' });
+    }
+
+    await pool.execute('UPDATE bookings SET status = ? WHERE id = ?', [status, req.params.id]);
+
+    // Fetch booking details to notify customer
+    const [[booking]] = await pool.query(
+        'SELECT b.*, p.name AS provider_name FROM bookings b LEFT JOIN users p ON p.id = b.provider_id WHERE b.id = ?',
+        [req.params.id]
+    );
+    if (booking) {
+        const title = status === 'confirmed'
+            ? `${booking.provider_name} confirmed your booking!`
+            : status === 'declined'
+            ? `${booking.provider_name} declined your booking`
+            : `Booking completed`;
+        const msg = status === 'confirmed'
+            ? `Your booking for ${booking.service || 'a service'} has been confirmed.`
+            : status === 'declined'
+            ? `Your booking for ${booking.service || 'a service'} was declined. Try another helper.`
+            : `Your booking with ${booking.provider_name} is marked as completed.`;
+
+        await pool.execute(
+            'INSERT INTO notifications (user_id, type, title, message, booking_id) VALUES (?, ?, ?, ?, ?)',
+            [booking.customer_id, 'booking_' + status, title, msg, req.params.id]
+        );
+    }
+
+    res.json({ success: true });
+}));
+
+// ── GET /api/notifications/:userId ───────────────────────────────────────────
+app.get('/api/notifications/:userId', handleAsync(async (req, res) => {
+    const [rows] = await pool.query(
+        'SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT 50',
+        [req.params.userId]
+    );
+    res.json({ success: true, notifications: rows });
+}));
+
+// ── GET /api/notifications/:userId/unread-count ───────────────────────────────
+app.get('/api/notifications/:userId/unread-count', handleAsync(async (req, res) => {
+    const [[{ count }]] = await pool.query(
+        'SELECT COUNT(*) AS count FROM notifications WHERE user_id = ? AND is_read = 0',
+        [req.params.userId]
+    );
+    res.json({ success: true, count });
+}));
+
+// ── PUT /api/notifications/:id/read ──────────────────────────────────────────
+app.put('/api/notifications/:id/read', handleAsync(async (req, res) => {
+    await pool.execute('UPDATE notifications SET is_read = 1 WHERE id = ?', [req.params.id]);
+    res.json({ success: true });
+}));
+
+// ── PUT /api/notifications/read-all/:userId ───────────────────────────────────
+app.put('/api/notifications/read-all/:userId', handleAsync(async (req, res) => {
+    await pool.execute('UPDATE notifications SET is_read = 1 WHERE user_id = ?', [req.params.userId]);
+    res.json({ success: true });
 }));
 
 // ─── Token helpers ────────────────────────────────────────────────────────────
