@@ -394,9 +394,21 @@ app.post('/api/ratings', handleAsync(async (req, res) => {
 // ── POST /api/chat ────────────────────────────────────────────────────────────
 // AI chat with a provider's profile context. Uses SSE streaming.
 app.post('/api/chat', handleAsync(async (req, res) => {
-    const { provider_id, messages } = req.body;
+    const { provider_id, messages, user_id } = req.body;
     if (!provider_id || !Array.isArray(messages)) {
         return res.status(400).json({ success: false, error: 'provider_id and messages[] required' });
+    }
+
+    // Notify provider on the first message in a session
+    if (messages.length === 1 && user_id && user_id !== provider_id) {
+        try {
+            const [[sender]] = await pool.query('SELECT name FROM users WHERE id = ?', [user_id]);
+            const senderName = sender ? sender.name : 'Someone';
+            await pool.execute(
+                'INSERT INTO notifications (user_id, type, title, message) VALUES (?, ?, ?, ?)',
+                [provider_id, 'chat', '💬 New Chat Message', `${senderName} started a chat with your profile`]
+            );
+        } catch (e) { console.error('Chat notification error:', e.message); }
     }
 
     // Fetch provider from DB for context

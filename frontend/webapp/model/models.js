@@ -43,7 +43,18 @@ sap.ui.define([
             },
 
             // geo location (set on GPS fix or default Berlin)
-            location: { lat: 52.52, lng: 13.405 }
+            location: { lat: 52.52, lng: 13.405 },
+
+            // availability chip flags (UI state)
+            availabilityFlags: {
+                all_day: false,
+                weekdays: false,
+                weekends: false,
+                morning: false,
+                afternoon: false,
+                evening: false,
+                night: false
+            }
         },
         // country/state dropdowns
         countries: [],

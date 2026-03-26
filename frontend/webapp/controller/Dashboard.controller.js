@@ -135,6 +135,30 @@ sap.ui.define([
             this.byId("navContainer").to(this.byId("editPage"));
         },
 
+        onAvailabilityToggle: function(oEvent) {
+            var oModel = this.getModel("appData");
+            var sKey   = oEvent.getSource().data("availKey");
+            var oFlags = Object.assign({}, oModel.getProperty("/user/availabilityFlags"));
+
+            if (sKey === "all_day") {
+                var bOn = !oFlags.all_day;
+                oFlags.all_day = oFlags.weekdays = oFlags.weekends =
+                    oFlags.morning = oFlags.afternoon = oFlags.evening = oFlags.night = bOn;
+            } else {
+                oFlags[sKey] = !oFlags[sKey];
+                oFlags.all_day = oFlags.weekdays && oFlags.weekends &&
+                    oFlags.morning && oFlags.afternoon && oFlags.evening && oFlags.night;
+            }
+
+            oModel.setProperty("/user/availabilityFlags", oFlags);
+
+            // Keep availability array in sync for saving
+            var aKeys = ["weekdays","weekends","morning","afternoon","evening","night"]
+                .filter(function(k) { return oFlags[k]; });
+            if (oFlags.all_day) aKeys.unshift("all_day");
+            oModel.setProperty("/user/availability", aKeys);
+        },
+
         onCountryChange: function(oEvent) {
             var sCode = oEvent.getParameter("selectedItem").getKey();
             var oModel = this.getModel("appData");
@@ -625,10 +649,12 @@ sap.ui.define([
             var iPlaceholder = this._chatMessages.length;
             this._chatMessages.push({ role: "assistant", content: "" });
 
+            var sUserId = oModel.getProperty("/user/id") || sessionStorage.getItem("helphub_user_id");
+
             fetch(API_BASE + "/api/chat", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ provider_id: sProviderId, messages: aApiMessages })
+                body: JSON.stringify({ provider_id: sProviderId, messages: aApiMessages, user_id: sUserId })
             })
             .then(function(res) {
                 var oReader  = res.body.getReader();

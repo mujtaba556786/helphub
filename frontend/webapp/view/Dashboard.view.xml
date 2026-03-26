@@ -197,11 +197,47 @@
         <Input value="{appData>/user/rate}" type="Number"/>
 
         <Label text="Availability"/>
-        <MultiComboBox selectedKeys="{appData>/user/availability}">
-            <core:Item key="weekday_morning" text="Weekdays – Morning"/>
-            <core:Item key="weekday_evening" text="Weekdays – Evening"/>
-            <core:Item key="weekend" text="Weekends"/>
-        </MultiComboBox>
+        <!-- Quick picks row -->
+        <FlexBox wrap="Wrap" class="sapUiTinyMarginBottom">
+            <Button text="All Day" press="onAvailabilityToggle"
+                type="{= ${appData>/user/availabilityFlags/all_day} ? 'Emphasized' : 'Default'}"
+                class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
+                <customData><core:CustomData key="availKey" value="all_day"/></customData>
+            </Button>
+            <Button text="Weekdays" press="onAvailabilityToggle"
+                type="{= ${appData>/user/availabilityFlags/weekdays} ? 'Emphasized' : 'Default'}"
+                class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
+                <customData><core:CustomData key="availKey" value="weekdays"/></customData>
+            </Button>
+            <Button text="Weekends" press="onAvailabilityToggle"
+                type="{= ${appData>/user/availabilityFlags/weekends} ? 'Emphasized' : 'Default'}"
+                class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
+                <customData><core:CustomData key="availKey" value="weekends"/></customData>
+            </Button>
+        </FlexBox>
+        <!-- Time of day row -->
+        <FlexBox wrap="Wrap">
+            <Button text="🌅 Morning (6–12)" press="onAvailabilityToggle"
+                type="{= ${appData>/user/availabilityFlags/morning} ? 'Emphasized' : 'Default'}"
+                class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
+                <customData><core:CustomData key="availKey" value="morning"/></customData>
+            </Button>
+            <Button text="☀️ Afternoon (12–17)" press="onAvailabilityToggle"
+                type="{= ${appData>/user/availabilityFlags/afternoon} ? 'Emphasized' : 'Default'}"
+                class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
+                <customData><core:CustomData key="availKey" value="afternoon"/></customData>
+            </Button>
+            <Button text="🌆 Evening (17–22)" press="onAvailabilityToggle"
+                type="{= ${appData>/user/availabilityFlags/evening} ? 'Emphasized' : 'Default'}"
+                class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
+                <customData><core:CustomData key="availKey" value="evening"/></customData>
+            </Button>
+            <Button text="🌙 Night (22+)" press="onAvailabilityToggle"
+                type="{= ${appData>/user/availabilityFlags/night} ? 'Emphasized' : 'Default'}"
+                class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
+                <customData><core:CustomData key="availKey" value="night"/></customData>
+            </Button>
+        </FlexBox>
 
         <Label text="Years of Experience"/>
         <Input value="{appData>/user/years}" type="Number"/>

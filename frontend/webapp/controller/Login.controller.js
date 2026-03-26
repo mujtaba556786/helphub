@@ -51,8 +51,14 @@ sap.ui.define([
             oModel.setProperty("/user/languages", oUser.languages || "");
             oModel.setProperty("/user/years",    oUser.years     || 0);
             oModel.setProperty("/user/rate",     oUser.rate      || 0);
-            oModel.setProperty("/user/availability",     (oUser.availability     || "").split(",").filter(Boolean));
+            var aAvail = (oUser.availability || "").split(",").filter(Boolean);
+            oModel.setProperty("/user/availability", aAvail);
             oModel.setProperty("/user/serviceCategories",(oUser.service_categories || "").split(",").filter(Boolean));
+
+            // Populate availability toggle flags from saved keys
+            var oFlags = { all_day: false, weekdays: false, weekends: false, morning: false, afternoon: false, evening: false, night: false };
+            aAvail.forEach(function(k) { if (oFlags.hasOwnProperty(k)) oFlags[k] = true; });
+            oModel.setProperty("/user/availabilityFlags", oFlags);
 
             // Structured address from DB columns
             oModel.setProperty("/user/address/street",     oUser.street_name   || "");
