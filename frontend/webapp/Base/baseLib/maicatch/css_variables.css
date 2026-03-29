@@ -244,7 +244,7 @@
 
 /*!SAP_POSTPROCESS_REDUCE_START*/
 :root {
-  --sapBrandColor: #47D7AC;
+  --sapBrandColor: #f97316;
   --sapHighlightColor: #06041F;
   --sapBaseColor: #fff;
   --sapShellColor: #354a5f;
@@ -616,20 +616,20 @@
   --sapButton_Hover_Background: #8077ed;
   --sapButton_Hover_BorderColor: #06041F;
   --sapButton_Hover_TextColor: #fff;
-  --sapButton_IconColor: #47d7ac;
+  --sapButton_IconColor: #f97316;
   --sapButton_Active_Background: #06041F;
   --sapButton_Active_BorderColor: #06041F;
   --sapButton_Active_TextColor: #fff;
-  --sapButton_Emphasized_Background: #47D7AC;
-  --sapButton_Emphasized_BorderColor: #47D7AC;
+  --sapButton_Emphasized_Background: #f97316;
+  --sapButton_Emphasized_BorderColor: #f97316;
   --sapButton_Emphasized_BorderWidth: .0625rem;
-  --sapButton_Emphasized_TextColor: #232629;
+  --sapButton_Emphasized_TextColor: #ffffff;
   --sapButton_Emphasized_FontFamily: "72-Bold", "72-Boldfull", "72", "72full", Arial, Helvetica, sans-serif;
-  --sapButton_Emphasized_Hover_Background: #2dce9e;
-  --sapButton_Emphasized_Hover_BorderColor: #2dce9e;
-  --sapButton_Emphasized_Hover_TextColor: #232629;
-  --sapButton_Emphasized_Active_Background: #2ac194;
-  --sapButton_Emphasized_Active_BorderColor: #2ac194;
+  --sapButton_Emphasized_Hover_Background: #ea580c;
+  --sapButton_Emphasized_Hover_BorderColor: #ea580c;
+  --sapButton_Emphasized_Hover_TextColor: #ffffff;
+  --sapButton_Emphasized_Active_Background: #c2410c;
+  --sapButton_Emphasized_Active_BorderColor: #c2410c;
   --sapButton_Emphasized_Active_TextColor: #fff;
   --sapButton_Emphasized_TextShadow: transparent;
   --sapButton_Emphasized_FontWeight: bold;

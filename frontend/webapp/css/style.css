@@ -1,14 +1,66 @@
+/* ── CSS Variables (Light + Dark mode) ─────────────────────────── */
+:root {
+    --hh-primary:       #f97316;   /* orange-500  */
+    --hh-primary-dark:  #ea580c;   /* orange-600  */
+    --hh-accent:        #fb923c;   /* orange-400  */
+    --hh-bg:            #ffffff;
+    --hh-bg-soft:       #fff7ed;   /* orange-50   */
+    --hh-bg-login:      linear-gradient(135deg, #fff7ed, #ffedd5);
+    --hh-card-bg:       #ffffff;
+    --hh-card-shadow:   0 4px 18px rgba(15, 23, 42, 0.06);
+    --hh-text:          #0f172a;
+    --hh-text-gray:     #64748b;
+    --hh-map-bg:        #fef3c7;
+    --hh-border:        #e5e7eb;
+    --hh-input-bg:      #ffffff;
+    --hh-notif-dot:     #f97316;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --hh-bg:            #0f172a;
+        --hh-bg-soft:       #1e293b;
+        --hh-bg-login:      linear-gradient(135deg, #1e293b, #0f172a);
+        --hh-card-bg:       #1e293b;
+        --hh-card-shadow:   0 4px 18px rgba(0, 0, 0, 0.35);
+        --hh-text:          #f1f5f9;
+        --hh-text-gray:     #94a3b8;
+        --hh-map-bg:        #1e293b;
+        --hh-border:        #334155;
+        --hh-input-bg:      #1e293b;
+    }
+    body, .sapUiBody {
+        background-color: var(--hh-bg) !important;
+        color: var(--hh-text) !important;
+    }
+    .sapMPage, .sapMPageBg,
+    .sapMList, .sapMListBg,
+    .sapMPanel, .sapMPanelContent {
+        background-color: var(--hh-bg-soft) !important;
+    }
+    .sapMInputBase .sapMInputBaseInner,
+    .sapMTextArea textarea,
+    .sapMSelectList {
+        background-color: var(--hh-input-bg) !important;
+        color: var(--hh-text) !important;
+        border-color: var(--hh-border) !important;
+    }
+    .sapMText, .sapMLabel, .sapMTitle {
+        color: var(--hh-text) !important;
+    }
+}
+
 .textCenter {
     text-align: center;
 }
 
 /* LOGIN */
 .loginBg {
-    background: linear-gradient(135deg, #eff6ff, #e0f2fe);
+    background: var(--hh-bg-login);
 }
 
 .loginCard {
-    background-color: #ffffff;
+    background-color: var(--hh-card-bg);
     border-radius: 18px;
     box-shadow: 0 14px 40px rgba(15, 23, 42, 0.12);
     padding: 24px 20px;
@@ -19,7 +71,7 @@
 }
 
 .googleBtn {
-    border: 1px solid #e5e7eb !important;
+    border: 1px solid var(--hh-border) !important;
 }
 
 /* Fixed Tile Layout */
@@ -77,7 +129,7 @@
 .serviceName {
     font-weight: 700 !important;
     margin-top: 14px !important;
-    color: #0f172a !important;
+    color: var(--hh-text) !important;
     font-size: 1rem !important;
     text-align: center;
     white-space: normal !important;
@@ -87,27 +139,62 @@
 /* Expert list cards */
 .expertCard {
     border-radius: 14px;
-    background-color: #ffffff;
-    box-shadow: 0 4px 18px rgba(15, 23, 42, 0.06);
+    background-color: var(--hh-card-bg);
+    box-shadow: var(--hh-card-shadow);
 }
 
 .expertName {
-    color: #111827;
+    color: var(--hh-text);
 }
 
-.grayText { color: #64748b; }
-.blueText { color: #3b82f6; }
-.fontBold { font-weight: 700; }
+.grayText  { color: var(--hh-text-gray); }
+.blueText  { color: var(--hh-primary); }
+.fontBold  { font-weight: 700; }
 .smallText { font-size: 0.9rem; }
 
 /* Map */
 .mapPlaceholder {
-    background: #f1f5f9;
-    border-bottom: 2px solid #e2e8f0;
+    background: var(--hh-map-bg);
+    border-bottom: 2px solid var(--hh-border);
 }
 
 .mapDiv {
     height: 260px;
     width: 100%;
     z-index: 0;
+}
+
+/* ── Orange theme overrides for SAP UI5 buttons ─────────────────── */
+.sapMBtnEmphasized,
+.sapMBtnEmphasized.sapMBtn {
+    background-color: #f97316 !important;
+    border-color: #f97316 !important;
+}
+.sapMBtnEmphasized .sapMBtnInner {
+    background-color: #f97316 !important;
+    border-color: #f97316 !important;
+    color: #ffffff !important;
+}
+.sapMBtnEmphasized:hover .sapMBtnInner,
+.sapMBtnEmphasized .sapMBtnInner:hover {
+    background-color: #ea580c !important;
+    border-color: #ea580c !important;
+}
+.sapMBtnEmphasized:active .sapMBtnInner,
+.sapMBtnEmphasized .sapMBtnInner:active {
+    background-color: #c2410c !important;
+    border-color: #c2410c !important;
+}
+/* Focus ring */
+.sapMBtnEmphasized:focus,
+.sapMBtnEmphasized .sapMFocusable:focus {
+    outline-color: #f97316 !important;
+}
+/* Avatar accent color */
+.sapFAvatarAccent6 {
+    background-color: #f97316 !important;
+}
+/* Login background override (light mode fallback) */
+.loginBg {
+    background: linear-gradient(135deg, #fff7ed, #ffedd5) !important;
 }
