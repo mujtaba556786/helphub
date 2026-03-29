@@ -196,6 +196,7 @@ sap.ui.define([
 
         notifications: [],
         unreadCount: 0,
+        bookingCount: 0,
 
         bookingForm: {
             date: "",

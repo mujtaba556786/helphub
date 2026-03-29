@@ -61,7 +61,7 @@
                         </IconTabFilter>
 
                         <!-- TAB 2: My Schedule -->
-                        <IconTabFilter text="My Schedule" icon="sap-icon://calendar" count="{appData>/unreadCount}">
+                        <IconTabFilter text="My Schedule" icon="sap-icon://calendar" count="{appData>/bookingCount}">
                             <VBox class="sapUiSmallMargin">
                                 <Title text="Your Bookings" level="H4" class="sapUiSmallMarginBottom"/>
                                 <List id="bookingsList" items="{appData>/upcomingBookings}" noDataText="No bookings yet. Book a helper to get started!">

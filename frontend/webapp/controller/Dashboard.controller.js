@@ -835,6 +835,7 @@ sap.ui.define([
                 .then(function(oData) {
                     if (oData.success) {
                         oModel.setProperty("/upcomingBookings", oData.bookings);
+                        oModel.setProperty("/bookingCount", (oData.bookings || []).length);
                     }
                 })
                 .catch(function() { /* keep empty */ });
