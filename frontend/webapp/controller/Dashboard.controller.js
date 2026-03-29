@@ -55,7 +55,7 @@ sap.ui.define([
         },
 
         onLogout: function () {
-            MessageBox.confirm("Sign out of HelpHub?", {
+            MessageBox.confirm("Sign out of HelpMate?", {
                 onClose: (oAction) => { 
                     if (oAction === "OK") {
                         this.navTo("login");
@@ -198,7 +198,7 @@ sap.ui.define([
                 oReader.readAsDataURL(oFile);
 
                 // Upload to server
-                var sUserId = that.getModel("appData").getProperty("/user/id") || sessionStorage.getItem("helphub_user_id");
+                var sUserId = that.getModel("appData").getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
                 if (!sUserId) { MessageToast.show("Please log in again to upload a photo."); return; }
 
                 var oForm = new FormData();
@@ -260,14 +260,14 @@ sap.ui.define([
                 return;
             }
 
-            var sUserId = oUser.id || sessionStorage.getItem("helphub_user_id");
+            var sUserId = oUser.id || sessionStorage.getItem("helpmate_user_id");
             if (!sUserId) { MessageToast.show("Session expired. Please log in again."); return; }
 
             fetch(API_BASE + "/api/users/" + encodeURIComponent(sUserId), {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": "Bearer " + (sessionStorage.getItem("helphub_token") || "")
+                    "Authorization": "Bearer " + (sessionStorage.getItem("helpmate_token") || "")
                 },
                 body: JSON.stringify({
                     name:             oUser.name,
@@ -549,7 +549,7 @@ sap.ui.define([
             }
 
             var sProviderId = oModel.getProperty("/selectedProfile/id");
-            var sUserId     = oModel.getProperty("/user/id") || sessionStorage.getItem("helphub_user_id");
+            var sUserId     = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
             var sName       = oModel.getProperty("/user/name") || "Anonymous";
             var sComment    = oComment ? oComment.getValue().trim() : "";
 
@@ -649,7 +649,7 @@ sap.ui.define([
             var iPlaceholder = this._chatMessages.length;
             this._chatMessages.push({ role: "assistant", content: "" });
 
-            var sUserId = oModel.getProperty("/user/id") || sessionStorage.getItem("helphub_user_id");
+            var sUserId = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
 
             fetch(API_BASE + "/api/chat", {
                 method: "POST",
@@ -744,7 +744,7 @@ sap.ui.define([
             var sMessage    = oModel.getProperty("/bookingForm/message");
             var sProviderId = oModel.getProperty("/selectedProfile/id");
             var sService    = oModel.getProperty("/selectedProfile/serviceType");
-            var sCustomerId = oModel.getProperty("/user/id") || sessionStorage.getItem("helphub_user_id");
+            var sCustomerId = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
 
             if (!sDate) { MessageToast.show("Please select a date."); return; }
             if (!sCustomerId) { MessageToast.show("Please log in to book a helper."); return; }
@@ -809,7 +809,7 @@ sap.ui.define([
 
         _loadSchedule: function() {
             var oModel   = this.getModel("appData");
-            var sUserId  = oModel.getProperty("/user/id") || sessionStorage.getItem("helphub_user_id");
+            var sUserId  = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
             if (!sUserId) return;
 
             fetch(API_BASE + "/api/bookings/user/" + encodeURIComponent(sUserId))
@@ -842,7 +842,7 @@ sap.ui.define([
 
         _loadNotificationCount: function() {
             var oModel  = this.getModel("appData");
-            var sUserId = oModel.getProperty("/user/id") || sessionStorage.getItem("helphub_user_id");
+            var sUserId = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
             if (!sUserId) return;
 
             fetch(API_BASE + "/api/notifications/" + encodeURIComponent(sUserId) + "/unread-count")
@@ -862,7 +862,7 @@ sap.ui.define([
 
         onShowNotifications: function() {
             var oModel  = this.getModel("appData");
-            var sUserId = oModel.getProperty("/user/id") || sessionStorage.getItem("helphub_user_id");
+            var sUserId = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
             if (!sUserId) { MessageToast.show("Please log in first."); return; }
 
             fetch(API_BASE + "/api/notifications/" + encodeURIComponent(sUserId))
@@ -878,7 +878,7 @@ sap.ui.define([
 
         onMarkAllRead: function() {
             var oModel  = this.getModel("appData");
-            var sUserId = oModel.getProperty("/user/id") || sessionStorage.getItem("helphub_user_id");
+            var sUserId = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
             if (!sUserId) return;
 
             fetch(API_BASE + "/api/notifications/read-all/" + encodeURIComponent(sUserId), {

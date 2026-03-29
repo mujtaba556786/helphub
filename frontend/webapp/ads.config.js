@@ -1,5 +1,5 @@
 /**
- * HelpHub AdSense Configuration
+ * HelpMate AdSense Configuration
  *
  * Publisher ID: Replace ca-pub-XXXXXXXXXXXXXXXX with your real AdSense Publisher ID
  * Ad Slots: Replace slot IDs below with your real AdSense ad unit IDs

@@ -1,7 +1,7 @@
 {
   "name": "helphub",
   "version": "0.0.1",
-  "description": "HelpHub - Community Help Marketplace",
+  "description": "HelpMate - Community Help Marketplace",
   "keywords": [
     "ui5",
     "openui5",
@@ -23,7 +23,7 @@
     "unit-test": "fiori run --open \"test/unit/unitTests.qunit.html\"",
     "int-test": "fiori run --open \"test/integration/opaTests.qunit.html\"",
     "// Cordova Setup": "",
-    "cordova:init": "cordova create mobile com.helphub.app HelpHub && cd mobile && cordova platform add android ios",
+    "cordova:init": "cordova create mobile com.helpmate.app HelpMate && cd mobile && cordova platform add android ios",
     "cordova:prepare": "cordova prepare",
     "// Cordova Build": "",
     "cordova:build": "cordova build",

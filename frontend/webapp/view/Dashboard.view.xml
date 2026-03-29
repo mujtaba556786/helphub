@@ -9,12 +9,12 @@
     <NavContainer id="navContainer">
 
         <!-- PAGE 1: CATEGORY SELECTION -->
-        <Page id="dashboardPage" title="HelpHub" showHeader="true">
+        <Page id="dashboardPage" title="HelpMate" showHeader="true">
             <customHeader>
                 <Bar>
                     <contentLeft>
                         <HBox alignItems="Center">
-                            <Title text="HelpHub" level="H3" class="sapUiTinyMarginBegin"/>
+                            <Title text="HelpMate" level="H3" class="sapUiTinyMarginBegin"/>
                         </HBox>
                     </contentLeft>
                     <contentRight>

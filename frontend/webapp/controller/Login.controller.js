@@ -16,12 +16,12 @@ sap.ui.define([
         // ── Apply session data from backend response ────────────────────────────
         _applySession: function (oData) {
             var sAccessToken = oData.accessToken || oData.token;
-            sessionStorage.setItem("helphub_token", sAccessToken);
+            sessionStorage.setItem("helpmate_token", sAccessToken);
             if (oData.refreshToken) {
                 sessionStorage.setItem("helphub_refresh_token", oData.refreshToken);
             }
             if (oData.user && oData.user.id) {
-                sessionStorage.setItem("helphub_user_id", oData.user.id);
+                sessionStorage.setItem("helpmate_user_id", oData.user.id);
             }
 
             var oModel = this.getModel("appData");
