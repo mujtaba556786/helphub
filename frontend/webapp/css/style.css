@@ -80,6 +80,19 @@
     color: var(--hh-primary) !important;
 }
 
+/* ── Tile list item — transparent background ─────────────────────── */
+.serviceTilesContainer .sapMLIB,
+.serviceTilesContainer .sapMLIB:hover,
+.serviceTilesContainer .sapMLIB.sapMLIBHoverable:hover,
+.serviceTilesContainer .sapMCLI {
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+.serviceTilesContainer .sapMLIBContent {
+    background-color: transparent !important;
+}
+
 /* Fixed Tile Layout — 3-column grid */
 .serviceTilesContainer {
     display: grid !important;
