@@ -28,6 +28,9 @@ sap.ui.define([
                         };
                     });
 
+                    // Apply service tile colors — small delay so list items are in DOM
+                    setTimeout(this._applyTileColors.bind(this), 100);
+
                     // Map is initialized lazily on first navigate to searchPage
                 }.bind(this)
             }, this);
@@ -40,6 +43,21 @@ sap.ui.define([
             if (!this._notifInterval) {
                 this._startNotificationPolling();
             }
+        },
+
+        _applyTileColors: function() {
+            var aServices = this.getModel("appData").getProperty("/services") || [];
+            var aCircles  = document.querySelectorAll(".serviceTilesContainer .circleButton");
+            aCircles.forEach(function(el, i) {
+                if (aServices[i] && aServices[i].color) {
+                    // Use setProperty with important to override sapMFlexBoxBGTransparent
+                    el.style.setProperty("background-color", aServices[i].color, "important");
+                }
+            });
+            // Orange header icons
+            document.querySelectorAll(".sapMBarChild .sapMBtnIcon, .sapMBarChild .sapUiIcon").forEach(function(el) {
+                el.style.color = "#f97316";
+            });
         },
 
         _loadProvidersFromApi: function() {

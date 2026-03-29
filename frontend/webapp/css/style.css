@@ -74,53 +74,63 @@
     border: 1px solid var(--hh-border) !important;
 }
 
-/* Fixed Tile Layout */
+/* ── Header icon overrides → orange ─────────────────────────────── */
+.sapMBarChild .sapMBtn.sapMBtnTransparent .sapMBtnIcon,
+.sapMBarChild .sapMBtn.sapMBtnTransparent .sapUiIcon {
+    color: var(--hh-primary) !important;
+}
+
+/* Fixed Tile Layout — 3-column grid */
 .serviceTilesContainer {
-    display: flex !important;
-    flex-wrap: wrap !important;
-    gap: 28px;
-    padding: 24px 8px 40px;
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 16px !important;
+    padding: 16px 8px 40px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
 }
 
 .customServiceTile {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
     cursor: pointer;
-    width: 120px;
-    min-height: 160px;
+    width: 100% !important;
+    min-height: 120px;
     transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
 .customServiceTile:hover {
-    transform: translateY(-4px);
+    transform: translateY(-3px);
 }
 
 .circleButton {
-    width: 96px !important;
-    height: 96px !important;
-    min-width: 96px !important;
-    min-height: 96px !important;
+    width: 72px !important;
+    height: 72px !important;
+    min-width: 72px !important;
+    min-height: 72px !important;
     border-radius: 50% !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.16), inset 0 2px 4px rgba(255,255,255,0.5);
-    border: 5px solid #ffffff !important;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.12), inset 0 2px 4px rgba(255,255,255,0.6);
+    border: 4px solid #ffffff !important;
     background-clip: padding-box;
-    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
     position: relative;
     z-index: 5;
+    /* Fallback color — overridden per-tile via JS setProperty */
+    background-color: #f1f5f9;
 }
 
 .customServiceTile:hover .circleButton {
-    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.22);
-    transform: scale(1.05);
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.2);
+    transform: scale(1.08);
 }
 
 .serviceIcon {
-    font-size: 44px !important;
+    font-size: 32px !important;
     line-height: 1 !important;
     user-select: none;
     transition: transform 0.3s ease;
@@ -128,12 +138,15 @@
 
 .serviceName {
     font-weight: 700 !important;
-    margin-top: 14px !important;
+    margin-top: 10px !important;
     color: var(--hh-text) !important;
-    font-size: 1rem !important;
-    text-align: center;
+    font-size: 0.78rem !important;
+    text-align: center !important;
     white-space: normal !important;
     overflow: visible !important;
+    word-break: break-word !important;
+    max-width: 90px !important;
+    line-height: 1.3 !important;
 }
 
 /* Expert list cards */
