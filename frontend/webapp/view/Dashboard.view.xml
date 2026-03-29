@@ -67,17 +67,17 @@
                                 <List id="bookingsList" items="{appData>/upcomingBookings}" noDataText="No bookings yet. Book a helper to get started!">
                                     <CustomListItem>
                                         <VBox class="sapUiSmallMargin">
-                                            <HBox justifyContent="SpaceBetween" alignItems="Center">
-                                                <VBox>
+                                            <HBox justifyContent="SpaceBetween" alignItems="Start" wrap="Wrap">
+                                                <VBox class="bookingInfoBox">
                                                     <Title text="{appData>service}" level="H5"/>
                                                     <Text text="{appData>provider_name}" class="grayText smallText"/>
                                                     <Text text="{appData>scheduled_date} {appData>scheduled_time}" class="smallText blueText"/>
                                                 </VBox>
-                                                <VBox alignItems="End">
+                                                <VBox alignItems="End" class="bookingActionsBox">
                                                     <ObjectStatus text="{appData>status}" state="{path:'appData>status', formatter:'.formatBookingState'}"/>
-                                                    <HBox class="sapUiTinyMarginTop" visible="{= ${appData>status} === 'pending' &amp;&amp; ${appData>/user/id} === ${appData>provider_id}}">
-                                                        <Button text="✓ Accept" type="Accept" press="onAcceptBooking" class="sapUiTinyMarginEnd"/>
-                                                        <Button text="✗ Decline" type="Reject" press="onDeclineBooking"/>
+                                                    <HBox class="sapUiTinyMarginTop" wrap="Wrap" visible="{= ${appData>status} === 'pending' &amp;&amp; ${appData>/user/id} === ${appData>provider_id}}">
+                                                        <Button text="✓ Accept" type="Accept" press="onAcceptBooking" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                                                        <Button text="✗ Decline" type="Reject" press="onDeclineBooking" class="sapUiTinyMarginBottom"/>
                                                     </HBox>
                                                 </VBox>
                                             </HBox>
@@ -143,12 +143,12 @@
                                             <ObjectStatus text="{appData>languages}" state="None" class="smallText"/>
                                         </HBox>
                                     </VBox>
-                                    <VBox alignItems="End" wrap="NoWrap">
+                                    <VBox alignItems="End" wrap="NoWrap" class="helperCardActions">
                                         <ObjectStatus text="{path:'appData>', formatter:'.formatAvailabilityStatus'}" state="{path:'appData>', formatter:'.formatAvailabilityState'}" class="fontBold"/>
                                         <Title text="{path:'appData>', formatter:'.formatPriceDisplay'}" level="H4" class="sapUiTinyMarginTop"/>
-                                        <Button text="Profile" type="Transparent" class="sapUiTinyMarginTop" press="onViewProfile"/>
-                                        <Button text="📅 Book" type="Emphasized" class="sapUiTinyMarginTop" press="onQuickBook"/>
-                                        <Button text="💬 Chat" type="Accept" class="sapUiTinyMarginTop" press="onQuickChat"/>
+                                        <Button text="Profile" type="Transparent" class="sapUiTinyMarginTop helperCardBtn" press="onViewProfile"/>
+                                        <Button text="📅 Book" type="Emphasized" class="sapUiTinyMarginTop helperCardBtn" press="onQuickBook"/>
+                                        <Button text="💬 Chat" type="Accept" class="sapUiTinyMarginTop helperCardBtn" press="onQuickChat"/>
                                     </VBox>
                                 </HBox>
                             </CustomListItem>

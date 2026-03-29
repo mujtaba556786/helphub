@@ -255,3 +255,254 @@
 .loginBg {
     background: linear-gradient(135deg, #fff7ed, #ffedd5) !important;
 }
+
+/* ── Mobile UX: Touch targets & input sizing ─────────────────────── */
+
+/* All SAP UI5 buttons: min 44px touch target */
+.sapMBtn {
+    min-height: 44px !important;
+    min-width: 44px !important;
+}
+.sapMBtnInner {
+    min-height: 44px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+/* All inputs: 16px font to prevent iOS auto-zoom, 44px height */
+.sapMInputBase .sapMInputBaseInner,
+.sapMInput .sapMInputBaseInner,
+.sapMTextArea textarea,
+.sapMSelect .sapMSelectList,
+.sapMComboBox .sapMInputBaseInner,
+.sapMMultiComboBox .sapMInputBaseInner,
+.sapMDatePicker .sapMInputBaseInner {
+    font-size: 16px !important;
+    min-height: 44px !important;
+}
+
+/* Select dropdowns */
+.sapMSlt {
+    min-height: 44px !important;
+    font-size: 16px !important;
+}
+.sapMSlt .sapMSltLabel {
+    font-size: 16px !important;
+    line-height: 44px !important;
+}
+
+/* DatePicker & TimePicker inner inputs */
+.sapMDPIcn,
+.sapMInputBaseIcon {
+    min-height: 44px !important;
+    min-width: 44px !important;
+}
+
+/* Header bar icon buttons */
+.sapMBarChild .sapMBtn {
+    min-height: 44px !important;
+    min-width: 44px !important;
+}
+
+/* ── Map: ensure full-width rendering ────────────────────────────── */
+.mapDiv {
+    height: 260px;
+    width: 100% !important;
+    min-width: 100% !important;
+    z-index: 0;
+}
+#googleMap {
+    width: 100% !important;
+    min-width: 100% !important;
+}
+
+/* ── Search page filter buttons: bigger tap targets ──────────────── */
+@media (max-width: 600px) {
+    /* Filter buttons row */
+    .sapMHBox > .sapMBtn {
+        min-height: 44px !important;
+        padding: 0 12px !important;
+    }
+
+    /* Helper card action buttons (Profile / Book / Chat) — full width, stacked */
+    .expertCardActions .sapMBtn,
+    .helperCardActions .sapMBtn {
+        width: 100% !important;
+        min-height: 44px !important;
+        margin-bottom: 6px !important;
+    }
+
+    /* Dialog footer buttons: full width on mobile */
+    .sapMDialogFooter .sapMBtn,
+    .sapMIBar .sapMBtn {
+        min-height: 44px !important;
+    }
+
+    /* Booking dialog begin/end buttons */
+    .sapMDialogBeginButton .sapMBtn,
+    .sapMDialogEndButton .sapMBtn {
+        min-height: 44px !important;
+    }
+
+    /* Profile page save button */
+    .sapMPage .sapMBtn[data-sap-ui*="save"],
+    .mainContent .sapMBtn {
+        min-height: 44px !important;
+    }
+
+    /* Availability toggle buttons in profile */
+    .sapMFlexBox .sapMBtn {
+        min-height: 44px !important;
+    }
+
+    /* My Schedule — Accept / Decline buttons */
+    .sapMList .sapMBtn {
+        min-height: 44px !important;
+    }
+
+    /* Notifications mark-all-read button */
+    .sapMDialog .sapMBtn {
+        min-height: 44px !important;
+    }
+
+    /* Dialog content should not overflow horizontally */
+    .sapMDialogScrollCont {
+        overflow-x: hidden !important;
+    }
+
+    /* Search page content padding fix */
+    .flexBasis65 {
+        padding-bottom: 60px;
+    }
+}
+
+/* ── My Schedule: booking row stacks on narrow screens ───────────── */
+@media (max-width: 480px) {
+    /* Booking list item: stack vertically instead of side-by-side */
+    .sapMList .sapMCLI .sapMHBox {
+        flex-wrap: wrap !important;
+    }
+    .sapMList .sapMCLI .sapMHBox > .sapMVBox {
+        flex: 1 1 100% !important;
+        min-width: 0 !important;
+    }
+    .sapMList .sapMCLI .sapMHBox > .sapMVBox:last-child {
+        margin-top: 8px !important;
+        align-items: flex-start !important;
+    }
+
+    /* Helper card right-side action buttons: make them wider */
+    .expertCard .sapMVBox[data-sap-ui] .sapMBtn {
+        min-width: 80px !important;
+        min-height: 44px !important;
+    }
+}
+
+/* ── Slider touch target ─────────────────────────────────────────── */
+.sapMSliderHandle {
+    width: 28px !important;
+    height: 28px !important;
+    margin-top: -14px !important;
+}
+
+/* ── Avatar press target ─────────────────────────────────────────── */
+.sapFAvatar {
+    cursor: pointer;
+}
+.sapFAvatarXS {
+    min-width: 32px !important;
+    min-height: 32px !important;
+}
+
+/* ── Prevent horizontal scroll on all pages ──────────────────────── */
+.sapMPage,
+.sapMPageScroll,
+.sapMITBContent {
+    overflow-x: hidden !important;
+    max-width: 100vw !important;
+}
+
+/* ── RatingIndicator tap area ────────────────────────────────────── */
+.sapMRI {
+    min-height: 44px !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+/* ── Helper card action buttons (Profile / Book / Chat) ──────────── */
+.helperCardActions {
+    min-width: 90px;
+}
+.helperCardBtn {
+    width: 100% !important;
+}
+.helperCardBtn .sapMBtnInner {
+    width: 100% !important;
+    min-height: 44px !important;
+    justify-content: center !important;
+}
+
+/* ── My Schedule booking list item layout ────────────────────────── */
+.bookingInfoBox {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+.bookingActionsBox {
+    flex: 0 0 auto;
+    min-width: 100px;
+}
+
+/* ── Save Profile button: always full height ─────────────────────── */
+.sapMPage .sapMBtn.sapMBtnEmphasized {
+    min-height: 44px !important;
+}
+
+/* ── Notifications / Mark all read button ────────────────────────── */
+.sapMDialog .sapMHBox .sapMBtn {
+    min-height: 44px !important;
+}
+
+/* ── All dialog footer (begin/end) buttons ───────────────────────── */
+.sapMDialogActions .sapMBtn,
+.sapMDialogFooter .sapMBtn {
+    min-height: 48px !important;
+    flex: 1 !important;
+}
+
+/* ── Change Photo button on profile page ─────────────────────────── */
+.sapMVBox > .sapMBtn.sapMBtnTransparent {
+    min-height: 44px !important;
+}
+
+/* ── Tab bar items — ensure tappable ────────────────────────────── */
+.sapMITBItem {
+    min-height: 48px !important;
+}
+
+/* ── Search radius slider — bigger handle on touch ───────────────── */
+.sapMSlider {
+    padding: 12px 0 !important;
+}
+
+/* ── Prevent content clipping in dialog on small screens ─────────── */
+@media (max-width: 400px) {
+    .sapMDialog {
+        max-width: 100vw !important;
+        width: 100vw !important;
+        border-radius: 0 !important;
+        margin: 0 !important;
+    }
+    .sapMDialogStretchContent {
+        height: 100vh !important;
+    }
+    /* Dialog footer buttons stack */
+    .sapMDialogActions {
+        flex-wrap: wrap !important;
+    }
+    .sapMDialogActions .sapMBtn {
+        flex: 1 1 100% !important;
+        min-height: 48px !important;
+        margin-bottom: 4px !important;
+    }
+}
