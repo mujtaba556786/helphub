@@ -9,7 +9,7 @@
     <NavContainer id="navContainer">
 
         <!-- PAGE 1: CATEGORY SELECTION -->
-        <Page id="dashboardPage" title="HelpMate" showHeader="true" enableScrolling="true">
+        <Page id="dashboardPage" title="HelpMate" showHeader="true" enableScrolling="false">
             <customHeader>
                 <Bar>
                     <contentLeft>
@@ -33,53 +33,57 @@
                     <!-- TAB 1: Find Help -->
                     <items>
                         <IconTabFilter key="findHelp" text="Find Help" icon="sap-icon://question-mark">
-                            <VBox class="sapUiSmallMargin mainContent">
-                                <Title text="How can we help you today?" level="H2" class="sapUiLargeMarginBottom"/>
-                                <Text text="Choose a service below to find trusted helpers near you." class="grayText sapUiSmallMarginBottom"/>
+                            <ScrollContainer vertical="true" horizontal="false" height="100%">
+                                <VBox class="sapUiSmallMargin mainContent">
+                                    <Title text="How can we help you today?" level="H2" class="sapUiLargeMarginBottom"/>
+                                    <Text text="Choose a service below to find trusted helpers near you." class="grayText sapUiSmallMarginBottom"/>
 
-                                <!-- Service tiles -->
-                                <FlexBox class="serviceTilesContainer" direction="Row" wrap="Wrap" justifyContent="Center" items="{appData>/services}">
-                                    <items>
-                                        <CustomListItem class="hhTileItem" type="Active" press=".onServicePress">
-                                            <HBox direction="Column">
-                                                <VBox class="circleButton" core:style="background-color:{appData>color}">
-                                                    <Text text="{appData>icon}" class="serviceIcon"/>
-                                                </VBox>
-                                                <Text text="{appData>name}" class="serviceName"/>
-                                            </HBox>
-                                        </CustomListItem>
-                                    </items>
-                                </FlexBox>
+                                    <!-- Service tiles -->
+                                    <FlexBox class="serviceTilesContainer" direction="Row" wrap="Wrap" justifyContent="Center" items="{appData>/services}">
+                                        <items>
+                                            <CustomListItem class="hhTileItem" type="Active" press=".onServicePress">
+                                                <HBox direction="Column">
+                                                    <VBox class="circleButton" core:style="background-color:{appData>color}">
+                                                        <Text text="{appData>icon}" class="serviceIcon"/>
+                                                    </VBox>
+                                                    <Text text="{appData>name}" class="serviceName"/>
+                                                </HBox>
+                                            </CustomListItem>
+                                        </items>
+                                    </FlexBox>
 
-                            </VBox>
+                                </VBox>
+                            </ScrollContainer>
                         </IconTabFilter>
 
                         <!-- TAB 2: My Schedule -->
                         <IconTabFilter key="mySchedule" text="My Schedule" icon="sap-icon://calendar" count="{appData>/bookingCount}">
-                            <VBox class="sapUiSmallMargin">
-                                <Title text="Your Bookings" level="H4" class="sapUiSmallMarginBottom"/>
-                                <List id="bookingsList" items="{appData>/upcomingBookings}" noDataText="No bookings yet. Book a helper to get started!">
-                                    <CustomListItem>
-                                        <VBox class="sapUiSmallMargin">
-                                            <HBox justifyContent="SpaceBetween" alignItems="Start" wrap="Wrap">
-                                                <VBox class="bookingInfoBox">
-                                                    <Title text="{appData>service}" level="H5"/>
-                                                    <Text text="{appData>provider_name}" class="grayText smallText"/>
-                                                    <Text text="{appData>scheduled_date} {appData>scheduled_time}" class="smallText blueText"/>
-                                                </VBox>
-                                                <VBox alignItems="End" class="bookingActionsBox">
-                                                    <ObjectStatus text="{appData>status}" state="{path:'appData>status', formatter:'.formatBookingState'}"/>
-                                                    <HBox class="sapUiTinyMarginTop" wrap="Wrap" visible="{= ${appData>status} === 'pending' &amp;&amp; ${appData>/user/id} === ${appData>provider_id}}">
-                                                        <Button text="✓ Accept" type="Accept" press="onAcceptBooking" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
-                                                        <Button text="✗ Decline" type="Reject" press="onDeclineBooking" class="sapUiTinyMarginBottom"/>
-                                                    </HBox>
-                                                </VBox>
-                                            </HBox>
-                                            <Text text="{appData>message}" class="smallText grayText sapUiTinyMarginTop" visible="{= !!${appData>message}}"/>
-                                        </VBox>
-                                    </CustomListItem>
-                                </List>
-                            </VBox>
+                            <ScrollContainer vertical="true" horizontal="false" height="100%">
+                                <VBox class="sapUiSmallMargin">
+                                    <Title text="Your Bookings" level="H4" class="sapUiSmallMarginBottom"/>
+                                    <List id="bookingsList" items="{appData>/upcomingBookings}" noDataText="No bookings yet. Book a helper to get started!">
+                                        <CustomListItem>
+                                            <VBox class="sapUiSmallMargin">
+                                                <HBox justifyContent="SpaceBetween" alignItems="Start" wrap="Wrap">
+                                                    <VBox class="bookingInfoBox">
+                                                        <Title text="{appData>service}" level="H5"/>
+                                                        <Text text="{appData>provider_name}" class="grayText smallText"/>
+                                                        <Text text="{appData>scheduled_date} {appData>scheduled_time}" class="smallText blueText"/>
+                                                    </VBox>
+                                                    <VBox alignItems="End" class="bookingActionsBox">
+                                                        <ObjectStatus text="{appData>status}" state="{path:'appData>status', formatter:'.formatBookingState'}"/>
+                                                        <HBox class="sapUiTinyMarginTop" wrap="Wrap" visible="{= ${appData>status} === 'pending' &amp;&amp; ${appData>/user/id} === ${appData>provider_id}}">
+                                                            <Button text="✓ Accept" type="Accept" press="onAcceptBooking" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                                                            <Button text="✗ Decline" type="Reject" press="onDeclineBooking" class="sapUiTinyMarginBottom"/>
+                                                        </HBox>
+                                                    </VBox>
+                                                </HBox>
+                                                <Text text="{appData>message}" class="smallText grayText sapUiTinyMarginTop" visible="{= !!${appData>message}}"/>
+                                            </VBox>
+                                        </CustomListItem>
+                                    </List>
+                                </VBox>
+                            </ScrollContainer>
                         </IconTabFilter>
                     </items>
 
@@ -274,7 +278,9 @@
 
                 </VBox>
 
+            </content>
 
+            <dependents>
                 <!-- Profile dialog -->
                 <Dialog id="profileDialog" title="Helper profile" stretch="true" >
                     <VBox class="sapUiMediumMargin">
@@ -403,7 +409,7 @@
                     </endButton>
                 </Dialog>
 
-            </content>
+            </dependents>
         </Page>
 
     </NavContainer>
