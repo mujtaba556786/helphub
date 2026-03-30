@@ -186,11 +186,14 @@ async function initDb() {
                 scheduled_time VARCHAR(20),
                 message TEXT,
                 status VARCHAR(20) DEFAULT 'pending',
+                is_seen TINYINT(1) DEFAULT 0,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 INDEX idx_customer (customer_id),
                 INDEX idx_provider (provider_id)
             )
         `);
+        // Add is_seen column if upgrading existing table
+        await connection.query(`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS is_seen TINYINT(1) DEFAULT 0`).catch(() => {});
 
         await connection.query(`
             CREATE TABLE IF NOT EXISTS notifications (
@@ -519,7 +522,17 @@ app.get('/api/bookings/user/:id', handleAsync(async (req, res) => {
          ORDER BY b.created_at DESC`,
         [req.params.id, req.params.id]
     );
-    res.json({ success: true, bookings: rows });
+    const newCount = rows.filter(b => !b.is_seen).length;
+    res.json({ success: true, bookings: rows, newCount });
+}));
+
+// ── PUT /api/bookings/user/:id/mark-seen ─────────────────────────────────────
+app.put('/api/bookings/user/:id/mark-seen', handleAsync(async (req, res) => {
+    await pool.execute(
+        'UPDATE bookings SET is_seen = 1 WHERE (customer_id = ? OR provider_id = ?) AND is_seen = 0',
+        [req.params.id, req.params.id]
+    );
+    res.json({ success: true });
 }));
 
 // ── PUT /api/bookings/:id/status ──────────────────────────────────────────────

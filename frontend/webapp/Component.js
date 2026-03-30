@@ -24,7 +24,7 @@ sap.ui.define([
             this.setModel(oAppData, "appData");
 
             // Restore session from token if available
-            var sToken = sessionStorage.getItem("helphub_token");
+            var sToken = sessionStorage.getItem("helpmate_token") || sessionStorage.getItem("helphub_token");
             if (sToken) {
                 fetch(API_BASE + "/api/auth/me", {
                     headers: { "Authorization": "Bearer " + sToken }

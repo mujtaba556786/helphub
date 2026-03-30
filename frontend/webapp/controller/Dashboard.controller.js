@@ -45,19 +45,49 @@ sap.ui.define([
             }
         },
 
+        onTabSelect: function(oEvent) {
+            var sKey = oEvent.getParameter("key");
+            if (sKey === "mySchedule") {
+                // Mark all bookings as seen → badge clears
+                this._markBookingsSeen();
+            }
+        },
+
         _applyTileColors: function() {
             var aServices = this.getModel("appData").getProperty("/services") || [];
-            var aCircles  = document.querySelectorAll(".serviceTilesContainer .circleButton");
-            aCircles.forEach(function(el, i) {
-                if (aServices[i] && aServices[i].color) {
-                    // Use setProperty with important to override sapMFlexBoxBGTransparent
-                    el.style.setProperty("background-color", aServices[i].color, "important");
+
+            // Inject a persistent <style> block so colors survive SAP re-renders
+            var oStyle = document.getElementById("__hh-tile-colors");
+            if (!oStyle) {
+                oStyle = document.createElement("style");
+                oStyle.id = "__hh-tile-colors";
+                document.head.appendChild(oStyle);
+            }
+            var sCss = "";
+            aServices.forEach(function(svc, i) {
+                if (svc && svc.color) {
+                    // Direct children of serviceTilesContainer are flex-item wrappers
+                    sCss += ".serviceTilesContainer > *:nth-child(" + (i + 1) + ") .circleButton {" +
+                            "background-color: " + svc.color + " !important; }\n";
                 }
             });
-            // Orange header icons
-            document.querySelectorAll(".sapMBarChild .sapMBtnIcon, .sapMBarChild .sapUiIcon").forEach(function(el) {
-                el.style.color = "#f97316";
-            });
+            oStyle.textContent = sCss;
+        },
+
+        /** Toggle the small orange dot above the bell icon (avoids type="Emphasized" square) */
+        _setNotifDot: function(bShow) {
+            var oBtn = this.byId("notifBtn");
+            if (!oBtn) return;
+            var apply = function() {
+                var oDom = oBtn.getDomRef();
+                if (oDom) {
+                    oDom.classList.toggle("notifDot", !!bShow);
+                } else {
+                    // Retry once after next rendering tick
+                    setTimeout(apply, 150);
+                }
+            };
+            apply();
         },
 
         _loadProvidersFromApi: function() {
@@ -835,10 +865,22 @@ sap.ui.define([
                 .then(function(oData) {
                     if (oData.success) {
                         oModel.setProperty("/upcomingBookings", oData.bookings);
-                        oModel.setProperty("/bookingCount", (oData.bookings || []).length);
+                        // Only show badge count for NEW (unseen) bookings
+                        oModel.setProperty("/bookingCount", oData.newCount || 0);
                     }
                 })
                 .catch(function() { /* keep empty */ });
+        },
+
+        _markBookingsSeen: function() {
+            var oModel  = this.getModel("appData");
+            var sUserId = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
+            if (!sUserId) return;
+            fetch(API_BASE + "/api/bookings/user/" + encodeURIComponent(sUserId) + "/mark-seen", { method: "PUT" })
+                .then(function() {
+                    oModel.setProperty("/bookingCount", 0);
+                })
+                .catch(function() { /* silent */ });
         },
 
         formatBookingState: function(sStatus) {
@@ -869,11 +911,8 @@ sap.ui.define([
                 .then(function(oData) {
                     if (oData.success) {
                         oModel.setProperty("/unreadCount", oData.count || 0);
-                        // Highlight bell button if unread
-                        var oBtn = this.byId("notifBtn");
-                        if (oBtn) {
-                            oBtn.setType(oData.count > 0 ? "Emphasized" : "Transparent");
-                        }
+                        // Show/hide orange dot badge — never change button type (avoids filled-square)
+                        this._setNotifDot(oData.count > 0);
                     }
                 }.bind(this))
                 .catch(function() { /* silent */ });
@@ -911,8 +950,7 @@ sap.ui.define([
                     aNotifs.forEach(function(n) { n.is_read = 1; });
                     oModel.setProperty("/notifications", aNotifs);
                     oModel.setProperty("/unreadCount", 0);
-                    var oBtn = this.byId("notifBtn");
-                    if (oBtn) oBtn.setType("Transparent");
+                    this._setNotifDot(false);
                     MessageToast.show("All notifications marked as read.");
                 }
             }.bind(this))
