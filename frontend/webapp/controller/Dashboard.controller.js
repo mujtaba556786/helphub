@@ -656,11 +656,12 @@ sap.ui.define([
         },
 
         _renderChatBubbles: function(aMessages) {
-            var oHtml = this.byId("chatMessagesHtml");
-            if (!oHtml || !oHtml.getDomRef()) return;
-            var oBubbles = oHtml.getDomRef().querySelector("#chatBubbles") || oHtml.getDomRef();
+            var oHtml   = this.byId("chatMessagesHtml");
+            var oScroll = this.byId("chatScrollContainer");
+            if (!oHtml) return;
+
             var iLast = aMessages.length - 1;
-            oBubbles.innerHTML = aMessages.map(function(m, i) {
+            var sHtml = aMessages.map(function(m, i) {
                 var sEsc = (m.content || "").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, "<br>");
                 if (m.role === "user") {
                     var bRead    = (i < iLast) || (aMessages[i + 1] && aMessages[i + 1].role === "assistant");
@@ -673,8 +674,12 @@ sap.ui.define([
                 }
                 return '<div style="text-align:left;margin:4px 0"><span style="background:#f1f5f9;color:#1e293b;padding:8px 12px;border-radius:16px 16px 16px 4px;display:inline-block;max-width:80%;word-wrap:break-word">' + sEsc + '</span></div>';
             }).join("");
-            if (oBubbles.lastElementChild) {
-                oBubbles.lastElementChild.scrollIntoView({ behavior: "smooth" });
+
+            oHtml.setContent("<div>" + sHtml + "</div>");
+
+            // Scroll to bottom after SAP re-renders the HTML control
+            if (oScroll) {
+                setTimeout(function() { oScroll.scrollTo(0, 99999, 0); }, 50);
             }
         },
 
@@ -709,10 +714,9 @@ sap.ui.define([
             this._renderChatBubbles(this._chatMessages);
             oInput.setValue("");
 
-            var oTypingHtml = this.byId("chatTypingHtml");
-            var oTyping     = oTypingHtml ? oTypingHtml.getDomRef() : null;
-            var oSendBtn    = this.byId("chatSendBtn");
-            if (oTyping)  oTyping.style.display = "block";
+            var oTyping  = this.byId("chatTypingIndicator");
+            var oSendBtn = this.byId("chatSendBtn");
+            if (oTyping)  oTyping.setVisible(true);
             if (oSendBtn) oSendBtn.setEnabled(false);
 
             var aApiMessages = this._chatMessages.map(function(m) {
@@ -737,7 +741,7 @@ sap.ui.define([
                 function pump() {
                     return oReader.read().then(function(chunk) {
                         if (chunk.done) {
-                            if (oTyping)  oTyping.style.display = "none";
+                            if (oTyping)  oTyping.setVisible(false);
                             if (oSendBtn) oSendBtn.setEnabled(true);
                             return;
                         }
@@ -760,7 +764,7 @@ sap.ui.define([
                 return pump();
             })
             .catch(function() {
-                if (oTyping)  oTyping.style.display = "none";
+                if (oTyping)  oTyping.setVisible(false);
                 if (oSendBtn) oSendBtn.setEnabled(true);
                 that._chatMessages[iPlaceholder].content = "Sorry, I couldn't reach the server. Please try again.";
                 that._renderChatBubbles(that._chatMessages);

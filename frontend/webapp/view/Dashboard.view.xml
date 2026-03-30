@@ -359,10 +359,6 @@
                         <Text text="HelpHub connects you with verified local helpers for everyday tasks — gardening, babysitting, IT support and more." class="grayText sapUiSmallMarginBottom textCenter"/>
                         <VBox class="sapUiSmallMarginTop">
                             <HBox alignItems="Center" class="sapUiTinyMarginBottom">
-                                <core:HTML content="&lt;span style='font-size:20px;margin-right:8px'&gt;✅&lt;/span&gt;"/>
-                                <Text text="Verified helpers with real reviews"/>
-                            </HBox>
-                            <HBox alignItems="Center" class="sapUiTinyMarginBottom">
                                 <core:HTML content="&lt;span style='font-size:20px;margin-right:8px'&gt;📍&lt;/span&gt;"/>
                                 <Text text="Find helpers near your location"/>
                             </HBox>
@@ -566,9 +562,12 @@
                 <Dialog id="chatDialog" title="AI Chat" contentHeight="65vh" contentWidth="92%" verticalScrolling="false">
                     <!-- Messages fill available space; input pinned at bottom -->
                     <VBox height="100%" class="hhChatLayout">
-                        <ScrollContainer vertical="true" horizontal="false" class="hhChatMessages">
-                            <core:HTML id="chatMessagesHtml" content="&lt;div id='chatBubbles'&gt;&lt;/div&gt;"/>
-                            <core:HTML id="chatTypingHtml" content="&lt;div id='chatTyping' style='display:none;padding:4px 8px'&gt;&lt;span style='background:#f1f5f9;color:#64748b;padding:6px 12px;border-radius:12px;font-size:13px'&gt;typing…&lt;/span&gt;&lt;/div&gt;"/>
+                        <ScrollContainer id="chatScrollContainer" vertical="true" horizontal="false" class="hhChatMessages">
+                            <core:HTML id="chatMessagesHtml" content="&lt;div&gt;&lt;/div&gt;"/>
+                            <HBox id="chatTypingIndicator" visible="false" alignItems="Center" class="sapUiTinyMarginBegin sapUiTinyMarginBottom">
+                                <BusyIndicator size="1rem" class="sapUiTinyMarginEnd"/>
+                                <Text text="typing…" class="grayText smallText"/>
+                            </HBox>
                         </ScrollContainer>
                         <!-- Quick reply chips -->
                         <HBox class="hhQuickReplies" wrap="Wrap">
