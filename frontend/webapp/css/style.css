@@ -175,20 +175,29 @@
 }
 
 /* ── Chat dialog ─────────────────────────────────────────────────── */
-.chatInputRow {
-    width: 100%;
-    padding: 4px 0;
+.hhChatLayout {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.hhChatMessages {
+    flex: 1;
+    min-height: 0;
+}
+
+.hhChatInputBar {
+    flex-shrink: 0;
+    padding: 8px 12px;
+    border-top: 1px solid var(--hh-border);
+    background: var(--hh-bg);
 }
 
 #chatBubbles {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    padding: 12px 8px;
-}
-
-.chatMessagesBox {
-    min-height: 200px;
+    padding: 12px;
 }
 
 /* ── Booking list layout ─────────────────────────────────────────── */

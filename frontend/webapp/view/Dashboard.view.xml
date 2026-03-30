@@ -389,23 +389,17 @@
                 </Dialog>
 
                 <!-- AI Chat Dialog — full screen on mobile -->
-                <Dialog id="chatDialog" title="AI Chat" stretch="true">
-                    <!-- Input bar in subHeader — always visible -->
-                    <subHeader>
-                        <Bar>
-                            <contentMiddle>
-                                <HBox alignItems="Center" width="100%" class="chatInputRow">
-                                    <Input id="chatInput" placeholder="Ask about availability, pricing…" width="100%" submit="onChatSend" class="sapUiTinyMarginEnd"/>
-                                    <Button id="chatSendBtn" icon="sap-icon://paper-plane" type="Emphasized" press="onChatSend"/>
-                                </HBox>
-                            </contentMiddle>
-                        </Bar>
-                    </subHeader>
-
-                    <!-- Messages — scrollable content -->
-                    <VBox class="chatMessagesBox">
-                        <core:HTML id="chatMessagesHtml" content="&lt;div id='chatBubbles' style='padding:8px'&gt;&lt;/div&gt;"/>
-                        <core:HTML id="chatTypingHtml" content="&lt;div id='chatTyping' style='display:none;padding:4px 8px'&gt;&lt;span style='background:#f1f5f9;color:#64748b;padding:6px 12px;border-radius:12px;font-size:13px'&gt;typing…&lt;/span&gt;&lt;/div&gt;"/>
+                <Dialog id="chatDialog" title="AI Chat" stretch="true" verticalScrolling="false">
+                    <!-- Messages fill available space; input pinned at bottom -->
+                    <VBox height="100%" class="hhChatLayout">
+                        <ScrollContainer vertical="true" horizontal="false" class="hhChatMessages">
+                            <core:HTML id="chatMessagesHtml" content="&lt;div id='chatBubbles'&gt;&lt;/div&gt;"/>
+                            <core:HTML id="chatTypingHtml" content="&lt;div id='chatTyping' style='display:none;padding:4px 8px'&gt;&lt;span style='background:#f1f5f9;color:#64748b;padding:6px 12px;border-radius:12px;font-size:13px'&gt;typing…&lt;/span&gt;&lt;/div&gt;"/>
+                        </ScrollContainer>
+                        <HBox alignItems="Center" class="hhChatInputBar">
+                            <Input id="chatInput" placeholder="Ask anything…" width="100%" submit="onChatSend"/>
+                            <Button id="chatSendBtn" icon="sap-icon://paper-plane" type="Emphasized" press="onChatSend" class="sapUiTinyMarginBegin"/>
+                        </HBox>
                     </VBox>
 
                     <endButton>
