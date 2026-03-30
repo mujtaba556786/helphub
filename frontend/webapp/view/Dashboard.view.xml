@@ -4,7 +4,9 @@
     xmlns:f="sap.ui.layout.form"
     xmlns:core="sap.ui.core"
     xmlns:u="sap.ui.unified"
-    xmlns:l="sap.ui.layout" displayBlock="true">
+    xmlns:l="sap.ui.layout"
+    xmlns:data="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1"
+    displayBlock="true">
 
     <NavContainer id="navContainer">
 
@@ -85,6 +87,56 @@
                                 </VBox>
                             </ScrollContainer>
                         </IconTabFilter>
+                        <!-- TAB 3: Saved -->
+                        <IconTabFilter key="saved" text="Saved" icon="sap-icon://heart">
+                            <ScrollContainer vertical="true" horizontal="false" height="100%">
+                                <VBox class="sapUiSmallMargin mainContent">
+
+                                    <!-- Recently Viewed -->
+                                    <Title text="Recently Viewed" level="H4" class="sapUiSmallMarginBottom"/>
+                                    <List id="recentlyViewedList" items="{appData>/recentlyViewed}" noDataText="No helpers viewed yet.">
+                                        <CustomListItem>
+                                            <HBox class="sapUiSmallMargin" justifyContent="SpaceBetween" alignItems="Center">
+                                                <HBox alignItems="Center">
+                                                    <Avatar displaySize="S" src="{appData>photo}" initials="P" backgroundColor="Accent1" class="sapUiTinyMarginEnd"/>
+                                                    <VBox>
+                                                        <Title text="{appData>name}" level="H5"/>
+                                                        <Text text="{appData>serviceType}" class="grayText smallText"/>
+                                                    </VBox>
+                                                </HBox>
+                                                <Button text="Profile" type="Transparent" press="onViewRecentProfile"/>
+                                            </HBox>
+                                        </CustomListItem>
+                                    </List>
+
+                                    <!-- Saved Helpers -->
+                                    <Title text="Saved Helpers" level="H4" class="sapUiSmallMarginTop sapUiSmallMarginBottom"/>
+                                    <List id="favoritesList" items="{appData>/favoriteProviders}" noDataText="No saved helpers yet. Tap ♡ on a helper card to save them.">
+                                        <CustomListItem>
+                                            <HBox class="sapUiSmallMargin" justifyContent="SpaceBetween" alignItems="Center">
+                                                <HBox alignItems="Center">
+                                                    <Avatar displaySize="S" src="{appData>photo}" initials="P" backgroundColor="Accent1" class="sapUiTinyMarginEnd"/>
+                                                    <VBox>
+                                                        <Title text="{appData>name}" level="H5"/>
+                                                        <Text text="{appData>serviceType}" class="grayText smallText"/>
+                                                        <HBox alignItems="Center">
+                                                            <RatingIndicator value="{appData>rating}" displayOnly="true" iconSize="12px" class="sapUiTinyMarginEnd"/>
+                                                            <Text text="{path:'appData>', formatter:'.formatPriceDisplay'}" class="smallText blueText"/>
+                                                        </HBox>
+                                                    </VBox>
+                                                </HBox>
+                                                <VBox alignItems="End">
+                                                    <Button icon="sap-icon://favorite" type="Emphasized" press="onToggleFavorite" tooltip="Remove from saved" class="sapUiTinyMarginBottom"/>
+                                                    <Button text="Profile" type="Transparent" press="onViewFavoriteProfile"/>
+                                                </VBox>
+                                            </HBox>
+                                        </CustomListItem>
+                                    </List>
+
+                                </VBox>
+                            </ScrollContainer>
+                        </IconTabFilter>
+
                     </items>
 
                 </IconTabBar>
@@ -104,6 +156,8 @@
                             <Title text="{appData>/selectedCategoryName} Experts Nearby" level="H3"/>
                         </HBox>
 
+                        <SearchField id="helperSearch" placeholder="Search by name or skill…" search="onHelperSearch" liveChange="onHelperSearch" width="100%" class="sapUiTinyMarginBottom"/>
+
                         <VBox class="sapUiTinyMarginBottom">
                             <HBox justifyContent="SpaceBetween" alignItems="Center">
                                 <Text text="Search radius (km)" class="smallText grayText"/>
@@ -112,10 +166,13 @@
                             <Slider min="1" max="50" step="1" value="{appData>/filters/distance}" liveChange="onDistanceChange"/>
                         </VBox>
 
-                        <HBox class="sapUiTinyMarginBottom" justifyContent="Start">
-                            <Button text="All" type="Transparent" press="onFilterAll"/>
-                            <Button text="Top rated" type="Transparent" press="onFilterTopRated"/>
-                            <Button text="Budget friendly" type="Transparent" press="onFilterBudget"/>
+                        <HBox class="sapUiTinyMarginBottom" justifyContent="SpaceBetween" alignItems="Center">
+                            <HBox>
+                                <Button text="All" type="Transparent" press="onFilterAll"/>
+                                <Button text="Top rated" type="Transparent" press="onFilterTopRated"/>
+                                <Button text="Budget" type="Transparent" press="onFilterBudget"/>
+                            </HBox>
+                            <Button icon="sap-icon://filter" text="Filters" type="Transparent" press="onOpenFilters"/>
                         </HBox>
 
                         <!-- Ad slot: banner between filters and helper list (non-intrusive) -->
@@ -144,6 +201,7 @@
                                     <VBox alignItems="End" wrap="NoWrap" class="helperCardActions">
                                         <ObjectStatus text="{path:'appData>', formatter:'.formatAvailabilityStatus'}" state="{path:'appData>', formatter:'.formatAvailabilityState'}" class="fontBold"/>
                                         <Title text="{path:'appData>', formatter:'.formatPriceDisplay'}" level="H4" class="sapUiTinyMarginTop"/>
+                                        <Button icon="{= ${appData>/favorites}.indexOf(${appData>id}) >= 0 ? 'sap-icon://favorite' : 'sap-icon://unfavorite'}" type="{= ${appData>/favorites}.indexOf(${appData>id}) >= 0 ? 'Emphasized' : 'Transparent'}" press="onToggleFavorite" class="sapUiTinyMarginTop helperCardBtn" tooltip="Save helper"/>
                                         <Button text="Profile" type="Transparent" class="sapUiTinyMarginTop helperCardBtn" press="onViewProfile"/>
                                         <Button text="📅 Book" type="Emphasized" class="sapUiTinyMarginTop helperCardBtn" press="onQuickBook"/>
                                         <Button text="💬 Chat" type="Accept" class="sapUiTinyMarginTop helperCardBtn" press="onQuickChat"/>
@@ -281,6 +339,122 @@
             </content>
 
             <dependents>
+
+                <!-- Onboarding Dialog -->
+                <Dialog id="onboardingDialog" contentWidth="92%" verticalScrolling="true">
+                    <customHeader>
+                        <Bar>
+                            <contentLeft>
+                                <Title text="{= ${appData>/onboarding/step} === 1 ? '👋 Welcome to HelpHub' : ${appData>/onboarding/step} === 2 ? '⚙️ How it works' : '🎯 Pick your interests'}" level="H4"/>
+                            </contentLeft>
+                            <contentRight>
+                                <Text text="{= ${appData>/onboarding/step} + ' / 3'}" class="grayText smallText sapUiTinyMarginEnd"/>
+                            </contentRight>
+                        </Bar>
+                    </customHeader>
+                    <!-- Step 1: Welcome -->
+                    <VBox visible="{= ${appData>/onboarding/step} === 1}" class="sapUiMediumMargin hhOnboardStep">
+                        <core:HTML content="&lt;div style='text-align:center;font-size:64px;margin-bottom:12px'&gt;🏠&lt;/div&gt;"/>
+                        <Title text="Find trusted helpers near you" level="H2" class="sapUiSmallMarginBottom textCenter"/>
+                        <Text text="HelpHub connects you with verified local helpers for everyday tasks — gardening, babysitting, IT support and more." class="grayText sapUiSmallMarginBottom textCenter"/>
+                        <VBox class="sapUiSmallMarginTop">
+                            <HBox alignItems="Center" class="sapUiTinyMarginBottom">
+                                <core:HTML content="&lt;span style='font-size:20px;margin-right:8px'&gt;✅&lt;/span&gt;"/>
+                                <Text text="Verified helpers with real reviews"/>
+                            </HBox>
+                            <HBox alignItems="Center" class="sapUiTinyMarginBottom">
+                                <core:HTML content="&lt;span style='font-size:20px;margin-right:8px'&gt;📍&lt;/span&gt;"/>
+                                <Text text="Find helpers near your location"/>
+                            </HBox>
+                            <HBox alignItems="Center" class="sapUiTinyMarginBottom">
+                                <core:HTML content="&lt;span style='font-size:20px;margin-right:8px'&gt;💬&lt;/span&gt;"/>
+                                <Text text="Chat and book in seconds"/>
+                            </HBox>
+                        </VBox>
+                    </VBox>
+                    <!-- Step 2: How it works -->
+                    <VBox visible="{= ${appData>/onboarding/step} === 2}" class="sapUiMediumMargin hhOnboardStep">
+                        <VBox class="hhOnboardCard sapUiSmallMarginBottom">
+                            <HBox alignItems="Center">
+                                <core:HTML content="&lt;div class='hhOnboardNum'&gt;1&lt;/div&gt;"/>
+                                <VBox class="sapUiTinyMarginBegin">
+                                    <Title text="Choose a service" level="H5"/>
+                                    <Text text="Pick from 12 categories like gardening, cleaning, IT support and more." class="grayText smallText"/>
+                                </VBox>
+                            </HBox>
+                        </VBox>
+                        <VBox class="hhOnboardCard sapUiSmallMarginBottom">
+                            <HBox alignItems="Center">
+                                <core:HTML content="&lt;div class='hhOnboardNum'&gt;2&lt;/div&gt;"/>
+                                <VBox class="sapUiTinyMarginBegin">
+                                    <Title text="Browse &amp; compare helpers" level="H5"/>
+                                    <Text text="See ratings, experience, price, distance and availability at a glance." class="grayText smallText"/>
+                                </VBox>
+                            </HBox>
+                        </VBox>
+                        <VBox class="hhOnboardCard sapUiSmallMarginBottom">
+                            <HBox alignItems="Center">
+                                <core:HTML content="&lt;div class='hhOnboardNum'&gt;3&lt;/div&gt;"/>
+                                <VBox class="sapUiTinyMarginBegin">
+                                    <Title text="Book &amp; relax" level="H5"/>
+                                    <Text text="Send a booking request, chat with the helper and track your schedule." class="grayText smallText"/>
+                                </VBox>
+                            </HBox>
+                        </VBox>
+                    </VBox>
+                    <!-- Step 3: Pick interests -->
+                    <VBox visible="{= ${appData>/onboarding/step} === 3}" class="sapUiMediumMargin hhOnboardStep">
+                        <Text text="Select services you're most interested in." class="grayText sapUiSmallMarginBottom"/>
+                        <FlexBox wrap="Wrap" class="sapUiTinyMarginTop">
+                            <Button text="🌱 Gardening"    data:interestKey="Gardening"    press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                            <Button text="👶 Babysitting"  data:interestKey="Babysitting"  press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                            <Button text="🚗 Transport"    data:interestKey="Transport"    press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                            <Button text="🛒 Groceries"    data:interestKey="Groceries"    press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                            <Button text="📐 Math Tuition" data:interestKey="Math Tuition" press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                            <Button text="🧹 Cleaning"     data:interestKey="Cleaning"     press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                            <Button text="🐕 Pet Care"     data:interestKey="Pet Care"     press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                            <Button text="🔧 Handyman"     data:interestKey="Handyman"     press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                            <Button text="👨‍🍳 Cooking"    data:interestKey="Cooking"      press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                            <Button text="📦 Moving"       data:interestKey="Moving"       press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                            <Button text="💻 IT Support"   data:interestKey="IT Support"   press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                        </FlexBox>
+                    </VBox>
+                    <beginButton>
+                        <Button text="Skip" type="Transparent" press="onOnboardingSkip" visible="{= ${appData>/onboarding/step} === 1}"/>
+                    </beginButton>
+                    <endButton>
+                        <Button text="{= ${appData>/onboarding/step} === 3 ? 'Get Started 🚀' : 'Next →'}" type="Emphasized" press="onOnboardingNext"/>
+                    </endButton>
+                </Dialog>
+
+                <!-- Filter Dialog -->
+                <Dialog id="filterDialog" title="Filter Helpers" contentWidth="92%">
+                    <VBox class="sapUiMediumMargin">
+                        <Label text="Minimum rating"/>
+                        <Select id="filterRatingSelect" selectedKey="{appData>/filters/minRating}" width="100%" class="sapUiTinyMarginBottom">
+                            <core:Item key="0"   text="Any rating"/>
+                            <core:Item key="4.0" text="4.0+ stars"/>
+                            <core:Item key="4.5" text="4.5+ stars"/>
+                            <core:Item key="4.8" text="4.8+ stars (Top rated)"/>
+                        </Select>
+                        <Label text="Language" class="sapUiTinyMarginTop"/>
+                        <Input id="filterLangInput" value="{appData>/filters/language}" placeholder="e.g. EN or DE" width="100%" class="sapUiTinyMarginBottom"/>
+                        <Label text="Max hourly rate (EUR)" class="sapUiTinyMarginTop"/>
+                        <HBox justifyContent="SpaceBetween" alignItems="Center">
+                            <Text text="€0" class="smallText grayText"/>
+                            <Text text="{= '€' + ${appData>/filters/maxPrice} + '/hr'}" class="smallText blueText fontBold"/>
+                            <Text text="€200+" class="smallText grayText"/>
+                        </HBox>
+                        <Slider id="filterPriceSlider" min="0" max="200" step="5" value="{appData>/filters/maxPrice}" width="100%"/>
+                    </VBox>
+                    <beginButton>
+                        <Button text="Reset" press="onResetFilters"/>
+                    </beginButton>
+                    <endButton>
+                        <Button text="Apply" type="Emphasized" press="onApplyFilters"/>
+                    </endButton>
+                </Dialog>
+
                 <!-- Profile dialog -->
                 <Dialog id="profileDialog" title="Helper profile" verticalScrolling="true">
                     <VBox class="sapUiMediumMargin">
