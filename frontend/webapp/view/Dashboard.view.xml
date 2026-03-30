@@ -20,13 +20,7 @@
                     <contentRight>
                         <HBox alignItems="Center" class="sapUiTinyMarginEnd">
                             <Button id="notifBtn" icon="sap-icon://bell" type="Transparent" press="onShowNotifications" tooltip="Notifications"/>
-                            <Avatar
-                                src="{appData>/user/photo}"
-                                initials="{appData>/user/initials}"
-                                displaySize="XS"
-                                backgroundColor="Accent6"
-                                press="onEditProfile"
-                                class="sapUiTinyMarginEnd" />
+                            <Avatar src="{appData>/user/photo}" initials="{appData>/user/initials}" displaySize="XS" backgroundColor="Accent6" press="onEditProfile" class="sapUiTinyMarginEnd" />
                             <Button icon="sap-icon://log" press="onLogout" type="Transparent" tooltip="Sign out"/>
                         </HBox>
                     </contentRight>
@@ -34,11 +28,11 @@
             </customHeader>
 
             <content>
-                <IconTabBar expandable="false">
+                <IconTabBar expandable="false" select=".onTabSelect">
 
                     <!-- TAB 1: Find Help -->
                     <items>
-                        <IconTabFilter text="Find Help" icon="sap-icon://question-mark">
+                        <IconTabFilter key="findHelp" text="Find Help" icon="sap-icon://question-mark">
                             <VBox class="sapUiSmallMargin mainContent">
                                 <Title text="How can we help you today?" level="H2" class="sapUiLargeMarginBottom"/>
                                 <Text text="Choose a service below to find trusted helpers near you." class="grayText sapUiSmallMarginBottom"/>
@@ -46,7 +40,7 @@
                                 <!-- Service tiles -->
                                 <FlexBox class="serviceTilesContainer" direction="Row" wrap="Wrap" justifyContent="Center" items="{appData>/services}">
                                     <items>
-                                        <CustomListItem class="" type="Active" press=".onServicePress">
+                                        <CustomListItem class="hhTileItem" type="Active" press=".onServicePress">
                                             <HBox direction="Column">
                                                 <VBox class="circleButton" core:style="background-color:{appData>color}">
                                                     <Text text="{appData>icon}" class="serviceIcon"/>
@@ -61,7 +55,7 @@
                         </IconTabFilter>
 
                         <!-- TAB 2: My Schedule -->
-                        <IconTabFilter text="My Schedule" icon="sap-icon://calendar" count="{appData>/bookingCount}">
+                        <IconTabFilter key="mySchedule" text="My Schedule" icon="sap-icon://calendar" count="{appData>/bookingCount}">
                             <VBox class="sapUiSmallMargin">
                                 <Title text="Your Bookings" level="H4" class="sapUiSmallMarginBottom"/>
                                 <List id="bookingsList" items="{appData>/upcomingBookings}" noDataText="No bookings yet. Book a helper to get started!">
@@ -165,132 +159,124 @@
         <!-- PAGE 3: Edit Profile -->
         <Page id="editPage" title="My Profile" showNavButton="true" navButtonPress="onNavBack">
             <content>
-                <VBox class="sapUiSmallMargin mainContent maxWidth800">
+                <VBox class="sapUiSmallMargin">
 
-    <!-- PROFILE PHOTO -->
-    <VBox alignItems="Center" class="sapUiMediumMarginBottom">
-        <Avatar id="profileAvatar" src="{appData>/user/photo}" displaySize="XL" backgroundColor="Accent6" initials="{appData>/user/avatar}" class="sapUiSmallMarginBottom"/>
-        <Button text="Change Photo" icon="sap-icon://camera" press="onChangePhoto" type="Transparent"/>
-        <core:HTML id="avatarInputHtml" content='&lt;input id="avatarFileInput" type="file" accept="image/jpeg,image/jpg,image/png,image/gif,image/webp" style="display:none"/&gt;'/>
-        <Text id="photoError" text="" class="errorText" visible="false"/>
-    </VBox>
+                    <!-- PROFILE PHOTO -->
+                    <VBox alignItems="Center" class="sapUiMediumMarginBottom">
+                        <Avatar id="profileAvatar" src="{appData>/user/photo}" displaySize="XL" backgroundColor="Accent6" initials="{appData>/user/avatar}" class="sapUiSmallMarginBottom"/>
+                        <Button text="Change Photo" icon="sap-icon://camera" press="onChangePhoto" type="Transparent"/>
+                        <core:HTML id="avatarInputHtml" content='&lt;input id="avatarFileInput" type="file" accept="image/jpeg,image/jpg,image/png,image/gif,image/webp" style="display:none"/&gt;'/>
+                        <Text id="photoError" text="" class="errorText" visible="false"/>
+                    </VBox>
 
-    <f:SimpleForm editable="true" layout="ResponsiveGridLayout" columnsL="2" columnsM="2">
+                    <f:SimpleForm editable="true" layout="ResponsiveGridLayout" columnsL="2" columnsM="2">
 
-        <!-- Basic Info -->
-        <core:Title text="Basic Information"/>
+                        <!-- Basic Info -->
+                        <core:Title text="Basic Information"/>
 
-        <Label text="Display Name" required="true"/>
-        <Input value="{appData>/user/name}" valueState="{appData>/validation/name}" valueStateText="Display name is required"/>
+                        <Label text="Display Name" required="true"/>
+                        <Input value="{appData>/user/name}" valueState="{appData>/validation/name}" valueStateText="Display name is required"/>
 
-        <Label text="Phone Number"/>
-        <Input value="{appData>/user/phone}" type="Tel"/>
+                        <Label text="Phone Number"/>
+                        <Input value="{appData>/user/phone}" type="Tel"/>
 
-        <Label text="Languages"/>
-        <Input value="{appData>/user/languages}" placeholder="e.g. EN, DE"/>
+                        <Label text="Languages"/>
+                        <Input value="{appData>/user/languages}" placeholder="e.g. EN, DE"/>
 
-        <Label text="Bio"/>
-        <TextArea rows="3" value="{appData>/user/bio}" placeholder="Tell clients about your experience…"/>
+                        <Label text="Bio"/>
+                        <TextArea rows="3" value="{appData>/user/bio}" placeholder="Tell clients about your experience…"/>
 
-        <!-- Provider Info -->
-        <core:Title text="Provider Settings"/>
+                        <!-- Provider Info -->
+                        <core:Title text="Provider Settings"/>
 
-        <Label text="Service Categories"/>
-        <MultiComboBox selectedKeys="{appData>/user/serviceCategories}" items="{appData>/services}">
-            <core:Item key="{appData>name}" text="{appData>name}"/>
-        </MultiComboBox>
+                        <Label text="Service Categories"/>
+                        <MultiComboBox selectedKeys="{appData>/user/serviceCategories}" items="{appData>/services}">
+                            <core:Item key="{appData>name}" text="{appData>name}"/>
+                        </MultiComboBox>
 
-        <Label text="Hourly Rate (EUR)"/>
-        <Input value="{appData>/user/rate}" type="Number"/>
+                        <Label text="Hourly Rate (EUR)"/>
+                        <Input value="{appData>/user/rate}" type="Number"/>
 
-        <Label text="Availability"/>
-        <!-- Quick picks row -->
-        <FlexBox wrap="Wrap" class="sapUiTinyMarginBottom">
-            <Button text="All Day" press="onAvailabilityToggle"
-                type="{= ${appData>/user/availabilityFlags/all_day} ? 'Emphasized' : 'Default'}"
-                class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
-                <customData><core:CustomData key="availKey" value="all_day"/></customData>
-            </Button>
-            <Button text="Weekdays" press="onAvailabilityToggle"
-                type="{= ${appData>/user/availabilityFlags/weekdays} ? 'Emphasized' : 'Default'}"
-                class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
-                <customData><core:CustomData key="availKey" value="weekdays"/></customData>
-            </Button>
-            <Button text="Weekends" press="onAvailabilityToggle"
-                type="{= ${appData>/user/availabilityFlags/weekends} ? 'Emphasized' : 'Default'}"
-                class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
-                <customData><core:CustomData key="availKey" value="weekends"/></customData>
-            </Button>
-        </FlexBox>
-        <!-- Time of day row -->
-        <FlexBox wrap="Wrap">
-            <Button text="🌅 Morning (6–12)" press="onAvailabilityToggle"
-                type="{= ${appData>/user/availabilityFlags/morning} ? 'Emphasized' : 'Default'}"
-                class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
-                <customData><core:CustomData key="availKey" value="morning"/></customData>
-            </Button>
-            <Button text="☀️ Afternoon (12–17)" press="onAvailabilityToggle"
-                type="{= ${appData>/user/availabilityFlags/afternoon} ? 'Emphasized' : 'Default'}"
-                class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
-                <customData><core:CustomData key="availKey" value="afternoon"/></customData>
-            </Button>
-            <Button text="🌆 Evening (17–22)" press="onAvailabilityToggle"
-                type="{= ${appData>/user/availabilityFlags/evening} ? 'Emphasized' : 'Default'}"
-                class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
-                <customData><core:CustomData key="availKey" value="evening"/></customData>
-            </Button>
-            <Button text="🌙 Night (22+)" press="onAvailabilityToggle"
-                type="{= ${appData>/user/availabilityFlags/night} ? 'Emphasized' : 'Default'}"
-                class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
-                <customData><core:CustomData key="availKey" value="night"/></customData>
-            </Button>
-        </FlexBox>
+                        <Label text="Availability"/>
+                        <!-- Quick picks row -->
+                        <FlexBox wrap="Wrap" class="sapUiTinyMarginBottom">
+                            <Button text="All Day" press="onAvailabilityToggle" type="{= ${appData>/user/availabilityFlags/all_day} ? 'Emphasized' : 'Default'}" class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
+                                <customData>
+                                    <core:CustomData key="availKey" value="all_day"/>
+                                </customData>
+                            </Button>
+                            <Button text="Weekdays" press="onAvailabilityToggle" type="{= ${appData>/user/availabilityFlags/weekdays} ? 'Emphasized' : 'Default'}" class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
+                                <customData>
+                                    <core:CustomData key="availKey" value="weekdays"/>
+                                </customData>
+                            </Button>
+                            <Button text="Weekends" press="onAvailabilityToggle" type="{= ${appData>/user/availabilityFlags/weekends} ? 'Emphasized' : 'Default'}" class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
+                                <customData>
+                                    <core:CustomData key="availKey" value="weekends"/>
+                                </customData>
+                            </Button>
+                        </FlexBox>
+                        <!-- Time of day row -->
+                        <FlexBox wrap="Wrap">
+                            <Button text="🌅 Morning (6–12)" press="onAvailabilityToggle" type="{= ${appData>/user/availabilityFlags/morning} ? 'Emphasized' : 'Default'}" class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
+                                <customData>
+                                    <core:CustomData key="availKey" value="morning"/>
+                                </customData>
+                            </Button>
+                            <Button text="☀️ Afternoon (12–17)" press="onAvailabilityToggle" type="{= ${appData>/user/availabilityFlags/afternoon} ? 'Emphasized' : 'Default'}" class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
+                                <customData>
+                                    <core:CustomData key="availKey" value="afternoon"/>
+                                </customData>
+                            </Button>
+                            <Button text="🌆 Evening (17–22)" press="onAvailabilityToggle" type="{= ${appData>/user/availabilityFlags/evening} ? 'Emphasized' : 'Default'}" class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
+                                <customData>
+                                    <core:CustomData key="availKey" value="evening"/>
+                                </customData>
+                            </Button>
+                            <Button text="🌙 Night (22+)" press="onAvailabilityToggle" type="{= ${appData>/user/availabilityFlags/night} ? 'Emphasized' : 'Default'}" class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
+                                <customData>
+                                    <core:CustomData key="availKey" value="night"/>
+                                </customData>
+                            </Button>
+                        </FlexBox>
 
-        <Label text="Years of Experience"/>
-        <Input value="{appData>/user/years}" type="Number"/>
+                        <Label text="Years of Experience"/>
+                        <Input value="{appData>/user/years}" type="Number"/>
 
-        <!-- Address -->
-        <core:Title text="Address"/>
+                        <!-- Address -->
+                        <core:Title text="Address"/>
 
-        <Label text="Country" required="true"/>
-        <Select id="countrySelect" change="onCountryChange"
-            selectedKey="{appData>/user/address/country}"
-            items="{appData>/countries}">
-            <core:Item key="{appData>code}" text="{appData>name}"/>
-        </Select>
+                        <Label text="Country" required="true"/>
+                        <Select id="countrySelect" change="onCountryChange" selectedKey="{appData>/user/address/country}" items="{appData>/countries}">
+                            <core:Item key="{appData>code}" text="{appData>name}"/>
+                        </Select>
 
-        <Label text="State / Province" required="true"/>
-        <Select id="stateSelect"
-            selectedKey="{appData>/user/address/state}"
-            items="{appData>/stateOptions}">
-            <core:Item key="{appData>name}" text="{appData>name}"/>
-        </Select>
+                        <Label text="State / Province" required="true"/>
+                        <Select id="stateSelect" selectedKey="{appData>/user/address/state}" items="{appData>/stateOptions}">
+                            <core:Item key="{appData>name}" text="{appData>name}"/>
+                        </Select>
 
-        <Label text="City" required="true"/>
-        <Input id="cityInput" value="{appData>/user/address/city}"
-            valueState="{appData>/validation/city}" valueStateText="City is required"/>
+                        <Label text="City" required="true"/>
+                        <Input id="cityInput" value="{appData>/user/address/city}" valueState="{appData>/validation/city}" valueStateText="City is required"/>
 
-        <Label text="Street" required="true"/>
-        <Input id="streetInput" value="{appData>/user/address/street}"
-            valueState="{appData>/validation/street}" valueStateText="Street is required"/>
+                        <Label text="Street" required="true"/>
+                        <Input id="streetInput" value="{appData>/user/address/street}" valueState="{appData>/validation/street}" valueStateText="Street is required"/>
 
-        <Label text="House Number" required="true"/>
-        <Input id="houseInput" value="{appData>/user/address/houseNumber}"
-            valueState="{appData>/validation/houseNumber}" valueStateText="House number is required"/>
+                        <Label text="House Number" required="true"/>
+                        <Input id="houseInput" value="{appData>/user/address/houseNumber}" valueState="{appData>/validation/houseNumber}" valueStateText="House number is required"/>
 
-        <Label text="Postal Code" required="true"/>
-        <Input id="postalInput" value="{appData>/user/address/postalCode}"
-            valueState="{appData>/validation/postalCode}" valueStateText="Enter a valid postal code (3–10 characters)"/>
+                        <Label text="Postal Code" required="true"/>
+                        <Input id="postalInput" value="{appData>/user/address/postalCode}" valueState="{appData>/validation/postalCode}" valueStateText="Enter a valid postal code (3–10 characters)"/>
 
-    </f:SimpleForm>
+                    </f:SimpleForm>
 
-    <Button text="Save Profile Changes" type="Emphasized" press="onSaveProfile" class="sapUiLargeMarginTop" width="100%"/>
+                    <Button text="Save Profile Changes" type="Emphasized" press="onSaveProfile" class="sapUiMediumMarginTop sapUiLargeMarginBottom" width="100%"/>
 
-</VBox>
+                </VBox>
 
 
                 <!-- Profile dialog -->
-                <Dialog id="profileDialog" title="Helper profile" stretch="true" contentHeight="70%" contentWidth="90%" horizontalScrolling="false" verticalScrolling="true">
+                <Dialog id="profileDialog" title="Helper profile" stretch="true" >
                     <VBox class="sapUiMediumMargin">
                         <HBox alignItems="Center" class="sapUiSmallMarginBottom">
                             <Avatar src="{appData>/selectedProfile/photo}" initials="{appData>/selectedProfile/initials}" displaySize="L" class="sapUiTinyMarginEnd"/>
@@ -369,7 +355,7 @@
                 </Dialog>
 
                 <!-- Notifications Dialog -->
-                <Dialog id="notificationsDialog" title="Notifications" contentWidth="95%" contentHeight="60%">
+                <Dialog id="notificationsDialog" title="Notifications">
                     <VBox class="sapUiSmallMargin">
                         <HBox justifyContent="End" class="sapUiTinyMarginBottom">
                             <Button text="Mark all read" type="Transparent" press="onMarkAllRead"/>
@@ -393,14 +379,13 @@
                 </Dialog>
 
                 <!-- AI Chat Dialog — full screen on mobile -->
-                <Dialog id="chatDialog" title="AI Chat" stretch="true" verticalScrolling="true" horizontalScrolling="false">
+                <Dialog id="chatDialog" title="AI Chat" stretch="true">
                     <!-- Input bar in subHeader — always visible -->
                     <subHeader>
                         <Bar>
                             <contentMiddle>
                                 <HBox alignItems="Center" width="100%" class="chatInputRow">
-                                    <Input id="chatInput" placeholder="Ask about availability, pricing…"
-                                           width="100%" submit="onChatSend" class="sapUiTinyMarginEnd"/>
+                                    <Input id="chatInput" placeholder="Ask about availability, pricing…" width="100%" submit="onChatSend" class="sapUiTinyMarginEnd"/>
                                     <Button id="chatSendBtn" icon="sap-icon://paper-plane" type="Emphasized" press="onChatSend"/>
                                 </HBox>
                             </contentMiddle>

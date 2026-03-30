@@ -29,32 +29,17 @@
         --hh-border:        #334155;
         --hh-input-bg:      #1e293b;
     }
-    body, .sapUiBody {
-        background-color: var(--hh-bg) !important;
-        color: var(--hh-text) !important;
-    }
-    .sapMPage, .sapMPageBg,
-    .sapMList, .sapMListBg,
-    .sapMPanel, .sapMPanelContent {
-        background-color: var(--hh-bg-soft) !important;
-    }
-    .sapMInputBase .sapMInputBaseInner,
-    .sapMTextArea textarea,
-    .sapMSelectList {
-        background-color: var(--hh-input-bg) !important;
-        color: var(--hh-text) !important;
-        border-color: var(--hh-border) !important;
-    }
-    .sapMText, .sapMLabel, .sapMTitle {
-        color: var(--hh-text) !important;
-    }
 }
 
-.textCenter {
-    text-align: center;
-}
+/* ── Utility classes ──────────────────────────────────────────────── */
+.textCenter { text-align: center; }
+.grayText   { color: var(--hh-text-gray); }
+.blueText   { color: var(--hh-primary); }
+.fontBold   { font-weight: 700; }
+.smallText  { font-size: 0.9rem; }
+.errorText  { color: #d32f2f; font-size: 0.8rem; }
 
-/* LOGIN */
+/* ── Login ──────────────────────────────────────────────────────── */
 .loginBg {
     background: var(--hh-bg-login);
 }
@@ -71,45 +56,34 @@
 }
 
 .googleBtn {
-    border: 1px solid var(--hh-border) !important;
+    border: 1px solid var(--hh-border);
 }
 
-/* ── Header icon overrides → orange ─────────────────────────────── */
-.sapMBarChild .sapMBtn.sapMBtnTransparent .sapMBtnIcon,
-.sapMBarChild .sapMBtn.sapMBtnTransparent .sapUiIcon {
-    color: var(--hh-primary) !important;
+/* ── Service tile grid ─────────────────────────────────────────── */
+
+/* Tile list item — transparent, no border, no shadow */
+.hhTileItem {
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
 }
 
-/* ── Tile list item — transparent background ─────────────────────── */
-.serviceTilesContainer .sapMLIB,
-.serviceTilesContainer .sapMLIB:hover,
-.serviceTilesContainer .sapMLIB.sapMLIBHoverable:hover,
-.serviceTilesContainer .sapMCLI {
-    background-color: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-}
-.serviceTilesContainer .sapMLIBContent {
-    background-color: transparent !important;
-}
-
-/* Fixed Tile Layout — 3-column grid */
 .serviceTilesContainer {
-    display: grid !important;
-    grid-template-columns: repeat(3, 1fr) !important;
-    gap: 16px !important;
-    padding: 16px 8px 40px !important;
-    width: 100% !important;
-    box-sizing: border-box !important;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    padding: 16px 8px 40px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .customServiceTile {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
-    width: 100% !important;
+    width: 100%;
     min-height: 120px;
     transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
@@ -119,21 +93,20 @@
 }
 
 .circleButton {
-    width: 72px !important;
-    height: 72px !important;
-    min-width: 72px !important;
-    min-height: 72px !important;
-    border-radius: 50% !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
+    width: 72px;
+    height: 72px;
+    min-width: 72px;
+    min-height: 72px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     box-shadow: 0 6px 18px rgba(15, 23, 42, 0.12), inset 0 2px 4px rgba(255,255,255,0.6);
-    border: 4px solid #ffffff !important;
+    border: 4px solid #ffffff;
     background-clip: padding-box;
     transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
     position: relative;
     z-index: 5;
-    /* Fallback color — overridden per-tile via JS setProperty */
     background-color: #f1f5f9;
 }
 
@@ -143,26 +116,25 @@
 }
 
 .serviceIcon {
-    font-size: 32px !important;
-    line-height: 1 !important;
+    font-size: 32px;
+    line-height: 1;
     user-select: none;
     transition: transform 0.3s ease;
 }
 
 .serviceName {
-    font-weight: 700 !important;
-    margin-top: 10px !important;
-    color: var(--hh-text) !important;
-    font-size: 0.78rem !important;
-    text-align: center !important;
-    white-space: normal !important;
-    overflow: visible !important;
-    word-break: break-word !important;
-    max-width: 90px !important;
-    line-height: 1.3 !important;
+    font-weight: 700;
+    margin-top: 10px;
+    color: var(--hh-text);
+    font-size: 0.78rem;
+    text-align: center;
+    white-space: normal;
+    word-break: break-word;
+    max-width: 90px;
+    line-height: 1.3;
 }
 
-/* Expert list cards */
+/* ── Expert / helper cards ─────────────────────────────────────── */
 .expertCard {
     border-radius: 14px;
     background-color: var(--hh-card-bg);
@@ -173,43 +145,15 @@
     color: var(--hh-text);
 }
 
-.grayText  { color: var(--hh-text-gray); }
-.blueText  { color: var(--hh-primary); }
-.fontBold  { font-weight: 700; }
-.smallText { font-size: 0.9rem; }
-
-/* ── Main page scroll fix ────────────────────────────────────────── */
-.sapMITBContent {
-    overflow-y: auto !important;
-    -webkit-overflow-scrolling: touch !important;
-}
-.sapMPage > section {
-    overflow-y: auto !important;
-    -webkit-overflow-scrolling: touch !important;
-}
-.mainContent {
-    padding-bottom: 40px;
+.helperCardActions {
+    min-width: 90px;
 }
 
-/* ── Chat dialog — input in subHeader, messages scroll ───────────── */
-.chatInputRow {
-    width: 100% !important;
-    padding: 4px 0 !important;
-}
-.chatInputRow .sapMInput {
-    flex: 1 !important;
-}
-#chatBubbles {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    padding: 12px 8px;
-}
-.chatMessagesBox {
-    min-height: 200px;
+.helperCardBtn {
+    width: 100%;
 }
 
-/* Map */
+/* ── Map ─────────────────────────────────────────────────────────── */
 .mapPlaceholder {
     background: var(--hh-map-bg);
     border-bottom: 2px solid var(--hh-border);
@@ -221,288 +165,57 @@
     z-index: 0;
 }
 
-/* ── Orange theme overrides for SAP UI5 buttons ─────────────────── */
-.sapMBtnEmphasized,
-.sapMBtnEmphasized.sapMBtn {
-    background-color: #f97316 !important;
-    border-color: #f97316 !important;
-}
-.sapMBtnEmphasized .sapMBtnInner {
-    background-color: #f97316 !important;
-    border-color: #f97316 !important;
-    color: #ffffff !important;
-}
-.sapMBtnEmphasized:hover .sapMBtnInner,
-.sapMBtnEmphasized .sapMBtnInner:hover {
-    background-color: #ea580c !important;
-    border-color: #ea580c !important;
-}
-.sapMBtnEmphasized:active .sapMBtnInner,
-.sapMBtnEmphasized .sapMBtnInner:active {
-    background-color: #c2410c !important;
-    border-color: #c2410c !important;
-}
-/* Focus ring */
-.sapMBtnEmphasized:focus,
-.sapMBtnEmphasized .sapMFocusable:focus {
-    outline-color: #f97316 !important;
-}
-/* Avatar accent color */
-.sapFAvatarAccent6 {
-    background-color: #f97316 !important;
-}
-/* Login background override (light mode fallback) */
-.loginBg {
-    background: linear-gradient(135deg, #fff7ed, #ffedd5) !important;
-}
-
-/* ── Mobile UX: Touch targets & input sizing ─────────────────────── */
-
-/* All SAP UI5 buttons: min 44px touch target */
-.sapMBtn {
-    min-height: 44px !important;
-    min-width: 44px !important;
-}
-.sapMBtnInner {
-    min-height: 44px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-}
-
-/* All inputs: 16px font to prevent iOS auto-zoom, 44px height */
-.sapMInputBase .sapMInputBaseInner,
-.sapMInput .sapMInputBaseInner,
-.sapMTextArea textarea,
-.sapMSelect .sapMSelectList,
-.sapMComboBox .sapMInputBaseInner,
-.sapMMultiComboBox .sapMInputBaseInner,
-.sapMDatePicker .sapMInputBaseInner {
-    font-size: 16px !important;
-    min-height: 44px !important;
-}
-
-/* Select dropdowns */
-.sapMSlt {
-    min-height: 44px !important;
-    font-size: 16px !important;
-}
-.sapMSlt .sapMSltLabel {
-    font-size: 16px !important;
-    line-height: 44px !important;
-}
-
-/* DatePicker & TimePicker inner inputs */
-.sapMDPIcn,
-.sapMInputBaseIcon {
-    min-height: 44px !important;
-    min-width: 44px !important;
-}
-
-/* Header bar icon buttons */
-.sapMBarChild .sapMBtn {
-    min-height: 44px !important;
-    min-width: 44px !important;
-}
-
-/* ── Map: ensure full-width rendering ────────────────────────────── */
-.mapDiv {
-    height: 260px;
-    width: 100% !important;
-    min-width: 100% !important;
-    z-index: 0;
-}
 #googleMap {
-    width: 100% !important;
-    min-width: 100% !important;
+    width: 100%;
 }
 
-/* ── Search page filter buttons: bigger tap targets ──────────────── */
-@media (max-width: 600px) {
-    /* Filter buttons row */
-    .sapMHBox > .sapMBtn {
-        min-height: 44px !important;
-        padding: 0 12px !important;
-    }
-
-    /* Helper card action buttons (Profile / Book / Chat) — full width, stacked */
-    .expertCardActions .sapMBtn,
-    .helperCardActions .sapMBtn {
-        width: 100% !important;
-        min-height: 44px !important;
-        margin-bottom: 6px !important;
-    }
-
-    /* Dialog footer buttons: full width on mobile */
-    .sapMDialogFooter .sapMBtn,
-    .sapMIBar .sapMBtn {
-        min-height: 44px !important;
-    }
-
-    /* Booking dialog begin/end buttons */
-    .sapMDialogBeginButton .sapMBtn,
-    .sapMDialogEndButton .sapMBtn {
-        min-height: 44px !important;
-    }
-
-    /* Profile page save button */
-    .sapMPage .sapMBtn[data-sap-ui*="save"],
-    .mainContent .sapMBtn {
-        min-height: 44px !important;
-    }
-
-    /* Availability toggle buttons in profile */
-    .sapMFlexBox .sapMBtn {
-        min-height: 44px !important;
-    }
-
-    /* My Schedule — Accept / Decline buttons */
-    .sapMList .sapMBtn {
-        min-height: 44px !important;
-    }
-
-    /* Notifications mark-all-read button */
-    .sapMDialog .sapMBtn {
-        min-height: 44px !important;
-    }
-
-    /* Dialog content should not overflow horizontally */
-    .sapMDialogScrollCont {
-        overflow-x: hidden !important;
-    }
-
-    /* Search page content padding fix */
-    .flexBasis65 {
-        padding-bottom: 60px;
-    }
+/* ── Search page ─────────────────────────────────────────────────── */
+.flexBasis65 {
+    padding-bottom: 60px;
 }
 
-/* ── My Schedule: booking row stacks on narrow screens ───────────── */
-@media (max-width: 480px) {
-    /* Booking list item: stack vertically instead of side-by-side */
-    .sapMList .sapMCLI .sapMHBox {
-        flex-wrap: wrap !important;
-    }
-    .sapMList .sapMCLI .sapMHBox > .sapMVBox {
-        flex: 1 1 100% !important;
-        min-width: 0 !important;
-    }
-    .sapMList .sapMCLI .sapMHBox > .sapMVBox:last-child {
-        margin-top: 8px !important;
-        align-items: flex-start !important;
-    }
-
-    /* Helper card right-side action buttons: make them wider */
-    .expertCard .sapMVBox[data-sap-ui] .sapMBtn {
-        min-width: 80px !important;
-        min-height: 44px !important;
-    }
+/* ── Chat dialog ─────────────────────────────────────────────────── */
+.chatInputRow {
+    width: 100%;
+    padding: 4px 0;
 }
 
-/* ── Slider touch target ─────────────────────────────────────────── */
-.sapMSliderHandle {
-    width: 28px !important;
-    height: 28px !important;
-    margin-top: -14px !important;
+#chatBubbles {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px 8px;
 }
 
-/* ── Avatar press target ─────────────────────────────────────────── */
-.sapFAvatar {
-    cursor: pointer;
-}
-.sapFAvatarXS {
-    min-width: 32px !important;
-    min-height: 32px !important;
+.chatMessagesBox {
+    min-height: 200px;
 }
 
-/* ── Prevent horizontal scroll on all pages ──────────────────────── */
-.sapMPage,
-.sapMPageScroll,
-.sapMITBContent {
-    overflow-x: hidden !important;
-    max-width: 100vw !important;
-}
-
-/* ── RatingIndicator tap area ────────────────────────────────────── */
-.sapMRI {
-    min-height: 44px !important;
-    display: flex !important;
-    align-items: center !important;
-}
-
-/* ── Helper card action buttons (Profile / Book / Chat) ──────────── */
-.helperCardActions {
-    min-width: 90px;
-}
-.helperCardBtn {
-    width: 100% !important;
-}
-.helperCardBtn .sapMBtnInner {
-    width: 100% !important;
-    min-height: 44px !important;
-    justify-content: center !important;
-}
-
-/* ── My Schedule booking list item layout ────────────────────────── */
+/* ── Booking list layout ─────────────────────────────────────────── */
 .bookingInfoBox {
     flex: 1 1 auto;
     min-width: 0;
 }
+
 .bookingActionsBox {
     flex: 0 0 auto;
     min-width: 100px;
 }
 
-/* ── Save Profile button: always full height ─────────────────────── */
-.sapMPage .sapMBtn.sapMBtnEmphasized {
-    min-height: 44px !important;
+/* ── Notification dot (JS-toggled) ───────────────────────────────── */
+.notifDot::after {
+    content: "";
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--hh-notif-dot);
+    pointer-events: none;
 }
 
-/* ── Notifications / Mark all read button ────────────────────────── */
-.sapMDialog .sapMHBox .sapMBtn {
-    min-height: 44px !important;
-}
-
-/* ── All dialog footer (begin/end) buttons ───────────────────────── */
-.sapMDialogActions .sapMBtn,
-.sapMDialogFooter .sapMBtn {
-    min-height: 48px !important;
-    flex: 1 !important;
-}
-
-/* ── Change Photo button on profile page ─────────────────────────── */
-.sapMVBox > .sapMBtn.sapMBtnTransparent {
-    min-height: 44px !important;
-}
-
-/* ── Tab bar items — ensure tappable ────────────────────────────── */
-.sapMITBItem {
-    min-height: 48px !important;
-}
-
-/* ── Search radius slider — bigger handle on touch ───────────────── */
-.sapMSlider {
-    padding: 12px 0 !important;
-}
-
-/* ── Prevent content clipping in dialog on small screens ─────────── */
-@media (max-width: 400px) {
-    .sapMDialog {
-        max-width: 100vw !important;
-        width: 100vw !important;
-        border-radius: 0 !important;
-        margin: 0 !important;
-    }
-    .sapMDialogStretchContent {
-        height: 100vh !important;
-    }
-    /* Dialog footer buttons stack */
-    .sapMDialogActions {
-        flex-wrap: wrap !important;
-    }
-    .sapMDialogActions .sapMBtn {
-        flex: 1 1 100% !important;
-        min-height: 48px !important;
-        margin-bottom: 4px !important;
-    }
+/* ── Main content bottom padding ─────────────────────────────────── */
+.mainContent {
+    padding-bottom: 40px;
 }
