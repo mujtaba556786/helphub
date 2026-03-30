@@ -282,7 +282,7 @@
 
             <dependents>
                 <!-- Profile dialog -->
-                <Dialog id="profileDialog" title="Helper profile" stretch="true" >
+                <Dialog id="profileDialog" title="Helper profile" verticalScrolling="true">
                     <VBox class="sapUiMediumMargin">
                         <HBox alignItems="Center" class="sapUiSmallMarginBottom">
                             <Avatar src="{appData>/selectedProfile/photo}" initials="{appData>/selectedProfile/initials}" displaySize="L" class="sapUiTinyMarginEnd"/>
@@ -330,13 +330,17 @@
                                 <Button text="Submit Rating" type="Emphasized" press="onSubmitRating" class="sapUiTinyMarginTop"/>
                             </VBox>
                         </Panel>
+
+                        <!-- Actions inside content for proper layout -->
+                        <HBox justifyContent="Center" wrap="Wrap" class="sapUiMediumMarginTop sapUiMediumMarginBottom">
+                            <Button text="📅 Book Helper" type="Emphasized" press="onOpenBooking" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                            <Button text="💬 Chat" type="Accept" press="onOpenChat" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                        </HBox>
                     </VBox>
 
-                    <buttons>
-                        <Button text="📅 Book Helper" type="Emphasized" press="onOpenBooking"/>
-                        <Button text="💬 Chat" type="Accept" press="onOpenChat"/>
+                    <endButton>
                         <Button text="Close" press="onCloseProfile"/>
-                    </buttons>
+                    </endButton>
                 </Dialog>
 
                 <!-- Booking Dialog -->
