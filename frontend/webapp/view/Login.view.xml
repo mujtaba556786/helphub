@@ -9,7 +9,7 @@
             <VBox width="90%" class="loginCard maxWidth400">
                 <VBox alignItems="Center" class="sapUiMediumMargin">
                     <Avatar displaySize="XL" backgroundColor="Accent6" initials="❤️" class="sapUiSmallMarginBottom"/>
-                    <Title text="HelpHub" level="H1" class="sapUiTinyMarginBottom"/>
+                    <Title text="HelpMate" level="H1" class="sapUiTinyMarginBottom"/>
                     <Text text="Neighborhood Help Network" class="grayText"/>
                     <Text text="Get everyday tasks done by trusted neighbors." class="grayText textCenter"/>
                     <HBox class="sapUiTinyMarginTop" justifyContent="Center">

@@ -67,18 +67,18 @@ sap.ui.define([
         selectedCategoryName: "",
 
         services: [
-            { id: "1",  name: "Gardening",    icon: "🌱",    color: "#ecfdf5" },
-            { id: "2",  name: "Babysitting",  icon: "👶",    color: "#fff1f2" },
-            { id: "3",  name: "Transport",    icon: "🚗",    color: "#eff6ff" },
-            { id: "4",  name: "Driver",       icon: "🚕",    color: "#fefce8" },
-            { id: "5",  name: "Groceries",    icon: "🛒",    color: "#f5f3ff" },
-            { id: "6",  name: "Math Tuition", icon: "📐",    color: "#fff7ed" },
-            { id: "7",  name: "Cleaning",     icon: "🧹",    color: "#f0fdf4" },
-            { id: "8",  name: "Pet Care",     icon: "🐕",    color: "#fff1f2" },
-            { id: "9",  name: "Handyman",     icon: "🔧",    color: "#f8fafc" },
-            { id: "10", name: "Cooking",      icon: "👨‍🍳",    color: "#fef2f2" },
-            { id: "11", name: "Moving",       icon: "📦",    color: "#ecfeff" },
-            { id: "12", name: "IT Support",   icon: "💻",    color: "#f0f9ff" }
+            { id: "1",  name: "Gardening",    icon: "🌱",    color: "#bbf7d0" },
+            { id: "2",  name: "Babysitting",  icon: "👶",    color: "#fecdd3" },
+            { id: "3",  name: "Transport",    icon: "🚗",    color: "#bfdbfe" },
+            { id: "4",  name: "Driver",       icon: "🚕",    color: "#fef08a" },
+            { id: "5",  name: "Groceries",    icon: "🛒",    color: "#ddd6fe" },
+            { id: "6",  name: "Math Tuition", icon: "📐",    color: "#fed7aa" },
+            { id: "7",  name: "Cleaning",     icon: "🧹",    color: "#a7f3d0" },
+            { id: "8",  name: "Pet Care",     icon: "🐕",    color: "#fbcfe8" },
+            { id: "9",  name: "Handyman",     icon: "🔧",    color: "#e2e8f0" },
+            { id: "10", name: "Cooking",      icon: "👨‍🍳",    color: "#fca5a5" },
+            { id: "11", name: "Moving",       icon: "📦",    color: "#99f6e4" },
+            { id: "12", name: "IT Support",   icon: "💻",    color: "#bae6fd" }
         ],
 
         providers: [
@@ -196,6 +196,7 @@ sap.ui.define([
 
         notifications: [],
         unreadCount: 0,
+        bookingCount: 0,
 
         bookingForm: {
             date: "",

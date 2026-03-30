@@ -41,8 +41,8 @@ const avatarUpload = multer({
 });
 
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
-const JWT_SECRET = process.env.JWT_SECRET || 'helphub-dev-secret';
-const REFRESH_SECRET = process.env.REFRESH_SECRET || 'helphub-refresh-secret';
+const JWT_SECRET = process.env.JWT_SECRET || 'helpmate-dev-secret';
+const REFRESH_SECRET = process.env.REFRESH_SECRET || 'helpmate-refresh-secret';
 
 // Rate limiter: max 10 requests per 15 min per IP on auth routes
 const authLimiter = rateLimit({
@@ -186,11 +186,14 @@ async function initDb() {
                 scheduled_time VARCHAR(20),
                 message TEXT,
                 status VARCHAR(20) DEFAULT 'pending',
+                is_seen TINYINT(1) DEFAULT 0,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 INDEX idx_customer (customer_id),
                 INDEX idx_provider (provider_id)
             )
         `);
+        // Add is_seen column if upgrading existing table
+        await connection.query(`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS is_seen TINYINT(1) DEFAULT 0`).catch(() => {});
 
         await connection.query(`
             CREATE TABLE IF NOT EXISTS notifications (
@@ -425,7 +428,7 @@ app.post('/api/chat', handleAsync(async (req, res) => {
     const p = rows[0];
     if (!p) return res.status(404).json({ success: false, error: 'Provider not found' });
 
-    const systemPrompt = `You are an AI assistant for ${p.name}, a service provider on HelpHub.
+    const systemPrompt = `You are an AI assistant for ${p.name}, a service provider on HelpMate.
 
 Here is ${p.name}'s profile:
 - Service: ${p.service_categories || 'General'}
@@ -435,9 +438,9 @@ Here is ${p.name}'s profile:
 - Location: ${[p.city, p.country].filter(Boolean).join(', ') || 'Not specified'}
 - Languages: ${p.languages || 'Not specified'}
 - Availability: ${p.availability || 'Flexible'}
-- About: ${p.bio || 'Professional service provider on HelpHub.'}
+- About: ${p.bio || 'Professional service provider on HelpMate.'}
 
-Your job is to help users learn about ${p.name}, answer questions about their services, availability, and pricing. Be friendly, professional, and helpful. If asked about booking, tell them to use the HelpHub booking system. Do not make up information not provided above.`;
+Your job is to help users learn about ${p.name}, answer questions about their services, availability, and pricing. Be friendly, professional, and helpful. If asked about booking, tell them to use the HelpMate booking system. Do not make up information not provided above.`;
 
     // Set up SSE for streaming
     res.setHeader('Content-Type', 'text/event-stream');
@@ -519,7 +522,17 @@ app.get('/api/bookings/user/:id', handleAsync(async (req, res) => {
          ORDER BY b.created_at DESC`,
         [req.params.id, req.params.id]
     );
-    res.json({ success: true, bookings: rows });
+    const newCount = rows.filter(b => !b.is_seen).length;
+    res.json({ success: true, bookings: rows, newCount });
+}));
+
+// ── PUT /api/bookings/user/:id/mark-seen ─────────────────────────────────────
+app.put('/api/bookings/user/:id/mark-seen', handleAsync(async (req, res) => {
+    await pool.execute(
+        'UPDATE bookings SET is_seen = 1 WHERE (customer_id = ? OR provider_id = ?) AND is_seen = 0',
+        [req.params.id, req.params.id]
+    );
+    res.json({ success: true });
 }));
 
 // ── PUT /api/bookings/:id/status ──────────────────────────────────────────────
@@ -732,12 +745,12 @@ app.post('/api/auth/send-otp', authLimiter, handleAsync(async (req, res) => {
 
     try {
         await transporter.sendMail({
-            from: process.env.SMTP_FROM || `"HelpHub" <${process.env.SMTP_USER}>`,
+            from: process.env.SMTP_FROM || `"HelpMate" <${process.env.SMTP_USER}>`,
             to: email,
-            subject: 'Your HelpHub verification code',
+            subject: 'Your HelpMate verification code',
             html: `
                 <div style="font-family:sans-serif;max-width:400px;margin:auto">
-                    <h2 style="color:#2563eb">HelpHub</h2>
+                    <h2 style="color:#f97316">HelpMate</h2>
                     <p>Your one-time verification code is:</p>
                     <h1 style="letter-spacing:8px;color:#111">${otp}</h1>
                     <p style="color:#666;font-size:13px">This code expires in 10 minutes. If you didn't request this, ignore this email.</p>

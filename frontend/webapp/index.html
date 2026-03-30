@@ -2,9 +2,28 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>HelpHub</title>
+    <title>HelpMate</title>
+
+    <!-- ── PWA / App Icon ─────────────────────────────────────────── -->
+    <meta name="theme-color" content="#f97316" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#0f172a"  media="(prefers-color-scheme: dark)">
+    <meta name="application-name" content="HelpMate">
+    <meta name="description" content="Get everyday tasks done by trusted neighbors.">
+
+    <!-- iOS Web App -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="HelpMate">
+
+    <!-- App Icon (SVG inline as data URI – replace with real PNG when available) -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23f97316'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-size='36'>🤝%3C/text%3E%3C/svg%3E">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%23f97316'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-size='100'>🤝%3C/text%3E%3C/svg%3E">
+
+    <!-- iOS Splash Screen (orange bg while loading) -->
+    <meta name="msapplication-TileColor" content="#f97316">
+
     <style>
         html, body, body > div, #container, #container-uiarea {
             height: 100%;
