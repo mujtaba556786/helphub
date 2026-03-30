@@ -234,3 +234,34 @@ section {
 .mainContent {
     padding-bottom: 40px;
 }
+
+/* ── Onboarding dialog ────────────────────────────────────────────── */
+.hhOnboardStep {
+    min-height: 220px;
+}
+
+.hhOnboardCard {
+    background: var(--hh-bg-soft);
+    border-radius: 12px;
+    padding: 12px 16px;
+}
+
+.hhOnboardNum {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    border-radius: 50%;
+    background: var(--hh-primary);
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+.hhInterestBtn {
+    border-radius: 20px;
+}

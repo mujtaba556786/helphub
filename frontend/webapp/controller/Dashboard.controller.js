@@ -40,9 +40,11 @@ sap.ui.define([
             this._oModel = this.getModel("appData");
             this._loadProvidersFromApi();
             this._loadSchedule();
+            this._loadFavorites();
             if (!this._notifInterval) {
                 this._startNotificationPolling();
             }
+            setTimeout(this._checkOnboarding.bind(this), 350);
         },
 
         onTabSelect: function(oEvent) {
@@ -405,6 +407,12 @@ sap.ui.define([
             var oUserLoc = oModel.getProperty("/user/location");
             var that     = this;
 
+            var sQuery     = (oModel.getProperty("/searchQuery") || "").toLowerCase();
+            var fMinRating = parseFloat(oFilters.minRating) || 0;
+            var sLangFilter = (oFilters.language || "").trim().toLowerCase();
+            var iMaxPrice  = parseFloat(oFilters.maxPrice);
+            if (isNaN(iMaxPrice) || iMaxPrice >= 200) { iMaxPrice = Infinity; }
+
             var aFiltered = aAll.filter(function(p) {
                 if (p.serviceType !== sServiceName) { return false; }
 
@@ -413,6 +421,21 @@ sap.ui.define([
 
                 if (oFilters.priceCategory === "budget" && p.rate > 25) { return false; }
                 if (oFilters.priceCategory === "top"    && p.rating < 4.8) { return false; }
+
+                if (sQuery) {
+                    var sName = (p.name || "").toLowerCase();
+                    var sType = (p.serviceType || "").toLowerCase();
+                    if (!sName.includes(sQuery) && !sType.includes(sQuery)) { return false; }
+                }
+
+                if (fMinRating > 0 && (!p.rating || p.rating < fMinRating)) { return false; }
+
+                if (sLangFilter) {
+                    var sProvLang = (p.languages || "").toLowerCase();
+                    if (!sProvLang.includes(sLangFilter)) { return false; }
+                }
+
+                if (iMaxPrice < Infinity && p.rate > iMaxPrice) { return false; }
 
                 return true;
             });
@@ -564,6 +587,7 @@ sap.ui.define([
 
             var oModel = this.getModel("appData");
             oModel.setProperty("/selectedProfile", oProvider);
+            this._trackRecentlyViewed(oProvider);
 
             // Reset rating input
             var oStars = this.byId("newRatingStars");
@@ -959,6 +983,193 @@ sap.ui.define([
 
         onCloseNotifications: function() {
             this.byId("notificationsDialog").close();
+        },
+
+        // ── SEARCH ────────────────────────────────────────────────────────────
+        onHelperSearch: function(oEvent) {
+            var sQuery = oEvent.getParameter("query") || oEvent.getParameter("value") || "";
+            this.getModel("appData").setProperty("/searchQuery", sQuery.trim().toLowerCase());
+            this._refreshCurrentFilters();
+        },
+
+        // ── ADVANCED FILTERS ──────────────────────────────────────────────────
+        onOpenFilters: function() {
+            this.byId("filterDialog").open();
+        },
+
+        onApplyFilters: function() {
+            this.byId("filterDialog").close();
+            this._refreshCurrentFilters();
+        },
+
+        onResetFilters: function() {
+            var oModel = this.getModel("appData");
+            oModel.setProperty("/filters/minRating", 0);
+            oModel.setProperty("/filters/language", "");
+            oModel.setProperty("/filters/maxPrice", 200);
+            this.byId("filterDialog").close();
+            this._refreshCurrentFilters();
+        },
+
+        // ── ONBOARDING ────────────────────────────────────────────────────────
+        _checkOnboarding: function() {
+            if (!localStorage.getItem("hhOnboarded")) {
+                var oModel = this.getModel("appData");
+                oModel.setProperty("/onboarding/step", 1);
+                oModel.setProperty("/onboarding/interests", []);
+                this.byId("onboardingDialog").open();
+            }
+        },
+
+        onOnboardingNext: function() {
+            var oModel = this.getModel("appData");
+            var iStep  = oModel.getProperty("/onboarding/step");
+            if (iStep < 3) {
+                oModel.setProperty("/onboarding/step", iStep + 1);
+            } else {
+                this._finishOnboarding();
+            }
+        },
+
+        onOnboardingSkip: function() {
+            this._finishOnboarding();
+        },
+
+        _finishOnboarding: function() {
+            localStorage.setItem("hhOnboarded", "1");
+            var aInterests = this.getModel("appData").getProperty("/onboarding/interests") || [];
+            if (aInterests.length) {
+                localStorage.setItem("hhInterests", JSON.stringify(aInterests));
+            }
+            this.byId("onboardingDialog").close();
+        },
+
+        onToggleInterest: function(oEvent) {
+            var oBtn   = oEvent.getSource();
+            var sKey   = oBtn.data("interestKey");
+            var oModel = this.getModel("appData");
+            var aInterests = (oModel.getProperty("/onboarding/interests") || []).slice();
+            var iIdx = aInterests.indexOf(sKey);
+            if (iIdx >= 0) {
+                aInterests.splice(iIdx, 1);
+                oBtn.setType("Default");
+            } else {
+                aInterests.push(sKey);
+                oBtn.setType("Emphasized");
+            }
+            oModel.setProperty("/onboarding/interests", aInterests);
+        },
+
+        // ── FAVORITES ─────────────────────────────────────────────────────────
+        _loadFavorites: function() {
+            var oModel = this.getModel("appData");
+            try {
+                var aFavIds = JSON.parse(localStorage.getItem("hhFavorites") || "[]");
+                oModel.setProperty("/favorites", aFavIds);
+                this._syncFavoriteProviders();
+            } catch(e) { /* ignore */ }
+            try {
+                var aRecent = JSON.parse(localStorage.getItem("hhRecentlyViewed") || "[]");
+                oModel.setProperty("/recentlyViewed", aRecent);
+            } catch(e) { /* ignore */ }
+        },
+
+        _syncFavoriteProviders: function() {
+            var oModel = this.getModel("appData");
+            var aIds   = oModel.getProperty("/favorites") || [];
+            var aAll   = oModel.getProperty("/providers") || [];
+            oModel.setProperty("/favoriteProviders", aAll.filter(function(p) {
+                return aIds.indexOf(p.id) >= 0;
+            }));
+        },
+
+        onToggleFavorite: function(oEvent) {
+            var oModel  = this.getModel("appData");
+            var oSource = oEvent.getSource();
+            var oCtx    = oSource.getBindingContext("appData");
+            if (!oCtx) {
+                var oParent = oSource.getParent();
+                while (oParent && !oCtx) {
+                    oCtx = oParent.getBindingContext("appData");
+                    oParent = oParent.getParent ? oParent.getParent() : null;
+                }
+            }
+            if (!oCtx) return;
+            var sId  = oCtx.getObject().id;
+            var aFavs = (oModel.getProperty("/favorites") || []).slice();
+            var iIdx  = aFavs.indexOf(sId);
+            if (iIdx >= 0) {
+                aFavs.splice(iIdx, 1);
+                MessageToast.show("Removed from saved.");
+            } else {
+                aFavs.push(sId);
+                MessageToast.show("Saved to your helpers!");
+            }
+            oModel.setProperty("/favorites", aFavs);
+            localStorage.setItem("hhFavorites", JSON.stringify(aFavs));
+            this._syncFavoriteProviders();
+        },
+
+        onViewFavoriteProfile: function(oEvent) {
+            this._openProfileFromEvent(oEvent);
+        },
+
+        onViewRecentProfile: function(oEvent) {
+            this._openProfileFromEvent(oEvent);
+        },
+
+        // Walk up the control tree to find binding context — works for any list structure
+        _openProfileFromEvent: function(oEvent) {
+            var oModel  = this.getModel("appData");
+            var oControl = oEvent.getSource();
+            var oCtx = null;
+            while (oControl && !oCtx) {
+                oCtx = oControl.getBindingContext("appData");
+                oControl = oControl.getParent ? oControl.getParent() : null;
+            }
+            if (!oCtx) return;
+
+            var oProvider = Object.assign({}, oCtx.getObject());
+            if (oProvider.name && !oProvider.initials) {
+                oProvider.initials = oProvider.name.split(" ")
+                    .map(function(p) { return p[0]; }).join("").substring(0, 2).toUpperCase();
+            }
+            oProvider.reviews = [];
+            oModel.setProperty("/selectedProfile", oProvider);
+            this._trackRecentlyViewed(oProvider);
+
+            var oStars = this.byId("newRatingStars");
+            var oComment = this.byId("newRatingComment");
+            if (oStars)   oStars.setValue(0);
+            if (oComment) oComment.setValue("");
+
+            this.byId("profileDialog").open();
+
+            fetch(API_BASE + "/api/providers/" + encodeURIComponent(oProvider.id) + "/ratings")
+                .then(function(r) { return r.json(); })
+                .then(function(oData) {
+                    if (oData.success) {
+                        oModel.setProperty("/selectedProfile/reviews", oData.ratings);
+                    }
+                })
+                .catch(function() {});
+        },
+
+        // ── RECENTLY VIEWED ───────────────────────────────────────────────────
+        _trackRecentlyViewed: function(oProvider) {
+            var oModel  = this.getModel("appData");
+            var aRecent = (oModel.getProperty("/recentlyViewed") || []).slice();
+            aRecent = aRecent.filter(function(p) { return p.id !== oProvider.id; });
+            aRecent.unshift({
+                id:          oProvider.id,
+                name:        oProvider.name,
+                photo:       oProvider.photo,
+                serviceType: oProvider.serviceType
+            });
+            if (aRecent.length > 5) { aRecent = aRecent.slice(0, 5); }
+            oModel.setProperty("/recentlyViewed", aRecent);
+            localStorage.setItem("hhRecentlyViewed", JSON.stringify(aRecent));
         }
+
     });
 });

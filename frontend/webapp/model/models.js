@@ -207,8 +207,21 @@ sap.ui.define([
         filters: {
             distance: 10,
             distanceLabel: "Within 10 km",
-            priceCategory: "all" // all | budget | top
+            priceCategory: "all",
+            minRating: 0,
+            language: "",
+            maxPrice: 200
         },
+
+        searchQuery: "",
+
+        // onboarding
+        onboarding: { step: 1, interests: [] },
+
+        // favorites & recently viewed
+        favorites: [],
+        favoriteProviders: [],
+        recentlyViewed: [],
 
         upcomingBookings: [],
 
