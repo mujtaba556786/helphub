@@ -9,7 +9,7 @@
     <NavContainer id="navContainer">
 
         <!-- PAGE 1: CATEGORY SELECTION -->
-        <Page id="dashboardPage" title="HelpMate" showHeader="true">
+        <Page id="dashboardPage" title="HelpMate" showHeader="true" enableScrolling="true">
             <customHeader>
                 <Bar>
                     <contentLeft>
@@ -88,9 +88,9 @@
         </Page>
 
         <!-- PAGE 2: Search & Results -->
-        <Page id="searchPage" title="Local Experts" showNavButton="true" navButtonPress="onNavBack">
+        <Page id="searchPage" title="Local Experts" showNavButton="true" navButtonPress="onNavBack" enableScrolling="true">
             <content>
-                <VBox height="100%">
+                <VBox>
                     <VBox id="mapContainer" height="35vh" width="100%" class="mapPlaceholder">
                         <core:HTML content='&lt;div id="googleMap" class="mapDiv"&gt;Map View Centered on You&lt;/div&gt;'/>
                     </VBox>
@@ -157,7 +157,7 @@
         </Page>
 
         <!-- PAGE 3: Edit Profile -->
-        <Page id="editPage" title="My Profile" showNavButton="true" navButtonPress="onNavBack">
+        <Page id="editPage" title="My Profile" showNavButton="true" navButtonPress="onNavBack" enableScrolling="true">
             <content>
                 <VBox class="sapUiSmallMargin">
 

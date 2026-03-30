@@ -215,6 +215,12 @@
     pointer-events: none;
 }
 
+/* ── iOS momentum scroll on all scroll containers ─────────────────── */
+/* Targets the HTML section element SAP uses — not a SAP class */
+section {
+    -webkit-overflow-scrolling: touch;
+}
+
 /* ── Main content bottom padding ─────────────────────────────────── */
 .mainContent {
     padding-bottom: 40px;
