@@ -379,15 +379,31 @@ app.get('/api/providers/:id/ratings', handleAsync(async (req, res) => {
 app.post('/api/ratings', handleAsync(async (req, res) => {
     const { provider_id, user_id, reviewer_name, stars, comment } = req.body;
     if (!provider_id) return res.status(400).json({ success: false, error: 'provider_id is required' });
+    if (!user_id)     return res.status(400).json({ success: false, error: 'user_id is required — must be logged in to rate' });
+    if (user_id === provider_id) return res.status(400).json({ success: false, error: 'You cannot rate yourself' });
     const iStars = parseInt(stars);
     if (!iStars || iStars < 1 || iStars > 5) {
         return res.status(400).json({ success: false, error: 'stars must be 1–5' });
     }
 
-    await pool.execute(
-        'INSERT INTO ratings (provider_id, user_id, reviewer_name, stars, comment) VALUES (?, ?, ?, ?, ?)',
-        [provider_id, user_id || null, reviewer_name || 'Anonymous', iStars, comment || null]
+    // Check if user already rated this provider
+    const [[existing]] = await pool.query(
+        'SELECT id FROM ratings WHERE provider_id = ? AND user_id = ?',
+        [provider_id, user_id]
     );
+
+    if (existing) {
+        // Update existing rating
+        await pool.execute(
+            'UPDATE ratings SET stars = ?, comment = ?, reviewer_name = ?, created_at = NOW() WHERE provider_id = ? AND user_id = ?',
+            [iStars, comment || null, reviewer_name || 'Anonymous', provider_id, user_id]
+        );
+    } else {
+        await pool.execute(
+            'INSERT INTO ratings (provider_id, user_id, reviewer_name, stars, comment) VALUES (?, ?, ?, ?, ?)',
+            [provider_id, user_id, reviewer_name || 'Anonymous', iStars, comment || null]
+        );
+    }
 
     // Recalculate provider average rating
     const [[{ avg }]] = await pool.query(
@@ -396,7 +412,7 @@ app.post('/api/ratings', handleAsync(async (req, res) => {
     );
     await pool.execute('UPDATE users SET rating = ? WHERE id = ?', [avg, provider_id]);
 
-    res.json({ success: true, newAverage: avg });
+    res.json({ success: true, newAverage: avg, updated: !!existing });
 }));
 
 // ── POST /api/chat ────────────────────────────────────────────────────────────

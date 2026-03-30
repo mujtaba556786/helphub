@@ -13,8 +13,6 @@
                     <Text text="Neighborhood Help Network" class="grayText"/>
                     <Text text="Get everyday tasks done by trusted neighbors." class="grayText textCenter"/>
                     <HBox class="sapUiTinyMarginTop" justifyContent="Center">
-                        <Text text="• Verified reviews" class="smallText grayText"/>
-                        <Text text="   • Secure payments" class="smallText grayText sapUiTinyMarginBegin"/>
                     </HBox>
                 </VBox>
 

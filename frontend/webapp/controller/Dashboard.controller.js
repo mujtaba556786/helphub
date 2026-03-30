@@ -218,59 +218,51 @@ sap.ui.define([
         },
 
         onChangePhoto: function() {
-            var that = this;
-            var oInput = document.getElementById("avatarFileInput");
-            if (!oInput) { MessageToast.show("File input not ready."); return; }
+            // Programmatically open the FileUploader's native file picker
+            var oUploader = this.byId("avatarFileUploader");
+            if (!oUploader) { MessageToast.show("File uploader not ready."); return; }
+            oUploader.getDomRef("fu").click();
+        },
 
-            // Replace input to reset any previous selection
-            var oNewInput = oInput.cloneNode(true);
-            oInput.parentNode.replaceChild(oNewInput, oInput);
+        onAvatarFileSelected: function(oEvent) {
+            var that    = this;
+            var oFiles  = oEvent.getParameter("files");
+            var oFile   = oFiles && oFiles[0];
+            if (!oFile) return;
 
-            oNewInput.addEventListener("change", function(oEvt) {
-                var oFile = oEvt.target.files && oEvt.target.files[0];
-                if (!oFile) return;
+            if (oFile.size > 5 * 1024 * 1024) {
+                MessageToast.show("Image must be smaller than 5 MB.");
+                return;
+            }
 
-                var aAllowed = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"];
-                if (!aAllowed.includes(oFile.type)) {
-                    MessageToast.show("Only JPG, PNG, GIF or WebP images are allowed.");
-                    return;
+            // Immediate local preview
+            var oReader = new FileReader();
+            oReader.onload = function(e) {
+                that.getModel("appData").setProperty("/user/photo", e.target.result);
+            };
+            oReader.readAsDataURL(oFile);
+
+            // Upload to server
+            var sUserId = that.getModel("appData").getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
+            if (!sUserId) { MessageToast.show("Please log in again to upload a photo."); return; }
+
+            var oForm = new FormData();
+            oForm.append("avatar", oFile);
+
+            fetch(API_BASE + "/api/users/" + encodeURIComponent(sUserId) + "/avatar", {
+                method: "POST",
+                body: oForm
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(oData) {
+                if (oData.success) {
+                    that.getModel("appData").setProperty("/user/photo", API_BASE + oData.avatarUrl);
+                    MessageToast.show("Profile photo updated.");
+                } else {
+                    MessageToast.show("Upload failed: " + (oData.error || "Unknown error"));
                 }
-                if (oFile.size > 5 * 1024 * 1024) {
-                    MessageToast.show("Image must be smaller than 5 MB.");
-                    return;
-                }
-
-                // Immediate local preview
-                var oReader = new FileReader();
-                oReader.onload = function(e) {
-                    that.getModel("appData").setProperty("/user/photo", e.target.result);
-                };
-                oReader.readAsDataURL(oFile);
-
-                // Upload to server
-                var sUserId = that.getModel("appData").getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
-                if (!sUserId) { MessageToast.show("Please log in again to upload a photo."); return; }
-
-                var oForm = new FormData();
-                oForm.append("avatar", oFile);
-
-                fetch(API_BASE + "/api/users/" + encodeURIComponent(sUserId) + "/avatar", {
-                    method: "POST",
-                    body: oForm
-                })
-                .then(function(r) { return r.json(); })
-                .then(function(oData) {
-                    if (oData.success) {
-                        that.getModel("appData").setProperty("/user/photo", API_BASE + oData.avatarUrl);
-                        MessageToast.show("Profile photo updated.");
-                    } else {
-                        MessageToast.show("Upload failed: " + (oData.error || "Unknown error"));
-                    }
-                })
-                .catch(function() { MessageToast.show("Could not reach the server."); });
-            });
-
-            oNewInput.click();
+            })
+            .catch(function() { MessageToast.show("Could not reach the server."); });
         },
 
         onNavBack: function() {
@@ -639,20 +631,21 @@ sap.ui.define([
             .then(function(r) { return r.json(); })
             .then(function(oData) {
                 if (oData.success) {
-                    MessageToast.show("Thank you for your rating!");
-                    // Refresh reviews list
-                    if (oStars) oStars.setValue(0);
+                    MessageToast.show(oData.updated ? "Rating updated!" : "Thank you for your rating!");
+                    if (oStars)   oStars.setValue(0);
                     if (oComment) oComment.setValue("");
-                    // Update displayed average
                     if (oData.newAverage) {
                         oModel.setProperty("/selectedProfile/rating", oData.newAverage);
                     }
-                    // Append new review locally
-                    var aReviews = oModel.getProperty("/selectedProfile/reviews") || [];
-                    aReviews.unshift({ reviewer_name: sName, stars: iStars, comment: sComment });
-                    oModel.setProperty("/selectedProfile/reviews", aReviews);
+                    // Reload reviews from server to reflect the upsert correctly
+                    var sId = oModel.getProperty("/selectedProfile/id");
+                    fetch(API_BASE + "/api/providers/" + encodeURIComponent(sId) + "/ratings")
+                        .then(function(r) { return r.json(); })
+                        .then(function(d) {
+                            if (d.success) oModel.setProperty("/selectedProfile/reviews", d.ratings);
+                        });
                 } else {
-                    MessageToast.show("Could not submit: " + (oData.error || "Unknown error"));
+                    MessageToast.show(oData.error || "Could not submit rating.");
                 }
             }.bind(this))
             .catch(function() { MessageToast.show("Could not reach the server."); });
@@ -663,17 +656,31 @@ sap.ui.define([
         },
 
         _renderChatBubbles: function(aMessages) {
-            var oBubbles = document.getElementById("chatBubbles");
-            if (!oBubbles) return;
-            oBubbles.innerHTML = aMessages.map(function(m) {
+            var oHtml   = this.byId("chatMessagesHtml");
+            var oScroll = this.byId("chatScrollContainer");
+            if (!oHtml) return;
+
+            var iLast = aMessages.length - 1;
+            var sHtml = aMessages.map(function(m, i) {
                 var sEsc = (m.content || "").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, "<br>");
                 if (m.role === "user") {
-                    return '<div style="text-align:right;margin:4px 0"><span style="background:#3b82f6;color:white;padding:8px 12px;border-radius:16px 16px 4px 16px;display:inline-block;max-width:80%;word-wrap:break-word;text-align:left">' + sEsc + '</span></div>';
+                    var bRead    = (i < iLast) || (aMessages[i + 1] && aMessages[i + 1].role === "assistant");
+                    var sReceipt = bRead
+                        ? '<span style="font-size:11px;color:#93c5fd;margin-left:4px">✓✓</span>'
+                        : '<span style="font-size:11px;color:#bfdbfe;margin-left:4px">✓</span>';
+                    return '<div style="text-align:right;margin:4px 0">'
+                         + '<span style="background:#3b82f6;color:white;padding:8px 12px;border-radius:16px 16px 4px 16px;display:inline-block;max-width:80%;word-wrap:break-word;text-align:left">'
+                         + sEsc + '</span>' + sReceipt + '</div>';
                 }
                 return '<div style="text-align:left;margin:4px 0"><span style="background:#f1f5f9;color:#1e293b;padding:8px 12px;border-radius:16px 16px 16px 4px;display:inline-block;max-width:80%;word-wrap:break-word">' + sEsc + '</span></div>';
             }).join("");
-            // Scroll to bottom
-            oBubbles.scrollIntoView && oBubbles.lastElementChild && oBubbles.lastElementChild.scrollIntoView({ behavior: "smooth" });
+
+            oHtml.setContent("<div>" + sHtml + "</div>");
+
+            // Scroll to bottom after SAP re-renders the HTML control
+            if (oScroll) {
+                setTimeout(function() { oScroll.scrollTo(0, 99999, 0); }, 50);
+            }
         },
 
         onOpenChat: function() {
@@ -707,9 +714,9 @@ sap.ui.define([
             this._renderChatBubbles(this._chatMessages);
             oInput.setValue("");
 
-            var oTyping  = document.getElementById("chatTyping");
+            var oTyping  = this.byId("chatTypingIndicator");
             var oSendBtn = this.byId("chatSendBtn");
-            if (oTyping)  oTyping.style.display = "block";
+            if (oTyping)  oTyping.setVisible(true);
             if (oSendBtn) oSendBtn.setEnabled(false);
 
             var aApiMessages = this._chatMessages.map(function(m) {
@@ -734,7 +741,7 @@ sap.ui.define([
                 function pump() {
                     return oReader.read().then(function(chunk) {
                         if (chunk.done) {
-                            if (oTyping)  oTyping.style.display = "none";
+                            if (oTyping)  oTyping.setVisible(false);
                             if (oSendBtn) oSendBtn.setEnabled(true);
                             return;
                         }
@@ -757,7 +764,7 @@ sap.ui.define([
                 return pump();
             })
             .catch(function() {
-                if (oTyping)  oTyping.style.display = "none";
+                if (oTyping)  oTyping.setVisible(false);
                 if (oSendBtn) oSendBtn.setEnabled(true);
                 that._chatMessages[iPlaceholder].content = "Sorry, I couldn't reach the server. Please try again.";
                 that._renderChatBubbles(that._chatMessages);
@@ -766,6 +773,30 @@ sap.ui.define([
 
         onCloseChat: function() {
             this.byId("chatDialog").close();
+        },
+
+        // ── QUICK REPLIES ─────────────────────────────────────────────────────
+        onQuickReply: function(oEvent) {
+            var sText = oEvent.getSource().getText().replace(/[\uD800-\uDFFF]./g, "").replace(/[^\x00-\x7E]/g, "").trim();
+            // Use full button text (with emoji) as the message
+            sText = oEvent.getSource().getText().trim();
+            var oInput = this.byId("chatInput");
+            if (oInput) {
+                oInput.setValue(sText);
+                this.onChatSend();
+            }
+        },
+
+        // ── IN-APP PUSH TOAST ─────────────────────────────────────────────────
+        _showInAppToast: function(sIcon, sTitle, sMessage) {
+            MessageToast.show(sIcon + " " + sTitle + "\n" + sMessage, {
+                duration:    5000,
+                width:       "20em",
+                my:          "center top",
+                at:          "center top",
+                offset:      "0 64",
+                autoClose:   true
+            });
         },
 
         // Quick actions directly from the provider card (no profile dialog needed)
@@ -926,17 +957,22 @@ sap.ui.define([
         },
 
         _loadNotificationCount: function() {
-            var oModel  = this.getModel("appData");
-            var sUserId = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
+            var oModel   = this.getModel("appData");
+            var sUserId  = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
             if (!sUserId) return;
+            var iPrev    = oModel.getProperty("/unreadCount") || 0;
 
             fetch(API_BASE + "/api/notifications/" + encodeURIComponent(sUserId) + "/unread-count")
                 .then(function(r) { return r.json(); })
                 .then(function(oData) {
                     if (oData.success) {
-                        oModel.setProperty("/unreadCount", oData.count || 0);
-                        // Show/hide orange dot badge — never change button type (avoids filled-square)
-                        this._setNotifDot(oData.count > 0);
+                        var iNew = oData.count || 0;
+                        oModel.setProperty("/unreadCount", iNew);
+                        this._setNotifDot(iNew > 0);
+                        // Show in-app toast when new notification arrives
+                        if (iNew > iPrev) {
+                            this._showInAppToast("🔔", "New notification", "You have " + iNew + " unread notification" + (iNew > 1 ? "s" : ""));
+                        }
                     }
                 }.bind(this))
                 .catch(function() { /* silent */ });

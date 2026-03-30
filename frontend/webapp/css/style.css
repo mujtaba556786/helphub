@@ -265,3 +265,81 @@ section {
 .hhInterestBtn {
     border-radius: 20px;
 }
+
+/* ── Quick reply chips ────────────────────────────────────────────── */
+.hhQuickReplies {
+    padding: 4px 8px;
+    border-top: 1px solid var(--hh-border, #e2e8f0);
+    background: #f8fafc;
+    flex-shrink: 0;
+}
+
+.hhQRChip {
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    font-size: 12px;
+    padding: 2px 10px;
+    height: auto;
+}
+
+/* ── In-app push notification toast ──────────────────────────────── */
+.hhInAppToast {
+    position: fixed;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-80px);
+    z-index: 9999;
+    background: #1e293b;
+    color: #ffffff;
+    border-radius: 12px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    min-width: 260px;
+    max-width: 92vw;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    opacity: 0;
+    transition: transform 0.35s cubic-bezier(.175,.885,.32,1.275), opacity 0.3s ease;
+}
+
+.hhInAppToastSlide {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}
+
+.hhToastIcon {
+    font-size: 22px;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.hhToastBody {
+    flex: 1;
+    min-width: 0;
+}
+
+.hhToastBody strong {
+    display: block;
+    font-size: 14px;
+    margin-bottom: 2px;
+}
+
+.hhToastBody div {
+    font-size: 13px;
+    color: #94a3b8;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.hhToastClose {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 0;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
