@@ -389,7 +389,7 @@
                 </Dialog>
 
                 <!-- AI Chat Dialog — full screen on mobile -->
-                <Dialog id="chatDialog" title="AI Chat" stretch="true" verticalScrolling="false">
+                <Dialog id="chatDialog" title="AI Chat" contentHeight="65vh" contentWidth="92%" verticalScrolling="false">
                     <!-- Messages fill available space; input pinned at bottom -->
                     <VBox height="100%" class="hhChatLayout">
                         <ScrollContainer vertical="true" horizontal="false" class="hhChatMessages">
