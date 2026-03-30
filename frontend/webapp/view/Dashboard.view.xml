@@ -11,7 +11,7 @@
     <NavContainer id="navContainer">
 
         <!-- PAGE 1: CATEGORY SELECTION -->
-        <Page id="dashboardPage" title="HelpMate" showHeader="true" enableScrolling="false">
+        <Page id="dashboardPage" title="HelpMate" showHeader="true"  enableScrolling="true">
             <customHeader>
                 <Bar>
                     <contentLeft>
@@ -227,7 +227,7 @@
                     <VBox alignItems="Center" class="sapUiMediumMarginBottom">
                         <Avatar id="profileAvatar" src="{appData>/user/photo}" displaySize="XL" backgroundColor="Accent6" initials="{appData>/user/avatar}" class="sapUiSmallMarginBottom"/>
                         <Button text="Change Photo" icon="sap-icon://camera" press="onChangePhoto" type="Transparent"/>
-                        <core:HTML id="avatarInputHtml" content='&lt;input id="avatarFileInput" type="file" accept="image/jpeg,image/jpg,image/png,image/gif,image/webp" style="display:none"/&gt;'/>
+                        <u:FileUploader id="avatarFileUploader" fileType="jpg,jpeg,png,gif,webp" maximumFileSize="5" visible="false" change="onAvatarFileSelected" uploadOnChange="false" buttonOnly="true" buttonText=""/>
                         <Text id="photoError" text="" class="errorText" visible="false"/>
                     </VBox>
 
@@ -570,6 +570,14 @@
                             <core:HTML id="chatMessagesHtml" content="&lt;div id='chatBubbles'&gt;&lt;/div&gt;"/>
                             <core:HTML id="chatTypingHtml" content="&lt;div id='chatTyping' style='display:none;padding:4px 8px'&gt;&lt;span style='background:#f1f5f9;color:#64748b;padding:6px 12px;border-radius:12px;font-size:13px'&gt;typing…&lt;/span&gt;&lt;/div&gt;"/>
                         </ScrollContainer>
+                        <!-- Quick reply chips -->
+                        <HBox class="hhQuickReplies" wrap="Wrap">
+                            <Button text="On my way 🚗"        type="Transparent" press="onQuickReply" class="hhQRChip sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                            <Button text="I'm available ✅"    type="Transparent" press="onQuickReply" class="hhQRChip sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                            <Button text="Can we reschedule? 📅" type="Transparent" press="onQuickReply" class="hhQRChip sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                            <Button text="See you soon 👋"     type="Transparent" press="onQuickReply" class="hhQRChip sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                            <Button text="All done ✔️"         type="Transparent" press="onQuickReply" class="hhQRChip sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                        </HBox>
                         <HBox alignItems="Center" class="hhChatInputBar">
                             <Input id="chatInput" placeholder="Ask anything…" width="100%" submit="onChatSend"/>
                             <Button id="chatSendBtn" icon="sap-icon://paper-plane" type="Emphasized" press="onChatSend" class="sapUiTinyMarginBegin"/>
@@ -585,4 +593,6 @@
         </Page>
 
     </NavContainer>
+
+
 </mvc:View>
