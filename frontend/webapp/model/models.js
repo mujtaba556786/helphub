@@ -226,7 +226,31 @@ sap.ui.define([
         upcomingBookings: [],
 
         // selected profile for dialog
-        selectedProfile: {}
+        selectedProfile: {},
+
+        // Direct Messaging
+        conversations: [],
+        unreadDmCount: 0,
+        dmMessages: [],
+        currentConversation: null,
+
+        // Tasks
+        tasksFeed: [],
+        myTasks: [],
+        openTaskCount: 0,
+        selectedTask: {},
+        taskApplications: [],
+        taskForm: {
+            title: "",
+            description: "",
+            category: "",
+            budget: "",
+            task_date: "",
+            location: ""
+        },
+        taskViewMode: "browse",
+        taskSearchQuery: "",
+        taskCategoryFilter: ""
     });
 }
 

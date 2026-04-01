@@ -343,3 +343,43 @@ section {
     flex-shrink: 0;
     margin-top: 2px;
 }
+
+/* ── Conversation list ─────────────────────────────────────────── */
+.hhConvoContent {
+    flex: 1;
+    min-width: 0;
+}
+
+.hhConvoUnread .sapMTitle {
+    font-weight: 700 !important;
+}
+
+.hhConvoTime {
+    font-size: 0.75rem;
+    color: var(--hh-text-gray);
+    flex-shrink: 0;
+    margin-left: 8px;
+}
+
+.hhConvoPreview {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 220px;
+    flex: 1;
+}
+
+.hhUnreadDot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--hh-primary);
+    display: inline-block;
+    flex-shrink: 0;
+    margin-left: 8px;
+}
+
+/* ── Task feed ─────────────────────────────────────────────────── */
+.hhTaskToggle {
+    border-radius: 20px;
+}

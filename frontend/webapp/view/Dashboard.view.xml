@@ -58,7 +58,135 @@
                             </ScrollContainer>
                         </IconTabFilter>
 
-                        <!-- TAB 2: My Schedule -->
+                        <!-- TAB 2: Tasks -->
+                        <IconTabFilter key="tasks" text="Tasks" icon="sap-icon://task" count="{appData>/openTaskCount}">
+                            <ScrollContainer vertical="true" horizontal="false" height="100%">
+                                <VBox class="sapUiSmallMargin mainContent">
+                                    <HBox justifyContent="SpaceBetween" alignItems="Center" class="sapUiSmallMarginBottom">
+                                        <HBox>
+                                            <Button text="Browse" type="{= ${appData>/taskViewMode} === 'browse' ? 'Emphasized' : 'Default'}" press="onToggleTaskView" class="sapUiTinyMarginEnd hhTaskToggle">
+                                                <customData><core:CustomData key="mode" value="browse"/></customData>
+                                            </Button>
+                                            <Button text="My Tasks" type="{= ${appData>/taskViewMode} === 'mine' ? 'Emphasized' : 'Default'}" press="onToggleTaskView" class="hhTaskToggle">
+                                                <customData><core:CustomData key="mode" value="mine"/></customData>
+                                            </Button>
+                                        </HBox>
+                                        <Button text="+ Post Task" type="Emphasized" press="onOpenPostTask"/>
+                                    </HBox>
+
+                                    <!-- Search & Filter (Browse mode) -->
+                                    <VBox visible="{= ${appData>/taskViewMode} === 'browse'}" class="sapUiTinyMarginBottom">
+                                        <SearchField id="taskSearch" placeholder="Search tasks by title, description, or location…" search="onTaskSearch" liveChange="onTaskSearch" width="100%" class="sapUiTinyMarginBottom"/>
+                                        <HBox wrap="Wrap" alignItems="Center">
+                                            <Button text="All" type="{= ${appData>/taskCategoryFilter} === '' ? 'Emphasized' : 'Default'}" press="onTaskCategoryFilter" class="sapUiTinyMarginEnd sapUiTinyMarginBottom hhTaskToggle">
+                                                <customData><core:CustomData key="cat" value=""/></customData>
+                                            </Button>
+                                            <Button text="🌱 Gardening" type="{= ${appData>/taskCategoryFilter} === 'Gardening' ? 'Emphasized' : 'Default'}" press="onTaskCategoryFilter" class="sapUiTinyMarginEnd sapUiTinyMarginBottom hhTaskToggle">
+                                                <customData><core:CustomData key="cat" value="Gardening"/></customData>
+                                            </Button>
+                                            <Button text="🧹 Cleaning" type="{= ${appData>/taskCategoryFilter} === 'Cleaning' ? 'Emphasized' : 'Default'}" press="onTaskCategoryFilter" class="sapUiTinyMarginEnd sapUiTinyMarginBottom hhTaskToggle">
+                                                <customData><core:CustomData key="cat" value="Cleaning"/></customData>
+                                            </Button>
+                                            <Button text="🚗 Transport" type="{= ${appData>/taskCategoryFilter} === 'Transport' ? 'Emphasized' : 'Default'}" press="onTaskCategoryFilter" class="sapUiTinyMarginEnd sapUiTinyMarginBottom hhTaskToggle">
+                                                <customData><core:CustomData key="cat" value="Transport"/></customData>
+                                            </Button>
+                                            <Button text="🔧 Handyman" type="{= ${appData>/taskCategoryFilter} === 'Handyman' ? 'Emphasized' : 'Default'}" press="onTaskCategoryFilter" class="sapUiTinyMarginEnd sapUiTinyMarginBottom hhTaskToggle">
+                                                <customData><core:CustomData key="cat" value="Handyman"/></customData>
+                                            </Button>
+                                            <Button text="More ▾" type="Transparent" press="onTaskCategoryMore" class="sapUiTinyMarginBottom"/>
+                                        </HBox>
+                                    </VBox>
+
+                                    <!-- Browse Tasks -->
+                                    <VBox visible="{= ${appData>/taskViewMode} === 'browse'}">
+                                        <List id="taskFeedList" items="{appData>/tasksFeed}" noDataText="No tasks found. Try a different search or category.">
+                                            <CustomListItem type="Active" press="onTaskPress">
+                                                <VBox class="sapUiSmallMargin">
+                                                    <HBox justifyContent="SpaceBetween" alignItems="Start">
+                                                        <VBox class="bookingInfoBox">
+                                                            <Title text="{appData>title}" level="H5"/>
+                                                            <HBox alignItems="Center" class="sapUiTinyMarginTop" wrap="Wrap">
+                                                                <ObjectStatus text="{appData>category}" state="Information" class="smallText sapUiTinyMarginEnd"/>
+                                                                <Text text="{= ${appData>budget} ? '€' + ${appData>budget} : 'Open budget'}" class="smallText blueText fontBold sapUiTinyMarginEnd"/>
+                                                                <Text text="{appData>task_date}" class="smallText grayText"/>
+                                                            </HBox>
+                                                            <HBox alignItems="Center" class="sapUiTinyMarginTop" visible="{= !!${appData>location}}">
+                                                                <core:Icon src="sap-icon://map" size="0.75rem" class="sapUiTinyMarginEnd"/>
+                                                                <Text text="{appData>location}" class="smallText grayText"/>
+                                                            </HBox>
+                                                            <HBox alignItems="Center" class="sapUiTinyMarginTop">
+                                                                <Avatar displaySize="XS" src="{appData>poster_avatar}" initials="P" backgroundColor="Accent3" class="sapUiTinyMarginEnd"/>
+                                                                <Text text="{appData>poster_name}" class="smallText grayText"/>
+                                                            </HBox>
+                                                        </VBox>
+                                                        <VBox alignItems="End">
+                                                            <ObjectStatus text="{appData>status}" state="{path:'appData>status', formatter:'.formatTaskState'}"/>
+                                                            <Text text="{= ${appData>application_count} + ' applied'}" class="smallText grayText sapUiTinyMarginTop"/>
+                                                        </VBox>
+                                                    </HBox>
+                                                </VBox>
+                                            </CustomListItem>
+                                        </List>
+                                    </VBox>
+
+                                    <!-- My Tasks -->
+                                    <VBox visible="{= ${appData>/taskViewMode} === 'mine'}">
+                                        <List id="myTasksList" items="{appData>/myTasks}" noDataText="You haven't posted any tasks yet.">
+                                            <CustomListItem type="Active" press="onTaskPress">
+                                                <VBox class="sapUiSmallMargin">
+                                                    <HBox justifyContent="SpaceBetween" alignItems="Start">
+                                                        <VBox class="bookingInfoBox">
+                                                            <Title text="{appData>title}" level="H5"/>
+                                                            <HBox alignItems="Center" class="sapUiTinyMarginTop" wrap="Wrap">
+                                                                <ObjectStatus text="{appData>category}" state="Information" class="smallText sapUiTinyMarginEnd"/>
+                                                                <Text text="{= ${appData>budget} ? '€' + ${appData>budget} : 'Open budget'}" class="smallText blueText fontBold"/>
+                                                            </HBox>
+                                                            <HBox alignItems="Center" class="sapUiTinyMarginTop" visible="{= !!${appData>location}}">
+                                                                <core:Icon src="sap-icon://map" size="0.75rem" class="sapUiTinyMarginEnd"/>
+                                                                <Text text="{appData>location}" class="smallText grayText"/>
+                                                            </HBox>
+                                                        </VBox>
+                                                        <VBox alignItems="End">
+                                                            <ObjectStatus text="{appData>status}" state="{path:'appData>status', formatter:'.formatTaskState'}"/>
+                                                            <Text text="{= ${appData>application_count} + ' applied'}" class="smallText grayText sapUiTinyMarginTop"/>
+                                                        </VBox>
+                                                    </HBox>
+                                                </VBox>
+                                            </CustomListItem>
+                                        </List>
+                                    </VBox>
+
+                                </VBox>
+                            </ScrollContainer>
+                        </IconTabFilter>
+
+                        <!-- TAB 3: Messages -->
+                        <IconTabFilter key="messages" text="Messages" icon="sap-icon://discussion" count="{appData>/unreadDmCount}">
+                            <ScrollContainer vertical="true" horizontal="false" height="100%">
+                                <VBox class="sapUiSmallMargin mainContent">
+                                    <Title text="Messages" level="H4" class="sapUiSmallMarginBottom"/>
+                                    <List id="conversationsList" items="{appData>/conversations}" noDataText="No messages yet. Tap 'Message' on a helper's profile or task to start a conversation.">
+                                        <CustomListItem type="Active" press="onOpenDmChat">
+                                            <HBox class="sapUiSmallMargin" alignItems="Center">
+                                                <Avatar displaySize="S" src="{appData>other_avatar}" initials="P" backgroundColor="Accent1" class="sapUiTinyMarginEnd"/>
+                                                <VBox class="hhConvoContent">
+                                                    <HBox justifyContent="SpaceBetween" alignItems="Center" width="100%">
+                                                        <Title text="{appData>other_name}" level="H5" class="{= ${appData>unread_count} > 0 ? 'hhConvoUnread' : '' }"/>
+                                                        <Text text="{path:'appData>last_message_at', formatter:'.formatConvoTime'}" class="hhConvoTime"/>
+                                                    </HBox>
+                                                    <HBox alignItems="Center">
+                                                        <Text text="{appData>last_message}" class="smallText grayText hhConvoPreview"/>
+                                                        <core:HTML content="{= ${appData>unread_count} > 0 ? '&lt;span class=&quot;hhUnreadDot&quot;&gt;&lt;/span&gt;' : '' }" visible="{= ${appData>unread_count} > 0 }"/>
+                                                    </HBox>
+                                                </VBox>
+                                            </HBox>
+                                        </CustomListItem>
+                                    </List>
+                                </VBox>
+                            </ScrollContainer>
+                        </IconTabFilter>
+
+                        <!-- TAB 4: My Schedule -->
                         <IconTabFilter key="mySchedule" text="My Schedule" icon="sap-icon://calendar" count="{appData>/bookingCount}">
                             <ScrollContainer vertical="true" horizontal="false" height="100%">
                                 <VBox class="sapUiSmallMargin">
@@ -87,7 +215,8 @@
                                 </VBox>
                             </ScrollContainer>
                         </IconTabFilter>
-                        <!-- TAB 3: Saved -->
+
+                        <!-- TAB 5: Saved -->
                         <IconTabFilter key="saved" text="Saved" icon="sap-icon://heart">
                             <ScrollContainer vertical="true" horizontal="false" height="100%">
                                 <VBox class="sapUiSmallMargin mainContent">
@@ -204,7 +333,7 @@
                                         <Button icon="{= ${appData>/favorites}.indexOf(${appData>id}) >= 0 ? 'sap-icon://favorite' : 'sap-icon://unfavorite'}" type="{= ${appData>/favorites}.indexOf(${appData>id}) >= 0 ? 'Emphasized' : 'Transparent'}" press="onToggleFavorite" class="sapUiTinyMarginTop helperCardBtn" tooltip="Save helper"/>
                                         <Button text="Profile" type="Transparent" class="sapUiTinyMarginTop helperCardBtn" press="onViewProfile"/>
                                         <Button text="📅 Book" type="Emphasized" class="sapUiTinyMarginTop helperCardBtn" press="onQuickBook"/>
-                                        <Button text="💬 Chat" type="Accept" class="sapUiTinyMarginTop helperCardBtn" press="onQuickChat"/>
+                                        <Button text="✉️ Message" type="Accept" class="sapUiTinyMarginTop helperCardBtn" press="onQuickMessage"/>
                                     </VBox>
                                 </HBox>
                             </CustomListItem>
@@ -504,7 +633,7 @@
                         <!-- Actions inside content for proper layout -->
                         <HBox justifyContent="Center" wrap="Wrap" class="sapUiMediumMarginTop sapUiMediumMarginBottom">
                             <Button text="📅 Book Helper" type="Emphasized" press="onOpenBooking" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
-                            <Button text="💬 Chat" type="Accept" press="onOpenChat" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                            <Button text="✉️ Message" type="Accept" press="onStartDm" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
                         </HBox>
                     </VBox>
 
@@ -585,6 +714,125 @@
 
                     <endButton>
                         <Button text="Close" press="onCloseChat"/>
+                    </endButton>
+                </Dialog>
+
+                <!-- DM Chat Dialog -->
+                <Dialog id="dmChatDialog" title="Message" contentHeight="65vh" contentWidth="92%" verticalScrolling="false">
+                    <VBox height="100%" class="hhChatLayout">
+                        <ScrollContainer id="dmScrollContainer" vertical="true" horizontal="false" class="hhChatMessages">
+                            <core:HTML id="dmBubblesHtml" content="&lt;div&gt;&lt;/div&gt;"/>
+                        </ScrollContainer>
+                        <HBox class="hhQuickReplies" wrap="Wrap">
+                            <Button text="On my way 🚗"           type="Transparent" press="onDmQuickReply" class="hhQRChip sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                            <Button text="I'm available ✅"       type="Transparent" press="onDmQuickReply" class="hhQRChip sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                            <Button text="Can we reschedule? 📅"  type="Transparent" press="onDmQuickReply" class="hhQRChip sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                            <Button text="Thank you! 🙏"          type="Transparent" press="onDmQuickReply" class="hhQRChip sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                            <Button text="See you soon 👋"        type="Transparent" press="onDmQuickReply" class="hhQRChip sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                        </HBox>
+                        <HBox alignItems="Center" class="hhChatInputBar">
+                            <Input id="dmInput" placeholder="Type a message…" width="100%" submit="onDmSend"/>
+                            <Button id="dmSendBtn" icon="sap-icon://paper-plane" type="Emphasized" press="onDmSend" class="sapUiTinyMarginBegin"/>
+                        </HBox>
+                    </VBox>
+                    <endButton>
+                        <Button text="Close" press="onCloseDmChat"/>
+                    </endButton>
+                </Dialog>
+
+                <!-- Post Task Dialog -->
+                <Dialog id="postTaskDialog" title="Post a Task" contentWidth="92%">
+                    <VBox class="sapUiMediumMargin">
+                        <Label text="What do you need help with?" required="true"/>
+                        <Input value="{appData>/taskForm/title}" placeholder="e.g. Mow my lawn this Saturday" width="100%" class="sapUiTinyMarginBottom"/>
+                        <Label text="Description"/>
+                        <TextArea value="{appData>/taskForm/description}" rows="3" width="100%" placeholder="Add details — size, tools needed, special instructions…" class="sapUiTinyMarginBottom"/>
+                        <Label text="Category" required="true"/>
+                        <Select id="taskCategorySelect" selectedKey="{appData>/taskForm/category}" width="100%" class="sapUiTinyMarginBottom" items="{appData>/services}">
+                            <core:Item key="{appData>name}" text="{= ${appData>icon} + ' ' + ${appData>name}}"/>
+                        </Select>
+                        <Label text="Budget (EUR)"/>
+                        <Input value="{appData>/taskForm/budget}" type="Number" placeholder="e.g. 50" width="100%" class="sapUiTinyMarginBottom"/>
+                        <Label text="When"/>
+                        <DatePicker value="{appData>/taskForm/task_date}" valueFormat="yyyy-MM-dd" displayFormat="MMM dd, yyyy" width="100%" class="sapUiTinyMarginBottom"/>
+                        <Label text="Location"/>
+                        <Input value="{appData>/taskForm/location}" placeholder="e.g. Mitte, Berlin" width="100%" class="sapUiTinyMarginBottom"/>
+                    </VBox>
+                    <beginButton>
+                        <Button text="Post Task" type="Emphasized" press="onConfirmPostTask"/>
+                    </beginButton>
+                    <endButton>
+                        <Button text="Cancel" press="onClosePostTask"/>
+                    </endButton>
+                </Dialog>
+
+                <!-- Task Detail Dialog -->
+                <Dialog id="taskDetailDialog" title="Task Details" contentWidth="92%" verticalScrolling="true">
+                    <VBox class="sapUiMediumMargin">
+                        <Title text="{appData>/selectedTask/title}" level="H3" class="sapUiSmallMarginBottom"/>
+                        <HBox alignItems="Center" class="sapUiTinyMarginBottom" wrap="Wrap">
+                            <ObjectStatus text="{appData>/selectedTask/category}" state="Information" class="sapUiTinyMarginEnd"/>
+                            <ObjectStatus text="{appData>/selectedTask/status}" state="{path:'appData>/selectedTask/status', formatter:'.formatTaskState'}" class="sapUiTinyMarginEnd"/>
+                            <Text text="{= ${appData>/selectedTask/budget} ? '€' + ${appData>/selectedTask/budget} : 'Open budget'}" class="blueText fontBold"/>
+                        </HBox>
+                        <Text text="{appData>/selectedTask/description}" class="sapUiSmallMarginBottom" visible="{= !!${appData>/selectedTask/description}}"/>
+                        <HBox alignItems="Center" class="sapUiTinyMarginBottom">
+                            <core:Icon src="sap-icon://date-time" class="sapUiTinyMarginEnd"/>
+                            <Text text="{= ${appData>/selectedTask/task_date} || 'Flexible'}" class="smallText"/>
+                        </HBox>
+                        <HBox alignItems="Center" class="sapUiSmallMarginBottom">
+                            <core:Icon src="sap-icon://map" class="sapUiTinyMarginEnd"/>
+                            <Text text="{= ${appData>/selectedTask/location} || 'Not specified'}" class="smallText"/>
+                        </HBox>
+
+                        <!-- Posted by -->
+                        <HBox alignItems="Center" class="sapUiSmallMarginBottom">
+                            <Avatar displaySize="XS" src="{appData>/selectedTask/poster_avatar}" initials="P" backgroundColor="Accent3" class="sapUiTinyMarginEnd"/>
+                            <Text text="{= 'Posted by ' + ${appData>/selectedTask/poster_name}}" class="smallText grayText"/>
+                        </HBox>
+
+                        <!-- Action buttons (for providers viewing others' tasks) -->
+                        <HBox visible="{= ${appData>/selectedTask/poster_id} !== ${appData>/user/id}}" class="sapUiSmallMarginBottom" wrap="Wrap">
+                            <Button text="Apply for this Task" type="Emphasized" press="onApplyToTask" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"
+                                visible="{= ${appData>/selectedTask/status} === 'open'}"/>
+                            <Button text="✉️ Message Poster" type="Default" press="onMessageTaskPoster" class="sapUiTinyMarginBottom"/>
+                        </HBox>
+
+                        <!-- Applicants (visible to poster) -->
+                        <VBox visible="{= ${appData>/selectedTask/poster_id} === ${appData>/user/id} &amp;&amp; ${appData>/taskApplications}.length > 0}">
+                            <Title text="Applicants" level="H4" class="sapUiSmallMarginBottom"/>
+                            <List id="taskApplicantsList" items="{appData>/taskApplications}" noDataText="No applicants yet.">
+                                <CustomListItem>
+                                    <HBox class="sapUiSmallMargin" justifyContent="SpaceBetween" alignItems="Center">
+                                        <HBox alignItems="Center">
+                                            <Avatar displaySize="S" src="{appData>provider_avatar}" initials="P" backgroundColor="Accent1" class="sapUiTinyMarginEnd"/>
+                                            <VBox>
+                                                <Title text="{appData>provider_name}" level="H5"/>
+                                                <HBox alignItems="Center">
+                                                    <RatingIndicator value="{appData>provider_rating}" displayOnly="true" iconSize="12px" class="sapUiTinyMarginEnd"/>
+                                                </HBox>
+                                                <Text text="{appData>message}" class="smallText grayText" visible="{= !!${appData>message}}"/>
+                                            </VBox>
+                                        </HBox>
+                                        <VBox alignItems="End">
+                                            <Button text="Assign" type="Emphasized" press="onAssignProvider" class="sapUiTinyMarginBottom" visible="{= ${appData>/selectedTask/status} === 'open'}"/>
+                                            <Button text="✉️ Message" type="Default" press="onMessageApplicant"/>
+                                        </VBox>
+                                    </HBox>
+                                </CustomListItem>
+                            </List>
+                        </VBox>
+
+                        <!-- Complete task button (for poster, when assigned) -->
+                        <Button text="Mark as Completed" type="Accept" press="onCompleteTask" width="100%" class="sapUiSmallMarginTop"
+                            visible="{= ${appData>/selectedTask/status} === 'assigned' &amp;&amp; ${appData>/selectedTask/poster_id} === ${appData>/user/id}}"/>
+
+                        <!-- Delete task (for poster only) -->
+                        <Button text="Delete Task" type="Reject" press="onDeleteTask" width="100%" class="sapUiSmallMarginTop"
+                            visible="{= ${appData>/selectedTask/poster_id} === ${appData>/user/id}}"/>
+                    </VBox>
+                    <endButton>
+                        <Button text="Close" press="onCloseTaskDetail"/>
                     </endButton>
                 </Dialog>
 

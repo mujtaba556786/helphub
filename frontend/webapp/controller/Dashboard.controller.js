@@ -38,9 +38,16 @@ sap.ui.define([
 
         _onRouteMatched: function() {
             this._oModel = this.getModel("appData");
+            // Ensure user id is in model (may only be in sessionStorage after page reload)
+            if (!this._oModel.getProperty("/user/id")) {
+                var sSid = sessionStorage.getItem("helpmate_user_id");
+                if (sSid) { this._oModel.setProperty("/user/id", sSid); }
+            }
             this._loadProvidersFromApi();
             this._loadSchedule();
             this._loadFavorites();
+            this._loadUnreadDmCount();
+            this._loadTasksFeed();
             if (!this._notifInterval) {
                 this._startNotificationPolling();
             }
@@ -50,8 +57,12 @@ sap.ui.define([
         onTabSelect: function(oEvent) {
             var sKey = oEvent.getParameter("key");
             if (sKey === "mySchedule") {
-                // Mark all bookings as seen → badge clears
                 this._markBookingsSeen();
+            } else if (sKey === "messages") {
+                this._loadConversations();
+            } else if (sKey === "tasks") {
+                this._loadTasksFeed();
+                this._loadMyTasks();
             }
         },
 
@@ -826,6 +837,13 @@ sap.ui.define([
             this.onOpenChat();
         },
 
+        onQuickMessage: function(oEvent) {
+            var oProvider = this._getProviderFromEvent(oEvent);
+            if (!oProvider) return;
+            this.getModel("appData").setProperty("/selectedProfile", oProvider);
+            this.onStartDm();
+        },
+
         // ── BOOKING ───────────────────────────────────────────────────────────
         onOpenBooking: function() {
             var oModel = this.getModel("appData");
@@ -953,6 +971,7 @@ sap.ui.define([
             this._loadNotificationCount();
             this._notifInterval = setInterval(function() {
                 that._loadNotificationCount();
+                that._loadUnreadDmCount();
             }, 60000); // poll every 60s
         },
 
@@ -1205,6 +1224,526 @@ sap.ui.define([
             if (aRecent.length > 5) { aRecent = aRecent.slice(0, 5); }
             oModel.setProperty("/recentlyViewed", aRecent);
             localStorage.setItem("hhRecentlyViewed", JSON.stringify(aRecent));
+        },
+
+        // ── DIRECT MESSAGING ─────────────────────────────────────────────────
+        _loadConversations: function() {
+            var oModel  = this.getModel("appData");
+            var sUserId = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
+            if (!sUserId) return;
+
+            fetch(API_BASE + "/api/conversations/" + encodeURIComponent(sUserId))
+                .then(function(r) { return r.json(); })
+                .then(function(oData) {
+                    if (oData.success) {
+                        oModel.setProperty("/conversations", oData.conversations);
+                        oModel.setProperty("/unreadDmCount", oData.totalUnread || 0);
+                    }
+                })
+                .catch(function() { /* silent */ });
+        },
+
+        _loadUnreadDmCount: function() {
+            var oModel  = this.getModel("appData");
+            var sUserId = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
+            if (!sUserId) return;
+
+            fetch(API_BASE + "/api/messages/unread-count/" + encodeURIComponent(sUserId))
+                .then(function(r) { return r.json(); })
+                .then(function(oData) {
+                    if (oData.success) {
+                        oModel.setProperty("/unreadDmCount", oData.count || 0);
+                    }
+                })
+                .catch(function() { /* silent */ });
+        },
+
+        onStartDm: function() {
+            var oModel      = this.getModel("appData");
+            var sUserId     = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
+            var sProviderId = oModel.getProperty("/selectedProfile/id");
+            var sProviderName = oModel.getProperty("/selectedProfile/name") || "Helper";
+
+            if (!sUserId) { MessageToast.show("Please log in first."); return; }
+            if (sUserId === sProviderId) { MessageToast.show("You can't message yourself."); return; }
+
+            var that = this;
+            fetch(API_BASE + "/api/conversations", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ user1_id: sUserId, user2_id: sProviderId })
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(oData) {
+                if (oData.success) {
+                    that.byId("profileDialog").close();
+                    that._currentConvoId = oData.conversation.id;
+                    that._currentConvoOtherName = sProviderName;
+                    that._currentConvoOtherId = sProviderId;
+                    that._openDmChatForConversation(oData.conversation.id, sProviderName);
+                }
+            })
+            .catch(function() { MessageToast.show("Could not start conversation."); });
+        },
+
+        onOpenDmChat: function(oEvent) {
+            var oCtx = oEvent.getSource().getBindingContext("appData");
+            if (!oCtx) return;
+            var oConvo = oCtx.getObject();
+            this._currentConvoId = oConvo.id;
+            this._currentConvoOtherName = oConvo.other_name;
+            this._currentConvoOtherId = oConvo.other_id;
+            this._openDmChatForConversation(oConvo.id, oConvo.other_name);
+        },
+
+        _openDmChatForConversation: function(sConvoId, sOtherName) {
+            var that = this;
+            var oModel = this.getModel("appData");
+            var sUserId = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
+
+            var oDialog = this.byId("dmChatDialog");
+            oDialog.setTitle("Chat with " + sOtherName);
+            oDialog.open();
+
+            fetch(API_BASE + "/api/messages/" + encodeURIComponent(sConvoId))
+                .then(function(r) { return r.json(); })
+                .then(function(oData) {
+                    if (oData.success) {
+                        that._dmMessages = oData.messages;
+                        that._renderDmBubbles();
+                        // Mark as read
+                        fetch(API_BASE + "/api/messages/" + encodeURIComponent(sConvoId) + "/read", {
+                            method: "PUT",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ user_id: sUserId })
+                        }).catch(function() {});
+                        that._loadUnreadDmCount();
+                    }
+                })
+                .catch(function() { that._dmMessages = []; that._renderDmBubbles(); });
+        },
+
+        _renderDmBubbles: function() {
+            var oHtml   = this.byId("dmBubblesHtml");
+            var oScroll = this.byId("dmScrollContainer");
+            if (!oHtml) return;
+
+            var oModel  = this.getModel("appData");
+            var sUserId = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
+            var aMessages = this._dmMessages || [];
+
+            var sHtml = aMessages.map(function(m) {
+                var sEsc = (m.content || "").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, "<br>");
+                var sTime = m.created_at ? new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+                if (m.sender_id === sUserId) {
+                    var sRead = m.is_read
+                        ? '<span style="font-size:11px;color:#93c5fd;margin-left:4px">✓✓</span>'
+                        : '<span style="font-size:11px;color:#bfdbfe;margin-left:4px">✓</span>';
+                    return '<div style="text-align:right;margin:4px 0">'
+                         + '<span style="background:#3b82f6;color:white;padding:8px 12px;border-radius:16px 16px 4px 16px;display:inline-block;max-width:80%;word-wrap:break-word;text-align:left">'
+                         + sEsc + '</span>' + sRead
+                         + '<div style="font-size:10px;color:#94a3b8;margin-top:2px">' + sTime + '</div></div>';
+                }
+                return '<div style="text-align:left;margin:4px 0">'
+                     + '<span style="background:#f1f5f9;color:#1e293b;padding:8px 12px;border-radius:16px 16px 16px 4px;display:inline-block;max-width:80%;word-wrap:break-word">'
+                     + sEsc + '</span>'
+                     + '<div style="font-size:10px;color:#94a3b8;margin-top:2px">' + sTime + '</div></div>';
+            }).join("");
+
+            oHtml.setContent("<div style='display:flex;flex-direction:column;gap:8px;padding:12px'>" + sHtml + "</div>");
+
+            if (oScroll) {
+                setTimeout(function() { oScroll.scrollTo(0, 99999, 0); }, 50);
+            }
+        },
+
+        onDmSend: function() {
+            var oInput  = this.byId("dmInput");
+            var sText   = oInput.getValue().trim();
+            if (!sText) return;
+
+            var oModel  = this.getModel("appData");
+            var sUserId = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
+            var sConvoId = this._currentConvoId;
+            if (!sConvoId || !sUserId) return;
+
+            oInput.setValue("");
+
+            // Optimistic local update
+            this._dmMessages.push({
+                sender_id: sUserId,
+                content: sText,
+                is_read: 0,
+                created_at: new Date().toISOString()
+            });
+            this._renderDmBubbles();
+
+            var that = this;
+            fetch(API_BASE + "/api/messages", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    conversation_id: sConvoId,
+                    sender_id: sUserId,
+                    content: sText
+                })
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(oData) {
+                if (!oData.success) {
+                    MessageToast.show("Message failed to send.");
+                }
+            })
+            .catch(function() { MessageToast.show("Could not reach the server."); });
+        },
+
+        onDmQuickReply: function(oEvent) {
+            var sText = oEvent.getSource().getText().replace(/\s*[\u{1F600}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}]+$/u, "").trim();
+            this.byId("dmInput").setValue(sText);
+            this.onDmSend();
+        },
+
+        onCloseDmChat: function() {
+            this.byId("dmChatDialog").close();
+            this._loadConversations();
+        },
+
+        formatConvoTime: function(sTime) {
+            if (!sTime) return "";
+            var d = new Date(sTime);
+            var now = new Date();
+            if (d.toDateString() === now.toDateString()) {
+                return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            }
+            return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+        },
+
+        // ── POST A TASK ──────────────────────────────────────────────────────
+        _loadTasksFeed: function() {
+            var oModel = this.getModel("appData");
+            var sSearch = oModel.getProperty("/taskSearchQuery") || "";
+            var sCategory = oModel.getProperty("/taskCategoryFilter") || "";
+            var sUrl = API_BASE + "/api/tasks?status=open";
+            if (sCategory) { sUrl += "&category=" + encodeURIComponent(sCategory); }
+            if (sSearch) { sUrl += "&search=" + encodeURIComponent(sSearch); }
+
+            fetch(sUrl)
+                .then(function(r) { return r.json(); })
+                .then(function(oData) {
+                    if (oData.success) {
+                        oModel.setProperty("/tasksFeed", oData.tasks);
+                        oModel.setProperty("/openTaskCount", oData.tasks.length || 0);
+                    }
+                })
+                .catch(function() { /* silent */ });
+        },
+
+        _loadMyTasks: function() {
+            var oModel  = this.getModel("appData");
+            var sUserId = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
+            if (!sUserId) return;
+
+            fetch(API_BASE + "/api/tasks?poster_id=" + encodeURIComponent(sUserId))
+                .then(function(r) { return r.json(); })
+                .then(function(oData) {
+                    if (oData.success) {
+                        oModel.setProperty("/myTasks", oData.tasks);
+                    }
+                })
+                .catch(function() { /* silent */ });
+        },
+
+        onToggleTaskView: function(oEvent) {
+            var sMode = oEvent.getSource().data("mode");
+            var oModel = this.getModel("appData");
+            oModel.setProperty("/taskViewMode", sMode);
+            if (sMode === "mine") {
+                this._loadMyTasks();
+            } else {
+                this._loadTasksFeed();
+            }
+        },
+
+        onTaskSearch: function(oEvent) {
+            var sQuery = oEvent.getParameter("query") || oEvent.getParameter("newValue") || "";
+            this.getModel("appData").setProperty("/taskSearchQuery", sQuery.trim());
+            clearTimeout(this._taskSearchTimer);
+            var that = this;
+            this._taskSearchTimer = setTimeout(function() { that._loadTasksFeed(); }, 300);
+        },
+
+        onTaskCategoryFilter: function(oEvent) {
+            var sCat = oEvent.getSource().data("cat");
+            this.getModel("appData").setProperty("/taskCategoryFilter", sCat);
+            this._loadTasksFeed();
+        },
+
+        onTaskCategoryMore: function() {
+            var oModel = this.getModel("appData");
+            var aServices = oModel.getProperty("/services") || [];
+            var aNames = aServices.map(function(s) { return s.name; });
+
+            var oActionSheet = new sap.m.ActionSheet({ placement: "Bottom" });
+            var that = this;
+            aNames.forEach(function(name) {
+                oActionSheet.addButton(new sap.m.Button({
+                    text: name,
+                    press: function() {
+                        oModel.setProperty("/taskCategoryFilter", name);
+                        that._loadTasksFeed();
+                    }
+                }));
+            });
+            oActionSheet.openBy(this.byId("taskSearch") || this.getView());
+        },
+
+        onOpenPostTask: function() {
+            var oModel = this.getModel("appData");
+            oModel.setProperty("/taskForm", {
+                title: "", description: "", category: "", budget: "", task_date: "", location: ""
+            });
+            this.byId("postTaskDialog").open();
+        },
+
+        onConfirmPostTask: function() {
+            var oModel  = this.getModel("appData");
+            var oForm   = oModel.getProperty("/taskForm");
+            var sUserId = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
+
+            if (!oForm.title || !oForm.title.trim()) { MessageToast.show("Please enter a title."); return; }
+            if (!oForm.category) { MessageToast.show("Please select a category."); return; }
+            if (!sUserId) { MessageToast.show("Please log in first."); return; }
+
+            var that = this;
+            fetch(API_BASE + "/api/tasks", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    poster_id:   sUserId,
+                    title:       oForm.title.trim(),
+                    description: oForm.description,
+                    category:    oForm.category,
+                    budget:      oForm.budget ? parseFloat(oForm.budget) : null,
+                    task_date:   oForm.task_date || null,
+                    location:    oForm.location
+                })
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(oData) {
+                if (oData.success) {
+                    that.byId("postTaskDialog").close();
+                    MessageToast.show("Task posted!");
+                    that._loadTasksFeed();
+                    that._loadMyTasks();
+                } else {
+                    MessageToast.show("Failed: " + (oData.error || "Unknown error"));
+                }
+            })
+            .catch(function() { MessageToast.show("Could not reach the server."); });
+        },
+
+        onClosePostTask: function() {
+            this.byId("postTaskDialog").close();
+        },
+
+        onTaskPress: function(oEvent) {
+            var oCtx = oEvent.getSource().getBindingContext("appData");
+            if (!oCtx) return;
+            var oTask = oCtx.getObject();
+
+            var oModel = this.getModel("appData");
+            oModel.setProperty("/selectedTask", oTask);
+            oModel.setProperty("/taskApplications", []);
+
+            var that = this;
+            fetch(API_BASE + "/api/tasks/" + encodeURIComponent(oTask.id))
+                .then(function(r) { return r.json(); })
+                .then(function(oData) {
+                    if (oData.success) {
+                        oModel.setProperty("/selectedTask", oData.task);
+                        oModel.setProperty("/taskApplications", oData.applications || []);
+                    }
+                    that.byId("taskDetailDialog").open();
+                })
+                .catch(function() { that.byId("taskDetailDialog").open(); });
+        },
+
+        onApplyToTask: function() {
+            var oModel     = this.getModel("appData");
+            var sTaskId    = oModel.getProperty("/selectedTask/id");
+            var sUserId    = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
+
+            if (!sUserId) { MessageToast.show("Please log in first."); return; }
+
+            var that = this;
+            fetch(API_BASE + "/api/tasks/" + encodeURIComponent(sTaskId) + "/apply", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ provider_id: sUserId })
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(oData) {
+                if (oData.success) {
+                    MessageToast.show("Applied! The poster will review your application.");
+                    that.byId("taskDetailDialog").close();
+                    that._loadTasksFeed();
+                } else {
+                    MessageToast.show(oData.error || "Could not apply.");
+                }
+            })
+            .catch(function() { MessageToast.show("Could not reach the server."); });
+        },
+
+        onAssignProvider: function(oEvent) {
+            var oCtx = oEvent.getSource().getParent().getParent().getBindingContext("appData");
+            if (!oCtx) return;
+            var sProviderId = oCtx.getObject().provider_id;
+            var oModel  = this.getModel("appData");
+            var sTaskId = oModel.getProperty("/selectedTask/id");
+
+            var that = this;
+            fetch(API_BASE + "/api/tasks/" + encodeURIComponent(sTaskId) + "/assign", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ provider_id: sProviderId })
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(oData) {
+                if (oData.success) {
+                    MessageToast.show("Provider assigned!");
+                    that.byId("taskDetailDialog").close();
+                    that._loadTasksFeed();
+                    that._loadMyTasks();
+                }
+            })
+            .catch(function() { MessageToast.show("Could not assign provider."); });
+        },
+
+        onCompleteTask: function() {
+            var oModel  = this.getModel("appData");
+            var sTaskId = oModel.getProperty("/selectedTask/id");
+
+            var that = this;
+            fetch(API_BASE + "/api/tasks/" + encodeURIComponent(sTaskId) + "/status", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ status: "completed" })
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(oData) {
+                if (oData.success) {
+                    MessageToast.show("Task completed!");
+                    that.byId("taskDetailDialog").close();
+                    that._loadTasksFeed();
+                    that._loadMyTasks();
+                }
+            })
+            .catch(function() { MessageToast.show("Could not update task."); });
+        },
+
+        onDeleteTask: function() {
+            var oModel  = this.getModel("appData");
+            var sTaskId = oModel.getProperty("/selectedTask/id");
+            var sUserId = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
+            var sTitle  = oModel.getProperty("/selectedTask/title") || "this task";
+
+            if (!sUserId) { MessageToast.show("Please log in first."); return; }
+
+            var that = this;
+            MessageBox.confirm("Delete \"" + sTitle + "\"? This cannot be undone.", {
+                title: "Delete Task",
+                onClose: function(sAction) {
+                    if (sAction !== MessageBox.Action.OK) return;
+                    fetch(API_BASE + "/api/tasks/" + encodeURIComponent(sTaskId), {
+                        method: "DELETE",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ user_id: sUserId })
+                    })
+                    .then(function(r) { return r.json(); })
+                    .then(function(oData) {
+                        if (oData.success) {
+                            MessageToast.show("Task deleted.");
+                            that.byId("taskDetailDialog").close();
+                            that._loadTasksFeed();
+                            that._loadMyTasks();
+                        } else {
+                            MessageToast.show(oData.error || "Could not delete task.");
+                        }
+                    })
+                    .catch(function() { MessageToast.show("Could not reach the server."); });
+                }
+            });
+        },
+
+        onCloseTaskDetail: function() {
+            this.byId("taskDetailDialog").close();
+        },
+
+        onMessageTaskPoster: function() {
+            var oModel  = this.getModel("appData");
+            var sUserId = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
+            var sPosterId = oModel.getProperty("/selectedTask/poster_id");
+            var sPosterName = oModel.getProperty("/selectedTask/poster_name") || "Task Poster";
+
+            if (!sUserId) { MessageToast.show("Please log in first."); return; }
+            if (sUserId === sPosterId) { MessageToast.show("This is your own task."); return; }
+
+            var that = this;
+            this.byId("taskDetailDialog").close();
+            fetch(API_BASE + "/api/conversations", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ user1_id: sUserId, user2_id: sPosterId })
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(oData) {
+                if (oData.success) {
+                    that._currentConvoId = oData.conversation.id;
+                    that._currentConvoOtherName = sPosterName;
+                    that._currentConvoOtherId = sPosterId;
+                    that._openDmChatForConversation(oData.conversation.id, sPosterName);
+                }
+            })
+            .catch(function() { MessageToast.show("Could not start conversation."); });
+        },
+
+        onMessageApplicant: function(oEvent) {
+            var oCtx = oEvent.getSource().getParent().getParent().getParent().getBindingContext("appData");
+            if (!oCtx) return;
+            var oApplicant = oCtx.getObject();
+            var oModel  = this.getModel("appData");
+            var sUserId = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
+            var sProviderId = oApplicant.provider_id;
+            var sProviderName = oApplicant.provider_name || "Applicant";
+
+            if (!sUserId) { MessageToast.show("Please log in first."); return; }
+
+            var that = this;
+            this.byId("taskDetailDialog").close();
+            fetch(API_BASE + "/api/conversations", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ user1_id: sUserId, user2_id: sProviderId })
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(oData) {
+                if (oData.success) {
+                    that._currentConvoId = oData.conversation.id;
+                    that._currentConvoOtherName = sProviderName;
+                    that._currentConvoOtherId = sProviderId;
+                    that._openDmChatForConversation(oData.conversation.id, sProviderName);
+                }
+            })
+            .catch(function() { MessageToast.show("Could not start conversation."); });
+        },
+
+        formatTaskState: function(sStatus) {
+            switch (sStatus) {
+                case "open":      return "Success";
+                case "assigned":  return "Warning";
+                case "completed": return "None";
+                default:          return "Information";
+            }
         }
 
     });

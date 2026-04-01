@@ -210,6 +210,67 @@ async function initDb() {
             )
         `);
 
+        // ── Direct Messaging tables ──────────────────────────────────────
+        await connection.query(`
+            CREATE TABLE IF NOT EXISTS conversations (
+                id VARCHAR(50) PRIMARY KEY,
+                participant_1 VARCHAR(50) NOT NULL,
+                participant_2 VARCHAR(50) NOT NULL,
+                last_message TEXT,
+                last_message_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_p1 (participant_1),
+                INDEX idx_p2 (participant_2)
+            )
+        `);
+
+        await connection.query(`
+            CREATE TABLE IF NOT EXISTS direct_messages (
+                id VARCHAR(50) PRIMARY KEY,
+                conversation_id VARCHAR(50) NOT NULL,
+                sender_id VARCHAR(50) NOT NULL,
+                content TEXT NOT NULL,
+                is_read TINYINT(1) DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_conversation (conversation_id),
+                INDEX idx_sender (sender_id),
+                INDEX idx_unread (conversation_id, is_read)
+            )
+        `);
+
+        // ── Post a Task tables ──────────────────────────────────────────
+        await connection.query(`
+            CREATE TABLE IF NOT EXISTS tasks (
+                id VARCHAR(50) PRIMARY KEY,
+                poster_id VARCHAR(50) NOT NULL,
+                assigned_provider_id VARCHAR(50),
+                title VARCHAR(200) NOT NULL,
+                description TEXT,
+                category VARCHAR(50) NOT NULL,
+                budget FLOAT,
+                task_date DATE,
+                location VARCHAR(200),
+                status VARCHAR(20) DEFAULT 'open',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_poster (poster_id),
+                INDEX idx_status (status),
+                INDEX idx_category (category)
+            )
+        `);
+
+        await connection.query(`
+            CREATE TABLE IF NOT EXISTS task_applications (
+                id VARCHAR(50) PRIMARY KEY,
+                task_id VARCHAR(50) NOT NULL,
+                provider_id VARCHAR(50) NOT NULL,
+                message TEXT,
+                status VARCHAR(20) DEFAULT 'pending',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_task (task_id),
+                INDEX idx_provider (provider_id)
+            )
+        `);
+
         // Seed provider lat/lng and service_categories if missing
         const providerSeeds = [
             { id: 'p1',  service_categories: 'Gardening',    lat: 52.5250, lng: 13.4100 },
@@ -613,6 +674,293 @@ app.put('/api/notifications/:id/read', handleAsync(async (req, res) => {
 // ── PUT /api/notifications/read-all/:userId ───────────────────────────────────
 app.put('/api/notifications/read-all/:userId', handleAsync(async (req, res) => {
     await pool.execute('UPDATE notifications SET is_read = 1 WHERE user_id = ?', [req.params.userId]);
+    res.json({ success: true });
+}));
+
+// ── DIRECT MESSAGING ROUTES ──────────────────────────────────────────────────
+
+// GET /api/conversations/:userId — list all conversations for a user
+app.get('/api/conversations/:userId', handleAsync(async (req, res) => {
+    const userId = req.params.userId;
+    const [rows] = await pool.query(
+        `SELECT c.*,
+                u1.name AS p1_name, u1.avatar AS p1_avatar,
+                u2.name AS p2_name, u2.avatar AS p2_avatar,
+                (SELECT COUNT(*) FROM direct_messages dm
+                 WHERE dm.conversation_id = c.id AND dm.sender_id != ? AND dm.is_read = 0) AS unread_count
+         FROM conversations c
+         LEFT JOIN users u1 ON u1.id = c.participant_1
+         LEFT JOIN users u2 ON u2.id = c.participant_2
+         WHERE c.participant_1 = ? OR c.participant_2 = ?
+         ORDER BY c.last_message_at DESC`,
+        [userId, userId, userId]
+    );
+
+    const conversations = rows.map(c => {
+        const isP1 = c.participant_1 === userId;
+        const otherAvatar = isP1 ? c.p2_avatar : c.p1_avatar;
+        return {
+            id: c.id,
+            other_id: isP1 ? c.participant_2 : c.participant_1,
+            other_name: isP1 ? c.p2_name : c.p1_name,
+            other_avatar: otherAvatar && otherAvatar.startsWith('/uploads/') ? `http://localhost:3000${otherAvatar}` : (otherAvatar || ''),
+            last_message: c.last_message,
+            last_message_at: c.last_message_at,
+            unread_count: c.unread_count
+        };
+    });
+
+    const totalUnread = conversations.reduce((sum, c) => sum + c.unread_count, 0);
+    res.json({ success: true, conversations, totalUnread });
+}));
+
+// POST /api/conversations — create or find existing conversation
+app.post('/api/conversations', handleAsync(async (req, res) => {
+    const { user1_id, user2_id } = req.body;
+    if (!user1_id || !user2_id) return res.status(400).json({ success: false, error: 'user1_id and user2_id required' });
+
+    // Check if conversation already exists
+    const [existing] = await pool.query(
+        `SELECT * FROM conversations
+         WHERE (participant_1 = ? AND participant_2 = ?) OR (participant_1 = ? AND participant_2 = ?)`,
+        [user1_id, user2_id, user2_id, user1_id]
+    );
+
+    if (existing.length > 0) {
+        return res.json({ success: true, conversation: existing[0], created: false });
+    }
+
+    const id = 'CONV' + Date.now();
+    await pool.execute(
+        'INSERT INTO conversations (id, participant_1, participant_2) VALUES (?, ?, ?)',
+        [id, user1_id, user2_id]
+    );
+    const [[conv]] = await pool.query('SELECT * FROM conversations WHERE id = ?', [id]);
+    res.json({ success: true, conversation: conv, created: true });
+}));
+
+// GET /api/messages/:conversationId — fetch messages for a conversation
+app.get('/api/messages/:conversationId', handleAsync(async (req, res) => {
+    const [rows] = await pool.query(
+        `SELECT dm.*, u.name AS sender_name, u.avatar AS sender_avatar
+         FROM direct_messages dm
+         LEFT JOIN users u ON u.id = dm.sender_id
+         WHERE dm.conversation_id = ?
+         ORDER BY dm.created_at ASC
+         LIMIT 100`,
+        [req.params.conversationId]
+    );
+    res.json({ success: true, messages: rows });
+}));
+
+// POST /api/messages — send a direct message
+app.post('/api/messages', handleAsync(async (req, res) => {
+    const { conversation_id, sender_id, content } = req.body;
+    if (!conversation_id || !sender_id || !content) {
+        return res.status(400).json({ success: false, error: 'conversation_id, sender_id, and content required' });
+    }
+
+    const id = 'DM' + Date.now() + Math.random().toString(36).slice(2, 6);
+    await pool.execute(
+        'INSERT INTO direct_messages (id, conversation_id, sender_id, content) VALUES (?, ?, ?, ?)',
+        [id, conversation_id, sender_id, content]
+    );
+
+    // Update conversation last_message
+    await pool.execute(
+        'UPDATE conversations SET last_message = ?, last_message_at = NOW() WHERE id = ?',
+        [content.substring(0, 200), conversation_id]
+    );
+
+    // Find recipient and create notification
+    const [[conv]] = await pool.query('SELECT * FROM conversations WHERE id = ?', [conversation_id]);
+    if (conv) {
+        const recipientId = conv.participant_1 === sender_id ? conv.participant_2 : conv.participant_1;
+        const [[sender]] = await pool.query('SELECT name FROM users WHERE id = ?', [sender_id]);
+        const senderName = sender ? sender.name : 'Someone';
+        await pool.execute(
+            'INSERT INTO notifications (user_id, type, title, message) VALUES (?, ?, ?, ?)',
+            [recipientId, 'direct_message', `💬 ${senderName}`, content.substring(0, 100)]
+        );
+    }
+
+    res.json({ success: true, messageId: id });
+}));
+
+// PUT /api/messages/:conversationId/read — mark messages as read
+app.put('/api/messages/:conversationId/read', handleAsync(async (req, res) => {
+    const { user_id } = req.body;
+    if (!user_id) return res.status(400).json({ success: false, error: 'user_id required' });
+    await pool.execute(
+        'UPDATE direct_messages SET is_read = 1 WHERE conversation_id = ? AND sender_id != ? AND is_read = 0',
+        [req.params.conversationId, user_id]
+    );
+    res.json({ success: true });
+}));
+
+// GET /api/messages/unread-count/:userId — total unread DM count
+app.get('/api/messages/unread-count/:userId', handleAsync(async (req, res) => {
+    const userId = req.params.userId;
+    const [[{ count }]] = await pool.query(
+        `SELECT COUNT(*) AS count FROM direct_messages dm
+         JOIN conversations c ON c.id = dm.conversation_id
+         WHERE (c.participant_1 = ? OR c.participant_2 = ?)
+           AND dm.sender_id != ? AND dm.is_read = 0`,
+        [userId, userId, userId]
+    );
+    res.json({ success: true, count });
+}));
+
+// ── POST A TASK ROUTES ──────────────────────────────────────────────────────
+
+// POST /api/tasks — create a task
+app.post('/api/tasks', handleAsync(async (req, res) => {
+    const { poster_id, title, description, category, budget, task_date, location } = req.body;
+    if (!poster_id || !title || !category) {
+        return res.status(400).json({ success: false, error: 'poster_id, title, and category are required' });
+    }
+
+    const id = 'T' + Date.now();
+    await pool.execute(
+        'INSERT INTO tasks (id, poster_id, title, description, category, budget, task_date, location) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+        [id, poster_id, title, description || null, category, budget || null, task_date || null, location || null]
+    );
+    res.json({ success: true, taskId: id });
+}));
+
+// GET /api/tasks — list tasks
+app.get('/api/tasks', handleAsync(async (req, res) => {
+    const { category, status, poster_id, search } = req.query;
+    let sql = `SELECT t.*, u.name AS poster_name, u.avatar AS poster_avatar,
+                      (SELECT COUNT(*) FROM task_applications ta WHERE ta.task_id = t.id) AS application_count
+               FROM tasks t
+               LEFT JOIN users u ON u.id = t.poster_id
+               WHERE 1=1`;
+    const params = [];
+
+    if (category) { sql += ' AND t.category = ?'; params.push(category); }
+    if (status) { sql += ' AND t.status = ?'; params.push(status); }
+    if (poster_id) { sql += ' AND t.poster_id = ?'; params.push(poster_id); }
+    if (search) { sql += ' AND (t.title LIKE ? OR t.description LIKE ? OR t.location LIKE ?)'; params.push(`%${search}%`, `%${search}%`, `%${search}%`); }
+
+    sql += ' ORDER BY t.created_at DESC LIMIT 50';
+    const [rows] = await pool.query(sql, params);
+
+    const tasks = rows.map(t => ({
+        ...t,
+        poster_avatar: t.poster_avatar && t.poster_avatar.startsWith('/uploads/') ? `http://localhost:3000${t.poster_avatar}` : (t.poster_avatar || '')
+    }));
+
+    res.json({ success: true, tasks });
+}));
+
+// GET /api/tasks/:id — task detail with applications
+app.get('/api/tasks/:id', handleAsync(async (req, res) => {
+    const [[task]] = await pool.query(
+        `SELECT t.*, u.name AS poster_name, u.avatar AS poster_avatar
+         FROM tasks t LEFT JOIN users u ON u.id = t.poster_id WHERE t.id = ?`,
+        [req.params.id]
+    );
+    if (!task) return res.status(404).json({ success: false, error: 'Task not found' });
+
+    const [applications] = await pool.query(
+        `SELECT ta.*, u.name AS provider_name, u.avatar AS provider_avatar, u.rating AS provider_rating
+         FROM task_applications ta LEFT JOIN users u ON u.id = ta.provider_id
+         WHERE ta.task_id = ? ORDER BY ta.created_at DESC`,
+        [req.params.id]
+    );
+
+    task.poster_avatar = task.poster_avatar && task.poster_avatar.startsWith('/uploads/') ? `http://localhost:3000${task.poster_avatar}` : (task.poster_avatar || '');
+    applications.forEach(a => {
+        a.provider_avatar = a.provider_avatar && a.provider_avatar.startsWith('/uploads/') ? `http://localhost:3000${a.provider_avatar}` : (a.provider_avatar || '');
+    });
+
+    res.json({ success: true, task, applications });
+}));
+
+// POST /api/tasks/:id/apply — provider applies to a task
+app.post('/api/tasks/:id/apply', handleAsync(async (req, res) => {
+    const { provider_id, message } = req.body;
+    if (!provider_id) return res.status(400).json({ success: false, error: 'provider_id required' });
+
+    // Check for duplicate application
+    const [dup] = await pool.query(
+        'SELECT id FROM task_applications WHERE task_id = ? AND provider_id = ?',
+        [req.params.id, provider_id]
+    );
+    if (dup.length > 0) return res.status(400).json({ success: false, error: 'Already applied to this task' });
+
+    const id = 'TA' + Date.now();
+    await pool.execute(
+        'INSERT INTO task_applications (id, task_id, provider_id, message) VALUES (?, ?, ?, ?)',
+        [id, req.params.id, provider_id, message || null]
+    );
+
+    // Notify task poster
+    const [[task]] = await pool.query('SELECT poster_id, title FROM tasks WHERE id = ?', [req.params.id]);
+    const [[provider]] = await pool.query('SELECT name FROM users WHERE id = ?', [provider_id]);
+    if (task) {
+        await pool.execute(
+            'INSERT INTO notifications (user_id, type, title, message) VALUES (?, ?, ?, ?)',
+            [task.poster_id, 'task_application', `📋 New applicant for "${task.title}"`, `${provider?.name || 'Someone'} wants to help with your task.`]
+        );
+    }
+
+    res.json({ success: true, applicationId: id });
+}));
+
+// PUT /api/tasks/:id/assign — assign a provider to a task
+app.put('/api/tasks/:id/assign', handleAsync(async (req, res) => {
+    const { provider_id } = req.body;
+    if (!provider_id) return res.status(400).json({ success: false, error: 'provider_id required' });
+
+    await pool.execute(
+        'UPDATE tasks SET assigned_provider_id = ?, status = ? WHERE id = ?',
+        [provider_id, 'assigned', req.params.id]
+    );
+
+    // Update application status
+    await pool.execute(
+        'UPDATE task_applications SET status = ? WHERE task_id = ? AND provider_id = ?',
+        ['accepted', req.params.id, provider_id]
+    );
+    // Reject other applications
+    await pool.execute(
+        'UPDATE task_applications SET status = ? WHERE task_id = ? AND provider_id != ?',
+        ['rejected', req.params.id, provider_id]
+    );
+
+    // Notify provider
+    const [[task]] = await pool.query('SELECT title FROM tasks WHERE id = ?', [req.params.id]);
+    await pool.execute(
+        'INSERT INTO notifications (user_id, type, title, message) VALUES (?, ?, ?, ?)',
+        [provider_id, 'task_assigned', `✅ You've been assigned!`, `You were selected for the task "${task?.title || ''}".`]
+    );
+
+    res.json({ success: true });
+}));
+
+// PUT /api/tasks/:id/status — update task status
+app.put('/api/tasks/:id/status', handleAsync(async (req, res) => {
+    const { status } = req.body;
+    if (!['open', 'assigned', 'completed'].includes(status)) {
+        return res.status(400).json({ success: false, error: 'Invalid status' });
+    }
+    await pool.execute('UPDATE tasks SET status = ? WHERE id = ?', [status, req.params.id]);
+    res.json({ success: true });
+}));
+
+// DELETE /api/tasks/:id — delete a task (poster only)
+app.delete('/api/tasks/:id', handleAsync(async (req, res) => {
+    const { user_id } = req.body;
+    if (!user_id) return res.status(400).json({ success: false, error: 'user_id required' });
+
+    const [[task]] = await pool.query('SELECT poster_id FROM tasks WHERE id = ?', [req.params.id]);
+    if (!task) return res.status(404).json({ success: false, error: 'Task not found' });
+    if (task.poster_id !== user_id) return res.status(403).json({ success: false, error: 'Only the poster can delete this task' });
+
+    await pool.execute('DELETE FROM task_applications WHERE task_id = ?', [req.params.id]);
+    await pool.execute('DELETE FROM tasks WHERE id = ?', [req.params.id]);
     res.json({ success: true });
 }));
 

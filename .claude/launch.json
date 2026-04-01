@@ -11,8 +11,7 @@
     {
       "name": "backend",
       "runtimeExecutable": "node",
-      "runtimeArgs": ["server.js"],
-      "cwd": "${workspaceFolder}/backend",
+      "runtimeArgs": ["backend/server.js"],
       "port": 3000
     }
   ]
