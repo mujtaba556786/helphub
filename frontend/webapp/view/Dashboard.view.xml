@@ -194,19 +194,17 @@
                                     <List id="bookingsList" items="{appData>/upcomingBookings}" noDataText="No bookings yet. Book a helper to get started!">
                                         <CustomListItem>
                                             <VBox class="sapUiSmallMargin">
-                                                <HBox justifyContent="SpaceBetween" alignItems="Start" wrap="Wrap">
+                                                <HBox justifyContent="SpaceBetween" alignItems="Start">
                                                     <VBox class="bookingInfoBox">
                                                         <Title text="{appData>service}" level="H5"/>
                                                         <Text text="{appData>provider_name}" class="grayText smallText"/>
-                                                        <Text text="{appData>scheduled_date} {appData>scheduled_time}" class="smallText blueText"/>
+                                                        <Text text="{path:'appData>scheduled_date', formatter:'.formatBookingDate'} {appData>scheduled_time}" class="smallText blueText"/>
                                                     </VBox>
-                                                    <VBox alignItems="End" class="bookingActionsBox">
-                                                        <ObjectStatus text="{appData>status}" state="{path:'appData>status', formatter:'.formatBookingState'}"/>
-                                                        <HBox class="sapUiTinyMarginTop" wrap="Wrap" visible="{= ${appData>status} === 'pending' &amp;&amp; ${appData>/user/id} === ${appData>provider_id}}">
-                                                            <Button text="✓ Accept" type="Accept" press="onAcceptBooking" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
-                                                            <Button text="✗ Decline" type="Reject" press="onDeclineBooking" class="sapUiTinyMarginBottom"/>
-                                                        </HBox>
-                                                    </VBox>
+                                                    <ObjectStatus text="{appData>status}" state="{path:'appData>status', formatter:'.formatBookingState'}"/>
+                                                </HBox>
+                                                <HBox class="sapUiTinyMarginTop" wrap="Wrap" visible="{= ${appData>status} === 'pending' &amp;&amp; ${appData>/user/id} === ${appData>provider_id}}">
+                                                    <Button text="✓ Accept" type="Accept" press="onAcceptBooking" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                                                    <Button text="✗ Decline" type="Reject" press="onDeclineBooking" class="sapUiTinyMarginBottom"/>
                                                 </HBox>
                                                 <Text text="{appData>message}" class="smallText grayText sapUiTinyMarginTop" visible="{= !!${appData>message}}"/>
                                             </VBox>
@@ -276,7 +274,7 @@
         <Page id="searchPage" title="Local Experts" showNavButton="true" navButtonPress="onNavBack" enableScrolling="true">
             <content>
                 <VBox>
-                    <VBox id="mapContainer" height="35vh" width="100%" class="mapPlaceholder">
+                    <VBox id="mapContainer" height="25vh" width="100%" class="mapPlaceholder">
                         <core:HTML content='&lt;div id="googleMap" class="mapDiv"&gt;Map View Centered on You&lt;/div&gt;'/>
                     </VBox>
 
@@ -309,8 +307,8 @@
 
                         <List items="{appData>/filteredProviders}" noDataText="No helpers nearby yet. Showing more helpers as they join.">
                             <CustomListItem>
-                                <HBox class="sapUiSmallMargin" justifyContent="SpaceBetween" alignItems="Center">
-                                    <VBox>
+                                <VBox class="sapUiSmallMargin">
+                                    <HBox justifyContent="SpaceBetween" alignItems="Start">
                                         <HBox alignItems="Center">
                                             <Avatar displaySize="S" src="{appData>photo}" initials="P" backgroundColor="Accent1" class="sapUiTinyMarginEnd"/>
                                             <VBox>
@@ -318,24 +316,26 @@
                                                 <Text text="{appData>address}" class="grayText smallText"/>
                                             </VBox>
                                         </HBox>
-                                        <HBox class="sapUiTinyMarginTop" alignItems="Center">
-                                            <RatingIndicator value="{appData>rating}" displayOnly="true" iconSize="14px" class="sapUiTinyMarginEnd"/>
-                                            <Text text="{path:'appData>', formatter:'.formatDistance'}" class="blueText fontBold smallText"/>
-                                        </HBox>
-                                        <HBox class="sapUiTinyMarginTop" wrap="Wrap">
-                                            <ObjectStatus text="{appData>years} yrs experience" state="Information" class="smallText sapUiTinyMarginEnd"/>
-                                            <ObjectStatus text="{appData>languages}" state="None" class="smallText"/>
-                                        </HBox>
-                                    </VBox>
-                                    <VBox alignItems="End" wrap="NoWrap" class="helperCardActions">
-                                        <ObjectStatus text="{path:'appData>', formatter:'.formatAvailabilityStatus'}" state="{path:'appData>', formatter:'.formatAvailabilityState'}" class="fontBold"/>
-                                        <Title text="{path:'appData>', formatter:'.formatPriceDisplay'}" level="H4" class="sapUiTinyMarginTop"/>
-                                        <Button icon="{= ${appData>/favorites}.indexOf(${appData>id}) >= 0 ? 'sap-icon://favorite' : 'sap-icon://unfavorite'}" type="{= ${appData>/favorites}.indexOf(${appData>id}) >= 0 ? 'Emphasized' : 'Transparent'}" press="onToggleFavorite" class="sapUiTinyMarginTop helperCardBtn" tooltip="Save helper"/>
-                                        <Button text="Profile" type="Transparent" class="sapUiTinyMarginTop helperCardBtn" press="onViewProfile"/>
-                                        <Button text="📅 Book" type="Emphasized" class="sapUiTinyMarginTop helperCardBtn" press="onQuickBook"/>
-                                        <Button text="✉️ Message" type="Accept" class="sapUiTinyMarginTop helperCardBtn" press="onQuickMessage"/>
-                                    </VBox>
-                                </HBox>
+                                        <VBox alignItems="End">
+                                            <ObjectStatus text="{path:'appData>', formatter:'.formatAvailabilityStatus'}" state="{path:'appData>', formatter:'.formatAvailabilityState'}" class="fontBold"/>
+                                            <Title text="{path:'appData>', formatter:'.formatPriceDisplay'}" level="H4" class="sapUiTinyMarginTop"/>
+                                        </VBox>
+                                    </HBox>
+                                    <HBox class="sapUiTinyMarginTop" alignItems="Center">
+                                        <RatingIndicator value="{appData>rating}" displayOnly="true" iconSize="14px" class="sapUiTinyMarginEnd"/>
+                                        <Text text="{path:'appData>', formatter:'.formatDistance'}" class="blueText fontBold smallText"/>
+                                    </HBox>
+                                    <HBox class="sapUiTinyMarginTop" wrap="Wrap">
+                                        <ObjectStatus text="{appData>years} yrs experience" state="Information" class="smallText sapUiTinyMarginEnd"/>
+                                        <ObjectStatus text="{appData>languages}" state="None" class="smallText"/>
+                                    </HBox>
+                                    <HBox class="sapUiTinyMarginTop helperCardActions" wrap="Wrap" alignItems="Center">
+                                        <Button icon="{= ${appData>/favorites}.indexOf(${appData>id}) >= 0 ? 'sap-icon://favorite' : 'sap-icon://unfavorite'}" type="{= ${appData>/favorites}.indexOf(${appData>id}) >= 0 ? 'Emphasized' : 'Transparent'}" press="onToggleFavorite" tooltip="Save helper" class="sapUiTinyMarginEnd"/>
+                                        <Button text="Profile" type="Transparent" press="onViewProfile" class="sapUiTinyMarginEnd"/>
+                                        <Button text="📅 Book" type="Emphasized" press="onQuickBook" class="sapUiTinyMarginEnd"/>
+                                        <Button text="✉️ Message" type="Accept" press="onQuickMessage"/>
+                                    </HBox>
+                                </VBox>
                             </CustomListItem>
                         </List>
 
@@ -553,7 +553,7 @@
                 </Dialog>
 
                 <!-- Filter Dialog -->
-                <Dialog id="filterDialog" title="Filter Helpers" contentWidth="92%">
+                <Dialog id="filterDialog" title="Filter Helpers" contentWidth="92%" stretch="{device>/system/phone}">
                     <VBox class="sapUiMediumMargin">
                         <Label text="Minimum rating"/>
                         <Select id="filterRatingSelect" selectedKey="{appData>/filters/minRating}" width="100%" class="sapUiTinyMarginBottom">
@@ -581,7 +581,7 @@
                 </Dialog>
 
                 <!-- Profile dialog -->
-                <Dialog id="profileDialog" title="Helper profile" verticalScrolling="true">
+                <Dialog id="profileDialog" title="Helper profile" verticalScrolling="true" stretch="{device>/system/phone}">
                     <VBox class="sapUiMediumMargin">
                         <HBox alignItems="Center" class="sapUiSmallMarginBottom">
                             <Avatar src="{appData>/selectedProfile/photo}" initials="{appData>/selectedProfile/initials}" displaySize="L" class="sapUiTinyMarginEnd"/>
@@ -643,7 +643,7 @@
                 </Dialog>
 
                 <!-- Booking Dialog -->
-                <Dialog id="bookingDialog" title="Book a Helper" contentWidth="90%">
+                <Dialog id="bookingDialog" title="Book a Helper" contentWidth="90%" stretch="{device>/system/phone}">
                     <VBox class="sapUiMediumMargin">
                         <Title text="{= 'Book ' + ${appData>/selectedProfile/name}}" level="H4" class="sapUiSmallMarginBottom"/>
                         <Label text="Service" required="true"/>
@@ -664,7 +664,7 @@
                 </Dialog>
 
                 <!-- Notifications Dialog -->
-                <Dialog id="notificationsDialog" title="Notifications">
+                <Dialog id="notificationsDialog" title="Notifications" stretch="{device>/system/phone}">
                     <VBox class="sapUiSmallMargin">
                         <HBox justifyContent="End" class="sapUiTinyMarginBottom">
                             <Button text="Mark all read" type="Transparent" press="onMarkAllRead"/>
@@ -688,7 +688,7 @@
                 </Dialog>
 
                 <!-- AI Chat Dialog — full screen on mobile -->
-                <Dialog id="chatDialog" title="AI Chat" contentHeight="65vh" contentWidth="92%" verticalScrolling="false">
+                <Dialog id="chatDialog" title="AI Chat" contentHeight="65vh" contentWidth="92%" verticalScrolling="false" stretch="{device>/system/phone}">
                     <!-- Messages fill available space; input pinned at bottom -->
                     <VBox height="100%" class="hhChatLayout">
                         <ScrollContainer id="chatScrollContainer" vertical="true" horizontal="false" class="hhChatMessages">
@@ -718,7 +718,7 @@
                 </Dialog>
 
                 <!-- DM Chat Dialog -->
-                <Dialog id="dmChatDialog" title="Message" contentHeight="65vh" contentWidth="92%" verticalScrolling="false">
+                <Dialog id="dmChatDialog" title="Message" contentHeight="65vh" contentWidth="92%" verticalScrolling="false" stretch="{device>/system/phone}">
                     <VBox height="100%" class="hhChatLayout">
                         <ScrollContainer id="dmScrollContainer" vertical="true" horizontal="false" class="hhChatMessages">
                             <core:HTML id="dmBubblesHtml" content="&lt;div&gt;&lt;/div&gt;"/>
@@ -741,7 +741,7 @@
                 </Dialog>
 
                 <!-- Post Task Dialog -->
-                <Dialog id="postTaskDialog" title="Post a Task" contentWidth="92%">
+                <Dialog id="postTaskDialog" title="Post a Task" contentWidth="92%" stretch="{device>/system/phone}">
                     <VBox class="sapUiMediumMargin">
                         <Label text="What do you need help with?" required="true"/>
                         <Input value="{appData>/taskForm/title}" placeholder="e.g. Mow my lawn this Saturday" width="100%" class="sapUiTinyMarginBottom"/>
@@ -767,7 +767,7 @@
                 </Dialog>
 
                 <!-- Task Detail Dialog -->
-                <Dialog id="taskDetailDialog" title="Task Details" contentWidth="92%" verticalScrolling="true">
+                <Dialog id="taskDetailDialog" title="Task Details" contentWidth="92%" verticalScrolling="true" stretch="{device>/system/phone}">
                     <VBox class="sapUiMediumMargin">
                         <Title text="{appData>/selectedTask/title}" level="H3" class="sapUiSmallMarginBottom"/>
                         <HBox alignItems="Center" class="sapUiTinyMarginBottom" wrap="Wrap">

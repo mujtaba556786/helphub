@@ -956,6 +956,15 @@ sap.ui.define([
                 .catch(function() { /* silent */ });
         },
 
+        formatBookingDate: function(sDate) {
+            if (!sDate) return "";
+            try {
+                var d = new Date(sDate);
+                if (isNaN(d.getTime())) return sDate;
+                return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+            } catch (e) { return sDate; }
+        },
+
         formatBookingState: function(sStatus) {
             switch (sStatus) {
                 case "confirmed":  return "Success";
