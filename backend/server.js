@@ -258,6 +258,14 @@ async function initDb() {
             )
         `);
 
+        // Add lat/lng to tasks if not present (safe to run on existing tables)
+        try {
+            await connection.query('ALTER TABLE tasks ADD COLUMN lat FLOAT');
+        } catch(e) { /* column already exists */ }
+        try {
+            await connection.query('ALTER TABLE tasks ADD COLUMN lng FLOAT');
+        } catch(e) { /* column already exists */ }
+
         await connection.query(`
             CREATE TABLE IF NOT EXISTS task_applications (
                 id VARCHAR(50) PRIMARY KEY,
@@ -815,15 +823,15 @@ app.get('/api/messages/unread-count/:userId', handleAsync(async (req, res) => {
 
 // POST /api/tasks — create a task
 app.post('/api/tasks', handleAsync(async (req, res) => {
-    const { poster_id, title, description, category, budget, task_date, location } = req.body;
+    const { poster_id, title, description, category, budget, task_date, location, lat, lng } = req.body;
     if (!poster_id || !title || !category) {
         return res.status(400).json({ success: false, error: 'poster_id, title, and category are required' });
     }
 
     const id = 'T' + Date.now();
     await pool.execute(
-        'INSERT INTO tasks (id, poster_id, title, description, category, budget, task_date, location) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-        [id, poster_id, title, description || null, category, budget || null, task_date || null, location || null]
+        'INSERT INTO tasks (id, poster_id, title, description, category, budget, task_date, location, lat, lng) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        [id, poster_id, title, description || null, category, budget || null, task_date || null, location || null, lat || null, lng || null]
     );
     res.json({ success: true, taskId: id });
 }));

@@ -97,6 +97,11 @@
                                         </HBox>
                                     </VBox>
 
+                                    <!-- Task map (Browse mode) -->
+                                    <VBox id="taskMapContainer" visible="{= ${appData>/taskViewMode} === 'browse'}" height="20vh" width="100%" class="mapPlaceholder sapUiTinyMarginBottom">
+                                        <core:HTML content='&lt;div id="taskMap" class="mapDiv"&gt;Map View Centered on You&lt;/div&gt;'/>
+                                    </VBox>
+
                                     <!-- Browse Tasks -->
                                     <VBox visible="{= ${appData>/taskViewMode} === 'browse'}">
                                         <List id="taskFeedList" items="{appData>/tasksFeed}" noDataText="No tasks found. Try a different search or category.">

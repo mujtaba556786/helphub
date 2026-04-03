@@ -63,6 +63,12 @@ sap.ui.define([
             } else if (sKey === "tasks") {
                 this._loadTasksFeed();
                 this._loadMyTasks();
+                if (!this._taskMapInitialized) {
+                    setTimeout(function() {
+                        this._initTaskMap();
+                        this._taskMapInitialized = true;
+                    }.bind(this), 400);
+                }
             }
         },
 
@@ -343,6 +349,31 @@ sap.ui.define([
             .then(function(oData) {
                 if (oData.success) {
                     MessageToast.show("Profile saved successfully.");
+
+                    // Sync updated user data back into the local providers array so
+                    // "View Profile" immediately reflects the changes
+                    var sUserId = oUser.id || sessionStorage.getItem("helpmate_user_id");
+                    var aProviders = (oModel.getProperty("/providers") || []).slice();
+                    var iIdx = -1;
+                    for (var i = 0; i < aProviders.length; i++) {
+                        if (aProviders[i].id === sUserId) { iIdx = i; break; }
+                    }
+                    if (iIdx >= 0) {
+                        aProviders[iIdx] = Object.assign({}, aProviders[iIdx], {
+                            name:         oUser.name,
+                            languages:    oUser.languages || "",
+                            years:        oUser.years || 0,
+                            rate:         oUser.rate || 0,
+                            availability: Array.isArray(oUser.availability)
+                                ? oUser.availability.join(",")
+                                : (oUser.availability || ""),
+                            address: [oAddr.street, oAddr.houseNumber, oAddr.city]
+                                .filter(Boolean).join(", ")
+                        });
+                        oModel.setProperty("/providers", aProviders);
+                        this._refreshCurrentFilters();
+                    }
+
                     this.onNavBack();
                 } else {
                     MessageToast.show("Save failed: " + (oData.error || "Unknown error"));
@@ -575,6 +606,60 @@ sap.ui.define([
                         "$" + (p.rate || 0) + "/hr • ⭐ " + (p.rating || "")
                     );
                 this._aProviderMarkers.push(oMarker);
+            }.bind(this));
+        },
+
+        _initTaskMap: function() {
+            if (!window.L) return;
+            var oModel   = this.getModel("appData");
+            var oUserLoc = oModel.getProperty("/user/location") || { lat: 52.52, lng: 13.405 };
+
+            this._oTaskMap = L.map("taskMap", { zoomControl: true }).setView(
+                [oUserLoc.lat, oUserLoc.lng], 13
+            );
+            L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                attribution: "© OpenStreetMap contributors",
+                maxZoom: 19
+            }).addTo(this._oTaskMap);
+
+            L.marker([oUserLoc.lat, oUserLoc.lng])
+                .addTo(this._oTaskMap)
+                .bindPopup("<b>You are here</b>");
+
+            this._aTaskMarkers = [];
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(pos) {
+                    var oLoc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                    oModel.setProperty("/user/location", oLoc);
+                    this._oTaskMap.setView([oLoc.lat, oLoc.lng], 13);
+                }.bind(this), function() {});
+            }
+
+            // Show tasks already loaded
+            var aTasks = oModel.getProperty("/tasksFeed") || [];
+            this._updateTaskMarkers(aTasks);
+
+            setTimeout(function() {
+                if (this._oTaskMap) { this._oTaskMap.invalidateSize(); }
+            }.bind(this), 200);
+        },
+
+        _updateTaskMarkers: function(aTasks) {
+            if (!this._oTaskMap || !window.L) return;
+            (this._aTaskMarkers || []).forEach(function(m) { m.remove(); });
+            this._aTaskMarkers = [];
+            (aTasks || []).forEach(function(t) {
+                if (!t.lat || !t.lng) return;
+                var oMarker = L.marker([t.lat, t.lng])
+                    .addTo(this._oTaskMap)
+                    .bindPopup(
+                        "<b>" + (t.title || "Task") + "</b><br>" +
+                        (t.category || "") + "<br>" +
+                        (t.budget ? "€" + t.budget : "Open budget") +
+                        (t.location ? "<br>" + t.location : "")
+                    );
+                this._aTaskMarkers.push(oMarker);
             }.bind(this));
         },
 
@@ -1506,8 +1591,9 @@ sap.ui.define([
                     if (oData.success) {
                         oModel.setProperty("/tasksFeed", oData.tasks);
                         oModel.setProperty("/openTaskCount", oData.tasks.length || 0);
+                        this._updateTaskMarkers(oData.tasks);
                     }
-                })
+                }.bind(this))
                 .catch(function() { /* silent */ });
         },
 
@@ -1588,6 +1674,7 @@ sap.ui.define([
             if (!sUserId) { MessageToast.show("Please log in first."); return; }
 
             var that = this;
+            var oUserLoc = oModel.getProperty("/user/location");
             fetch(API_BASE + "/api/tasks", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -1598,7 +1685,9 @@ sap.ui.define([
                     category:    oForm.category,
                     budget:      oForm.budget ? parseFloat(oForm.budget) : null,
                     task_date:   oForm.task_date || null,
-                    location:    oForm.location
+                    location:    oForm.location,
+                    lat:         oUserLoc ? oUserLoc.lat : null,
+                    lng:         oUserLoc ? oUserLoc.lng : null
                 })
             })
             .then(function(r) { return r.json(); })
