@@ -368,29 +368,61 @@ sap.ui.define([
 
         onFilterAll: function() {
             this.getModel("appData").setProperty("/filters/priceCategory", "all");
+            this._updateActiveFilterCount();
             this._refreshCurrentFilters();
         },
 
         onFilterTopRated: function() {
             this.getModel("appData").setProperty("/filters/priceCategory", "top");
+            this._updateActiveFilterCount();
             this._refreshCurrentFilters();
         },
 
         onFilterBudget: function() {
             this.getModel("appData").setProperty("/filters/priceCategory", "budget");
+            this._updateActiveFilterCount();
             this._refreshCurrentFilters();
         },
 
-        onFilterToday: function() {
-            MessageToast.show("Filter 'Today' (mock).");
+        onFilterAvailableNow: function() {
+            var oModel = this.getModel("appData");
+            var bCurrent = oModel.getProperty("/filters/availableNow");
+            oModel.setProperty("/filters/availableNow", !bCurrent);
+            this._updateActiveFilterCount();
+            this._refreshCurrentFilters();
         },
 
-        onFilterThisWeek: function() {
-            MessageToast.show("Filter 'This week' (mock).");
+        onRatingFilter: function(oEvent) {
+            var sRating = oEvent.getSource().data("rating");
+            this.getModel("appData").setProperty("/filters/minRating", parseFloat(sRating));
+            this._updateActiveFilterCount();
+            this._refreshCurrentFilters();
         },
 
-        onFilterNow: function() {
-            MessageToast.show("Filter 'Available now' (mock).");
+        onPriceFilterChange: function(oEvent) {
+            var iVal = oEvent.getParameter("value");
+            this.getModel("appData").setProperty("/filters/maxPrice", iVal);
+            this._updateActiveFilterCount();
+            this._refreshCurrentFilters();
+        },
+
+        onLangFilter: function(oEvent) {
+            var sLang = oEvent.getSource().data("lang");
+            this.getModel("appData").setProperty("/filters/language", sLang);
+            this._updateActiveFilterCount();
+            this._refreshCurrentFilters();
+        },
+
+        _updateActiveFilterCount: function() {
+            var oModel = this.getModel("appData");
+            var oFilters = oModel.getProperty("/filters");
+            var iCount = 0;
+            if (oFilters.priceCategory !== "all") iCount++;
+            if (oFilters.availableNow) iCount++;
+            if (oFilters.minRating > 0) iCount++;
+            if (oFilters.maxPrice < 200) iCount++;
+            if (oFilters.language) iCount++;
+            oModel.setProperty("/filters/activeCount", iCount);
         },
 
         _refreshCurrentFilters: function() {
@@ -415,6 +447,7 @@ sap.ui.define([
             var sLangFilter = (oFilters.language || "").trim().toLowerCase();
             var iMaxPrice  = parseFloat(oFilters.maxPrice);
             if (isNaN(iMaxPrice) || iMaxPrice >= 200) { iMaxPrice = Infinity; }
+            var bAvailableNow = oFilters.availableNow;
 
             var aFiltered = aAll.filter(function(p) {
                 if (p.serviceType !== sServiceName) { return false; }
@@ -424,6 +457,8 @@ sap.ui.define([
 
                 if (oFilters.priceCategory === "budget" && p.rate > 25) { return false; }
                 if (oFilters.priceCategory === "top"    && p.rating < 4.8) { return false; }
+
+                if (bAvailableNow && !that._isAvailableNow(p.availability)) { return false; }
 
                 if (sQuery) {
                     var sName = (p.name || "").toLowerCase();
@@ -565,13 +600,49 @@ sap.ui.define([
             return (oProvider.currency || "$") + (oProvider.rate || "0") + "/hr";
         },
 
+        _isAvailableNow: function(sAvailability) {
+            if (!sAvailability) return false;
+            var aSlots = sAvailability.toLowerCase().split(",").map(function(s) { return s.trim(); });
+
+            // If all_day is set, always available
+            if (aSlots.indexOf("all_day") >= 0) return true;
+
+            var now = new Date();
+            var iHour = now.getHours();
+            var iDay = now.getDay(); // 0=Sun, 6=Sat
+            var bWeekend = (iDay === 0 || iDay === 6);
+            var bWeekday = !bWeekend;
+
+            // Check day match
+            var bDayMatch = false;
+            if (aSlots.indexOf("weekdays") >= 0 && bWeekday) bDayMatch = true;
+            if (aSlots.indexOf("weekends") >= 0 && bWeekend) bDayMatch = true;
+            // If no day preference set, assume any day
+            if (aSlots.indexOf("weekdays") < 0 && aSlots.indexOf("weekends") < 0) bDayMatch = true;
+
+            if (!bDayMatch) return false;
+
+            // Check time slot match
+            var bTimeMatch = false;
+            if (aSlots.indexOf("morning") >= 0 && iHour >= 6 && iHour < 12) bTimeMatch = true;
+            if (aSlots.indexOf("afternoon") >= 0 && iHour >= 12 && iHour < 17) bTimeMatch = true;
+            if (aSlots.indexOf("evening") >= 0 && iHour >= 17 && iHour < 22) bTimeMatch = true;
+            if (aSlots.indexOf("night") >= 0 && (iHour >= 22 || iHour < 6)) bTimeMatch = true;
+            // If no time preference set, assume any time
+            if (aSlots.indexOf("morning") < 0 && aSlots.indexOf("afternoon") < 0 &&
+                aSlots.indexOf("evening") < 0 && aSlots.indexOf("night") < 0) bTimeMatch = true;
+
+            return bTimeMatch;
+        },
+
         formatAvailabilityStatus: function(oProvider) {
-            return oProvider && oProvider.availability ? oProvider.availability : "Available Now";
+            if (!oProvider) return "";
+            return this._isAvailableNow(oProvider.availability) ? "Available" : "Unavailable";
         },
 
         formatAvailabilityState: function(oProvider) {
-            var sStatus = this.formatAvailabilityStatus(oProvider);
-            return sStatus === "Available Now" ? "Success" : "Warning";
+            if (!oProvider) return "None";
+            return this._isAvailableNow(oProvider.availability) ? "Success" : "None";
         },
 
         onViewProfile: function (oEvent) {
@@ -1056,22 +1127,15 @@ sap.ui.define([
             this._refreshCurrentFilters();
         },
 
-        // ── ADVANCED FILTERS ──────────────────────────────────────────────────
-        onOpenFilters: function() {
-            this.byId("filterDialog").open();
-        },
-
-        onApplyFilters: function() {
-            this.byId("filterDialog").close();
-            this._refreshCurrentFilters();
-        },
-
+        // ── RESET FILTERS ────────────────────────────────────────────────────
         onResetFilters: function() {
             var oModel = this.getModel("appData");
             oModel.setProperty("/filters/minRating", 0);
             oModel.setProperty("/filters/language", "");
             oModel.setProperty("/filters/maxPrice", 200);
-            this.byId("filterDialog").close();
+            oModel.setProperty("/filters/priceCategory", "all");
+            oModel.setProperty("/filters/availableNow", false);
+            oModel.setProperty("/filters/activeCount", 0);
             this._refreshCurrentFilters();
         },
 

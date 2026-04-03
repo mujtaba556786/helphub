@@ -210,7 +210,9 @@ sap.ui.define([
             priceCategory: "all",
             minRating: 0,
             language: "",
-            maxPrice: 200
+            maxPrice: 200,
+            availableNow: false,
+            activeCount: 0
         },
 
         searchQuery: "",

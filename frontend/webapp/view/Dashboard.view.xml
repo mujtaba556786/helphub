@@ -285,21 +285,32 @@
 
                         <SearchField id="helperSearch" placeholder="Search by name or skill…" search="onHelperSearch" liveChange="onHelperSearch" width="100%" class="sapUiTinyMarginBottom"/>
 
+                        <!-- Filter pills -->
+                        <HBox wrap="Wrap" alignItems="Center" class="sapUiTinyMarginBottom">
+                            <Button text="🟢 Available now" type="{= ${appData>/filters/availableNow} ? 'Emphasized' : 'Default'}" press="onFilterAvailableNow" class="sapUiTinyMarginEnd sapUiTinyMarginBottom hhFilterPill"/>
+                            <Button text="All" type="{= ${appData>/filters/priceCategory} === 'all' ? 'Emphasized' : 'Default'}" press="onFilterAll" class="sapUiTinyMarginEnd sapUiTinyMarginBottom hhFilterPill"/>
+                            <Button text="⭐ Top rated" type="{= ${appData>/filters/priceCategory} === 'top' ? 'Emphasized' : 'Default'}" press="onFilterTopRated" class="sapUiTinyMarginEnd sapUiTinyMarginBottom hhFilterPill"/>
+                            <Button text="💸 Budget" type="{= ${appData>/filters/priceCategory} === 'budget' ? 'Emphasized' : 'Default'}" press="onFilterBudget" class="sapUiTinyMarginEnd sapUiTinyMarginBottom hhFilterPill"/>
+                        </HBox>
+
+                        <!-- Distance slider -->
                         <VBox class="sapUiTinyMarginBottom">
                             <HBox justifyContent="SpaceBetween" alignItems="Center">
-                                <Text text="Search radius (km)" class="smallText grayText"/>
-                                <Text text="{appData>/filters/distanceLabel}" class="smallText blueText"/>
+                                <Text text="📍 Distance" class="smallText grayText"/>
+                                <Text text="{appData>/filters/distanceLabel}" class="smallText blueText fontBold"/>
                             </HBox>
                             <Slider min="1" max="50" step="1" value="{appData>/filters/distance}" liveChange="onDistanceChange"/>
                         </VBox>
 
-                        <HBox class="sapUiTinyMarginBottom" justifyContent="SpaceBetween" alignItems="Center">
-                            <HBox>
-                                <Button text="All" type="Transparent" press="onFilterAll"/>
-                                <Button text="Top rated" type="Transparent" press="onFilterTopRated"/>
-                                <Button text="Budget" type="Transparent" press="onFilterBudget"/>
-                            </HBox>
-                            <Button icon="sap-icon://filter" text="Filters" type="Transparent" press="onOpenFilters"/>
+                        <!-- Language filter -->
+                        <HBox alignItems="Center" class="sapUiTinyMarginBottom">
+                            <Text text="🌐 Language" class="smallText grayText sapUiSmallMarginEnd"/>
+                            <Input value="{appData>/filters/language}" placeholder="e.g. EN, DE" liveChange="onLangFilter" width="120px"/>
+                        </HBox>
+
+                        <!-- Reset filters -->
+                        <HBox visible="{= ${appData>/filters/activeCount} > 0}" class="sapUiTinyMarginBottom">
+                            <Button text="✕ Reset filters" type="Transparent" press="onResetFilters" class="hhFilterPill"/>
                         </HBox>
 
                         <!-- Ad slot: banner between filters and helper list (non-intrusive) -->
@@ -552,33 +563,7 @@
                     </endButton>
                 </Dialog>
 
-                <!-- Filter Dialog -->
-                <Dialog id="filterDialog" title="Filter Helpers" contentWidth="92%" stretch="{device>/system/phone}">
-                    <VBox class="sapUiMediumMargin">
-                        <Label text="Minimum rating"/>
-                        <Select id="filterRatingSelect" selectedKey="{appData>/filters/minRating}" width="100%" class="sapUiTinyMarginBottom">
-                            <core:Item key="0"   text="Any rating"/>
-                            <core:Item key="4.0" text="4.0+ stars"/>
-                            <core:Item key="4.5" text="4.5+ stars"/>
-                            <core:Item key="4.8" text="4.8+ stars (Top rated)"/>
-                        </Select>
-                        <Label text="Language" class="sapUiTinyMarginTop"/>
-                        <Input id="filterLangInput" value="{appData>/filters/language}" placeholder="e.g. EN or DE" width="100%" class="sapUiTinyMarginBottom"/>
-                        <Label text="Max hourly rate (EUR)" class="sapUiTinyMarginTop"/>
-                        <HBox justifyContent="SpaceBetween" alignItems="Center">
-                            <Text text="€0" class="smallText grayText"/>
-                            <Text text="{= '€' + ${appData>/filters/maxPrice} + '/hr'}" class="smallText blueText fontBold"/>
-                            <Text text="€200+" class="smallText grayText"/>
-                        </HBox>
-                        <Slider id="filterPriceSlider" min="0" max="200" step="5" value="{appData>/filters/maxPrice}" width="100%"/>
-                    </VBox>
-                    <beginButton>
-                        <Button text="Reset" press="onResetFilters"/>
-                    </beginButton>
-                    <endButton>
-                        <Button text="Apply" type="Emphasized" press="onApplyFilters"/>
-                    </endButton>
-                </Dialog>
+                <!-- Filter dialog removed — filters are now inline on the search page -->
 
                 <!-- Profile dialog -->
                 <Dialog id="profileDialog" title="Helper profile" verticalScrolling="true" stretch="{device>/system/phone}">
