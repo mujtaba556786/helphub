@@ -346,10 +346,13 @@
                                         <ObjectStatus text="{appData>languages}" state="None" class="smallText"/>
                                     </HBox>
                                     <HBox class="sapUiTinyMarginTop helperCardActions" wrap="Wrap" alignItems="Center">
-                                        <Button icon="{= ${appData>/favorites}.indexOf(${appData>id}) >= 0 ? 'sap-icon://favorite' : 'sap-icon://unfavorite'}" type="{= ${appData>/favorites}.indexOf(${appData>id}) >= 0 ? 'Emphasized' : 'Transparent'}" press="onToggleFavorite" tooltip="Save helper" class="sapUiTinyMarginEnd"/>
+                                        <Button icon="{= ${appData>/favorites}.indexOf(${appData>id}) >= 0 ? 'sap-icon://favorite' : 'sap-icon://unfavorite'}" type="{= ${appData>/favorites}.indexOf(${appData>id}) >= 0 ? 'Emphasized' : 'Transparent'}" press="onToggleFavorite" tooltip="Save helper" class="sapUiTinyMarginEnd"
+                                            visible="{= ${appData>id} !== ${appData>/user/id}}"/>
                                         <Button text="Profile" type="Transparent" press="onViewProfile" class="sapUiTinyMarginEnd"/>
-                                        <Button text="📅 Book" type="Emphasized" press="onQuickBook" class="sapUiTinyMarginEnd"/>
-                                        <Button text="✉️ Message" type="Accept" press="onQuickMessage"/>
+                                        <Button text="📅 Book" type="Emphasized" press="onQuickBook" class="sapUiTinyMarginEnd"
+                                            visible="{= ${appData>id} !== ${appData>/user/id}}"/>
+                                        <Button text="✉️ Message" type="Accept" press="onQuickMessage"
+                                            visible="{= ${appData>id} !== ${appData>/user/id}}"/>
                                     </HBox>
                                 </VBox>
                             </CustomListItem>
@@ -622,8 +625,10 @@
 
                         <!-- Actions inside content for proper layout -->
                         <HBox justifyContent="Center" wrap="Wrap" class="sapUiMediumMarginTop sapUiMediumMarginBottom">
-                            <Button text="📅 Book Helper" type="Emphasized" press="onOpenBooking" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
-                            <Button text="✉️ Message" type="Accept" press="onStartDm" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                            <Button text="📅 Book Helper" type="Emphasized" press="onOpenBooking" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"
+                                visible="{= ${appData>/selectedProfile/id} !== ${appData>/user/id}}"/>
+                            <Button text="✉️ Message" type="Accept" press="onStartDm" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"
+                                visible="{= ${appData>/selectedProfile/id} !== ${appData>/user/id}}"/>
                         </HBox>
                     </VBox>
 

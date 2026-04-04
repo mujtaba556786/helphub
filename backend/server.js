@@ -422,7 +422,7 @@ app.get('/api/providers', handleAsync(async (req, res) => {
         languages: u.languages || '',
         years: u.years || 0,
         availability: u.availability || 'Available Now',
-        serviceType: u.service_categories ? u.service_categories.split(',')[0].trim() : '',
+        serviceType: u.service_categories || '',
         phone: u.phone || ''
     }));
 

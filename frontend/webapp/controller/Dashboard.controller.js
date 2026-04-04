@@ -481,7 +481,8 @@ sap.ui.define([
             var bAvailableNow = oFilters.availableNow;
 
             var aFiltered = aAll.filter(function(p) {
-                if (p.serviceType !== sServiceName) { return false; }
+                var aCategories = (p.serviceType || '').split(',').map(function(s) { return s.trim(); });
+                if (aCategories.indexOf(sServiceName) < 0) { return false; }
 
                 var fDist = that._calculateDistanceKm(oUserLoc, { lat: p.lat, lng: p.lng });
                 if (fDist > oFilters.distance) { return false; }
@@ -510,7 +511,30 @@ sap.ui.define([
             });
 
             if (!aFiltered.length) {
-                oModel.setProperty("/filters/distanceLabel", "No helpers within " + oFilters.distance + " km — try increasing the radius");
+                // Fallback: no providers within radius — show all for this category regardless of distance
+                aFiltered = aAll.filter(function(p) {
+                    var aCategories = (p.serviceType || '').split(',').map(function(s) { return s.trim(); });
+                    if (aCategories.indexOf(sServiceName) < 0) { return false; }
+                    if (oFilters.priceCategory === "budget" && p.rate > 25) { return false; }
+                    if (oFilters.priceCategory === "top"    && p.rating < 4.8) { return false; }
+                    if (bAvailableNow && !that._isAvailableNow(p.availability)) { return false; }
+                    if (sQuery) {
+                        var sName = (p.name || "").toLowerCase();
+                        var sType = (p.serviceType || "").toLowerCase();
+                        if (!sName.includes(sQuery) && !sType.includes(sQuery)) { return false; }
+                    }
+                    if (fMinRating > 0 && (!p.rating || p.rating < fMinRating)) { return false; }
+                    if (sLangFilter) {
+                        var sProvLang = (p.languages || "").toLowerCase();
+                        if (!sProvLang.includes(sLangFilter)) { return false; }
+                    }
+                    if (iMaxPrice < Infinity && p.rate > iMaxPrice) { return false; }
+                    return true;
+                });
+                oModel.setProperty("/filters/distanceLabel",
+                    aFiltered.length
+                        ? "No helpers within " + oFilters.distance + " km — showing all available helpers"
+                        : "No helpers found for this category yet");
             }
 
             aFiltered.sort(function(a, b) {
