@@ -51,3 +51,23 @@ type: project
 - React Native or Capacitor wrap for iOS/Android
 - GPS-based "Helper nearby" notification
 - Offline mode — view saved helpers without internet
+
+Direct messaging — without it, your marketplace leaks users
+Payments (Stripe) — no money flow = no real business
+Post a Task — doubles your marketplace by letting demand find supply
+Map view + distance sorting — location is everything for local services
+Real push notifications — replace the 5-second polling
+Want me to start implementing any of these?
+
+Fresh Ideas (Beyond Your Backlog)
+Idea	Why It Matters
+"Instant Book" vs "Request"	Let top-rated providers enable instant booking (no approval needed) — reduces friction
+Service Bundles	"Moving + Cleaning" package at a discount
+Availability Status	Real-time "Available Now" green dot — like Uber
+Photo Proof of Work	Provider uploads before/after photos when job is done — builds trust
+Tipping	Post-booking tip option — providers love this
+Repeat Customer Discount	Auto-discount for customers who book same provider 3+ times
+Emergency/Urgent Flag	"Need help TODAY" with higher rate — providers opt into urgent requests
+Provider Portfolio	Photo gallery of past work (especially for handyman, gardening, cooking)
+Group Bookings	Multiple neighbors book same provider (e.g., group cooking class)
+Seasonal Highlights	Auto-promote snow removal in winter, gardening in spring

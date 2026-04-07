@@ -1,0 +1,67 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core">
+
+    <Dialog id="profileDialog" title="Helper profile" verticalScrolling="true" stretch="{device>/system/phone}">
+        <VBox class="sapUiMediumMargin">
+            <HBox alignItems="Center" class="sapUiSmallMarginBottom">
+                <Avatar src="{appData>/selectedProfile/photo}" initials="{appData>/selectedProfile/initials}" displaySize="L" class="sapUiTinyMarginEnd"/>
+                <VBox>
+                    <Title text="{appData>/selectedProfile/name}" level="H2"/>
+                    <Text text="{appData>/selectedProfile/address}" class="grayText smallText"/>
+                    <Text text="{appData>/selectedProfile/serviceType}" class="smallText"/>
+                </VBox>
+            </HBox>
+
+            <HBox alignItems="Center" class="sapUiSmallMarginBottom">
+                <RatingIndicator value="{appData>/selectedProfile/rating}" maxValue="5" visualMode="Half" displayOnly="true" class="sapUiTinyMarginEnd"/>
+                <Text text="{= ${appData>/selectedProfile/rating} ? ${appData>/selectedProfile/rating} + ' / 5.0 rating' : 'No rating'}" class="smallText"/>
+            </HBox>
+
+            <Title text="About &amp; hobbies" level="H4" class="sapUiSmallMarginBottom"/>
+            <Text text="{appData>/selectedProfile/hobbies}" class="smallText sapUiTinyMarginBottom"/>
+
+            <HBox class="sapUiTinyMarginBottom" justifyContent="Start" wrap="Wrap">
+                <ObjectStatus text="{appData>/selectedProfile/years} yrs experience" state="Information" class="smallText sapUiTinyMarginEnd"/>
+                <ObjectStatus text="{appData>/selectedProfile/languages}" state="None" class="smallText sapUiTinyMarginEnd"/>
+                <ObjectStatus text="{appData>/selectedProfile/rate} {appData>/selectedProfile/currency}/hr" state="None" class="smallText"/>
+            </HBox>
+
+            <Title text="Reviews" level="H4" class="sapUiSmallMarginBottom"/>
+            <List id="reviewsList" items="{appData>/selectedProfile/reviews}" noDataText="No reviews yet — be the first!">
+                <CustomListItem>
+                    <VBox class="sapUiTinyMargin">
+                        <HBox alignItems="Center" class="sapUiTinyMarginBottom">
+                            <RatingIndicator value="{appData>stars}" maxValue="5" displayOnly="true" iconSize="12px" class="sapUiTinyMarginEnd"/>
+                            <Text text="{appData>reviewer_name}" class="fontBold smallText"/>
+                        </HBox>
+                        <Text text="{appData>comment}" class="smallText grayText"/>
+                    </VBox>
+                </CustomListItem>
+            </List>
+
+            <!-- Rate this helper -->
+            <Panel headerText="Rate this helper" expandable="true" expanded="false" class="sapUiSmallMarginTop">
+                <VBox class="sapUiSmallMargin">
+                    <Label text="Your rating" required="true"/>
+                    <RatingIndicator id="newRatingStars" maxValue="5" value="0" class="sapUiTinyMarginBottom"/>
+                    <Label text="Your comment (optional)"/>
+                    <TextArea id="newRatingComment" rows="3" width="100%" placeholder="Tell others about your experience…" class="sapUiTinyMarginBottom"/>
+                    <Button text="Submit Rating" type="Emphasized" press="onSubmitRating" class="sapUiTinyMarginTop"/>
+                </VBox>
+            </Panel>
+
+            <!-- Actions -->
+            <HBox justifyContent="Center" wrap="Wrap" class="sapUiMediumMarginTop sapUiMediumMarginBottom">
+                <Button text="📅 Book Helper" type="Emphasized" press="onOpenBooking" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"
+                    visible="{= ${appData>/selectedProfile/id} !== ${appData>/user/id}}"/>
+                <Button text="✉️ Message" type="Accept" press="onStartDm" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"
+                    visible="{= ${appData>/selectedProfile/id} !== ${appData>/user/id}}"/>
+            </HBox>
+        </VBox>
+        <endButton>
+            <Button text="Close" press="onCloseProfile"/>
+        </endButton>
+    </Dialog>
+
+</core:FragmentDefinition>

@@ -1,0 +1,28 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core">
+
+    <Dialog id="notificationsDialog" title="Notifications" stretch="{device>/system/phone}">
+        <VBox class="sapUiSmallMargin">
+            <HBox justifyContent="End" class="sapUiTinyMarginBottom">
+                <Button text="Mark all read" type="Transparent" press="onMarkAllRead"/>
+            </HBox>
+            <List id="notificationsList" items="{appData>/notifications}" noDataText="No notifications yet.">
+                <CustomListItem>
+                    <VBox class="sapUiSmallMargin">
+                        <HBox justifyContent="SpaceBetween" alignItems="Center">
+                            <Title text="{appData>title}" level="H5"/>
+                            <core:HTML content="{= ${appData>is_read} ? '' : '&lt;span style=&quot;width:8px;height:8px;border-radius:50%;background:#3b82f6;display:inline-block&quot;&gt;&lt;/span&gt;'}"/>
+                        </HBox>
+                        <Text text="{appData>message}" class="smallText grayText"/>
+                        <Text text="{appData>created_at}" class="smallText grayText"/>
+                    </VBox>
+                </CustomListItem>
+            </List>
+        </VBox>
+        <endButton>
+            <Button text="Close" press="onCloseNotifications"/>
+        </endButton>
+    </Dialog>
+
+</core:FragmentDefinition>

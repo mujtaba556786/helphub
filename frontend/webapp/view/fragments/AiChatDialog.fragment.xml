@@ -1,0 +1,31 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core">
+
+    <Dialog id="chatDialog" title="AI Chat" contentHeight="65vh" contentWidth="92%" verticalScrolling="false" stretch="{device>/system/phone}">
+        <VBox height="100%" class="hhChatLayout">
+            <ScrollContainer id="chatScrollContainer" vertical="true" horizontal="false" class="hhChatMessages">
+                <core:HTML id="chatMessagesHtml" content="&lt;div&gt;&lt;/div&gt;"/>
+                <HBox id="chatTypingIndicator" visible="false" alignItems="Center" class="sapUiTinyMarginBegin sapUiTinyMarginBottom">
+                    <BusyIndicator size="1rem" class="sapUiTinyMarginEnd"/>
+                    <Text text="typing…" class="grayText smallText"/>
+                </HBox>
+            </ScrollContainer>
+            <HBox class="hhQuickReplies" wrap="Wrap">
+                <Button text="On my way 🚗"          type="Transparent" press="onQuickReply" class="hhQRChip sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                <Button text="I'm available ✅"      type="Transparent" press="onQuickReply" class="hhQRChip sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                <Button text="Can we reschedule? 📅" type="Transparent" press="onQuickReply" class="hhQRChip sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                <Button text="See you soon 👋"       type="Transparent" press="onQuickReply" class="hhQRChip sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                <Button text="All done ✔️"           type="Transparent" press="onQuickReply" class="hhQRChip sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+            </HBox>
+            <HBox alignItems="Center" class="hhChatInputBar">
+                <Input id="chatInput" placeholder="Ask anything…" width="100%" submit="onChatSend"/>
+                <Button id="chatSendBtn" icon="sap-icon://paper-plane" type="Emphasized" press="onChatSend" class="sapUiTinyMarginBegin"/>
+            </HBox>
+        </VBox>
+        <endButton>
+            <Button text="Close" press="onCloseChat"/>
+        </endButton>
+    </Dialog>
+
+</core:FragmentDefinition>

@@ -1,0 +1,27 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core">
+
+    <Dialog id="dmChatDialog" title="Message" contentHeight="65vh" contentWidth="92%" verticalScrolling="false" stretch="{device>/system/phone}">
+        <VBox height="100%" class="hhChatLayout">
+            <ScrollContainer id="dmScrollContainer" vertical="true" horizontal="false" class="hhChatMessages">
+                <core:HTML id="dmBubblesHtml" content="&lt;div&gt;&lt;/div&gt;"/>
+            </ScrollContainer>
+            <HBox class="hhQuickReplies" wrap="Wrap">
+                <Button text="On my way 🚗"           type="Transparent" press="onDmQuickReply" class="hhQRChip sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                <Button text="I'm available ✅"       type="Transparent" press="onDmQuickReply" class="hhQRChip sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                <Button text="Can we reschedule? 📅"  type="Transparent" press="onDmQuickReply" class="hhQRChip sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                <Button text="Thank you! 🙏"          type="Transparent" press="onDmQuickReply" class="hhQRChip sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                <Button text="See you soon 👋"        type="Transparent" press="onDmQuickReply" class="hhQRChip sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+            </HBox>
+            <HBox alignItems="Center" class="hhChatInputBar">
+                <Input id="dmInput" placeholder="Type a message…" width="100%" submit="onDmSend"/>
+                <Button id="dmSendBtn" icon="sap-icon://paper-plane" type="Emphasized" press="onDmSend" class="sapUiTinyMarginBegin"/>
+            </HBox>
+        </VBox>
+        <endButton>
+            <Button text="Close" press="onCloseDmChat"/>
+        </endButton>
+    </Dialog>
+
+</core:FragmentDefinition>

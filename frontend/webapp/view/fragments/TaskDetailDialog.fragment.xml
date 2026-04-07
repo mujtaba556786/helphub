@@ -1,0 +1,74 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core">
+
+    <Dialog id="taskDetailDialog" title="Task Details" contentWidth="92%" verticalScrolling="true" stretch="{device>/system/phone}">
+        <VBox class="sapUiMediumMargin">
+            <Title text="{appData>/selectedTask/title}" level="H3" class="sapUiSmallMarginBottom"/>
+            <HBox alignItems="Center" class="sapUiTinyMarginBottom" wrap="Wrap">
+                <ObjectStatus text="{appData>/selectedTask/category}" state="Information" class="sapUiTinyMarginEnd"/>
+                <ObjectStatus text="{appData>/selectedTask/status}" state="{path:'appData>/selectedTask/status', formatter:'.formatTaskState'}" class="sapUiTinyMarginEnd"/>
+                <Text text="{= ${appData>/selectedTask/budget} ? '€' + ${appData>/selectedTask/budget} : 'Open budget'}" class="blueText fontBold"/>
+            </HBox>
+            <Text text="{appData>/selectedTask/description}" class="sapUiSmallMarginBottom" visible="{= !!${appData>/selectedTask/description}}"/>
+            <HBox alignItems="Center" class="sapUiTinyMarginBottom">
+                <core:Icon src="sap-icon://date-time" class="sapUiTinyMarginEnd"/>
+                <Text text="{= ${appData>/selectedTask/task_date} || 'Flexible'}" class="smallText"/>
+            </HBox>
+            <HBox alignItems="Center" class="sapUiSmallMarginBottom">
+                <core:Icon src="sap-icon://map" class="sapUiTinyMarginEnd"/>
+                <Text text="{= ${appData>/selectedTask/location} || 'Not specified'}" class="smallText"/>
+            </HBox>
+
+            <!-- Posted by -->
+            <HBox alignItems="Center" class="sapUiSmallMarginBottom">
+                <Avatar displaySize="XS" src="{appData>/selectedTask/poster_avatar}" initials="P" backgroundColor="Accent3" class="sapUiTinyMarginEnd"/>
+                <Text text="{= 'Posted by ' + ${appData>/selectedTask/poster_name}}" class="smallText grayText"/>
+            </HBox>
+
+            <!-- Action buttons (for providers viewing others' tasks) -->
+            <HBox visible="{= ${appData>/selectedTask/poster_id} !== ${appData>/user/id}}" class="sapUiSmallMarginBottom" wrap="Wrap">
+                <Button text="Apply for this Task" type="Emphasized" press="onApplyToTask" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"
+                    visible="{= ${appData>/selectedTask/status} === 'open'}"/>
+                <Button text="✉️ Message Poster" type="Default" press="onMessageTaskPoster" class="sapUiTinyMarginBottom"/>
+            </HBox>
+
+            <!-- Applicants (visible to poster) -->
+            <VBox visible="{= ${appData>/selectedTask/poster_id} === ${appData>/user/id} &amp;&amp; ${appData>/taskApplications}.length > 0}">
+                <Title text="Applicants" level="H4" class="sapUiSmallMarginBottom"/>
+                <List id="taskApplicantsList" items="{appData>/taskApplications}" noDataText="No applicants yet.">
+                    <CustomListItem>
+                        <HBox class="sapUiSmallMargin" justifyContent="SpaceBetween" alignItems="Center">
+                            <HBox alignItems="Center">
+                                <Avatar displaySize="S" src="{appData>provider_avatar}" initials="P" backgroundColor="Accent1" class="sapUiTinyMarginEnd"/>
+                                <VBox>
+                                    <Title text="{appData>provider_name}" level="H5"/>
+                                    <HBox alignItems="Center">
+                                        <RatingIndicator value="{appData>provider_rating}" displayOnly="true" iconSize="12px" class="sapUiTinyMarginEnd"/>
+                                    </HBox>
+                                    <Text text="{appData>message}" class="smallText grayText" visible="{= !!${appData>message}}"/>
+                                </VBox>
+                            </HBox>
+                            <VBox alignItems="End">
+                                <Button text="Assign" type="Emphasized" press="onAssignProvider" class="sapUiTinyMarginBottom" visible="{= ${appData>/selectedTask/status} === 'open'}"/>
+                                <Button text="✉️ Message" type="Default" press="onMessageApplicant"/>
+                            </VBox>
+                        </HBox>
+                    </CustomListItem>
+                </List>
+            </VBox>
+
+            <!-- Complete task button (for poster, when assigned) -->
+            <Button text="Mark as Completed" type="Accept" press="onCompleteTask" width="100%" class="sapUiSmallMarginTop"
+                visible="{= ${appData>/selectedTask/status} === 'assigned' &amp;&amp; ${appData>/selectedTask/poster_id} === ${appData>/user/id}}"/>
+
+            <!-- Delete task (for poster only) -->
+            <Button text="Delete Task" type="Reject" press="onDeleteTask" width="100%" class="sapUiSmallMarginTop"
+                visible="{= ${appData>/selectedTask/poster_id} === ${appData>/user/id}}"/>
+        </VBox>
+        <endButton>
+            <Button text="Close" press="onCloseTaskDetail"/>
+        </endButton>
+    </Dialog>
+
+</core:FragmentDefinition>

@@ -2,13 +2,27 @@ sap.ui.define([
     "helphub/controller/BaseController",
     "sap/m/MessageToast",
     "sap/m/MessageBox",
-    "helphub/model/countryStates"
-], function (BaseController, MessageToast, MessageBox, CountryStates) {
+    "sap/ui/core/Fragment",
+    "helphub/model/countryStates",
+    "helphub/controller/mixins/NotificationMixin",
+    "helphub/controller/mixins/MapMixin",
+    "helphub/controller/mixins/FilterMixin",
+    "helphub/controller/mixins/BookingMixin",
+    "helphub/controller/mixins/AiChatMixin",
+    "helphub/controller/mixins/DmMixin",
+    "helphub/controller/mixins/OnboardingFavoritesMixin",
+    "helphub/controller/mixins/ProfileMixin",
+    "helphub/controller/mixins/TaskMixin"
+], function(
+    BaseController, MessageToast, MessageBox, Fragment, CountryStates,
+    NotificationMixin, MapMixin, FilterMixin, BookingMixin, AiChatMixin,
+    DmMixin, OnboardingFavoritesMixin, ProfileMixin, TaskMixin
+) {
     "use strict";
 
     var API_BASE = "http://localhost:3000";
 
-    return BaseController.extend("helphub.controller.Dashboard", {
+    var DashboardController = BaseController.extend("helphub.controller.Dashboard", {
 
         onInit: function() {
             var oRouter = this.getRouter();
@@ -51,7 +65,129 @@ sap.ui.define([
             if (!this._notifInterval) {
                 this._startNotificationPolling();
             }
+            // Pre-warm all fragment dialogs so chains are instant on first interaction
+            this._getProfileDialog();
+            this._getBookingDialog();
+            this._getAiChatDialog();
+            this._getDmChatDialog();
+            this._getPostTaskDialog();
+            this._getTaskDetailDialog();
+            this._getNotificationsDialog();
+            this._getOnboardingDialog();
             setTimeout(this._checkOnboarding.bind(this), 350);
+        },
+
+        // ── FRAGMENT DIALOG FACTORIES ────────────────────────────────────────────
+        _getProfileDialog: function() {
+            if (!this._pProfileDialog) {
+                this._pProfileDialog = Fragment.load({
+                    id: this.getView().getId(),
+                    name: "helphub.view.fragments.ProfileDialog",
+                    controller: this
+                }).then(function(oDialog) {
+                    this.getView().addDependent(oDialog);
+                    return oDialog;
+                }.bind(this));
+            }
+            return this._pProfileDialog;
+        },
+
+        _getBookingDialog: function() {
+            if (!this._pBookingDialog) {
+                this._pBookingDialog = Fragment.load({
+                    id: this.getView().getId(),
+                    name: "helphub.view.fragments.BookingDialog",
+                    controller: this
+                }).then(function(oDialog) {
+                    this.getView().addDependent(oDialog);
+                    return oDialog;
+                }.bind(this));
+            }
+            return this._pBookingDialog;
+        },
+
+        _getAiChatDialog: function() {
+            if (!this._pAiChatDialog) {
+                this._pAiChatDialog = Fragment.load({
+                    id: this.getView().getId(),
+                    name: "helphub.view.fragments.AiChatDialog",
+                    controller: this
+                }).then(function(oDialog) {
+                    this.getView().addDependent(oDialog);
+                    return oDialog;
+                }.bind(this));
+            }
+            return this._pAiChatDialog;
+        },
+
+        _getDmChatDialog: function() {
+            if (!this._pDmChatDialog) {
+                this._pDmChatDialog = Fragment.load({
+                    id: this.getView().getId(),
+                    name: "helphub.view.fragments.DmChatDialog",
+                    controller: this
+                }).then(function(oDialog) {
+                    this.getView().addDependent(oDialog);
+                    return oDialog;
+                }.bind(this));
+            }
+            return this._pDmChatDialog;
+        },
+
+        _getPostTaskDialog: function() {
+            if (!this._pPostTaskDialog) {
+                this._pPostTaskDialog = Fragment.load({
+                    id: this.getView().getId(),
+                    name: "helphub.view.fragments.PostTaskDialog",
+                    controller: this
+                }).then(function(oDialog) {
+                    this.getView().addDependent(oDialog);
+                    return oDialog;
+                }.bind(this));
+            }
+            return this._pPostTaskDialog;
+        },
+
+        _getTaskDetailDialog: function() {
+            if (!this._pTaskDetailDialog) {
+                this._pTaskDetailDialog = Fragment.load({
+                    id: this.getView().getId(),
+                    name: "helphub.view.fragments.TaskDetailDialog",
+                    controller: this
+                }).then(function(oDialog) {
+                    this.getView().addDependent(oDialog);
+                    return oDialog;
+                }.bind(this));
+            }
+            return this._pTaskDetailDialog;
+        },
+
+        _getNotificationsDialog: function() {
+            if (!this._pNotificationsDialog) {
+                this._pNotificationsDialog = Fragment.load({
+                    id: this.getView().getId(),
+                    name: "helphub.view.fragments.NotificationsDialog",
+                    controller: this
+                }).then(function(oDialog) {
+                    this.getView().addDependent(oDialog);
+                    return oDialog;
+                }.bind(this));
+            }
+            return this._pNotificationsDialog;
+        },
+
+        _getOnboardingDialog: function() {
+            if (!this._pOnboardingDialog) {
+                this._pOnboardingDialog = Fragment.load({
+                    id: this.getView().getId(),
+                    name: "helphub.view.fragments.OnboardingDialog",
+                    controller: this
+                }).then(function(oDialog) {
+                    this.getView().addDependent(oDialog);
+                    return oDialog;
+                }.bind(this));
+            }
+            return this._pOnboardingDialog;
         },
 
         onTabSelect: function(oEvent) {
@@ -75,7 +211,6 @@ sap.ui.define([
         _applyTileColors: function() {
             var aServices = this.getModel("appData").getProperty("/services") || [];
 
-            // Inject a persistent <style> block so colors survive SAP re-renders
             var oStyle = document.getElementById("__hh-tile-colors");
             if (!oStyle) {
                 oStyle = document.createElement("style");
@@ -85,7 +220,6 @@ sap.ui.define([
             var sCss = "";
             aServices.forEach(function(svc, i) {
                 if (svc && svc.color) {
-                    // Direct children of serviceTilesContainer are flex-item wrappers
                     sCss += ".serviceTilesContainer > *:nth-child(" + (i + 1) + ") .circleButton {" +
                             "background-color: " + svc.color + " !important; }\n";
                 }
@@ -93,7 +227,7 @@ sap.ui.define([
             oStyle.textContent = sCss;
         },
 
-        /** Toggle the small orange dot above the bell icon (avoids type="Emphasized" square) */
+        /** Toggle the small orange dot above the bell icon */
         _setNotifDot: function(bShow) {
             var oBtn = this.byId("notifBtn");
             if (!oBtn) return;
@@ -102,7 +236,6 @@ sap.ui.define([
                 if (oDom) {
                     oDom.classList.toggle("notifDot", !!bShow);
                 } else {
-                    // Retry once after next rendering tick
                     setTimeout(apply, 150);
                 }
             };
@@ -121,9 +254,9 @@ sap.ui.define([
                 .catch(function() { /* keep mock data on network error */ });
         },
 
-        onLogout: function () {
+        onLogout: function() {
             MessageBox.confirm("Sign out of HelpMate?", {
-                onClose: (oAction) => { 
+                onClose: (oAction) => {
                     if (oAction === "OK") {
                         this.navTo("login");
                     }
@@ -131,24 +264,21 @@ sap.ui.define([
             });
         },
 
-        // TILE PRESS
-      onServicePress: function(oEvent) {
-    var oTile = oEvent.getSource(); // now always a UI5 Button
-    var oContext = oTile.getBindingContext("appData");
-    if (!oContext) return;
+        onServicePress: function(oEvent) {
+            var oTile = oEvent.getSource();
+            var oContext = oTile.getBindingContext("appData");
+            if (!oContext) return;
 
-    var oService = oContext.getObject();
+            var oService = oContext.getObject();
 
-    // Animate circle button
-    var $circle = oTile.$().find(".circleButton");
-    $circle.addClass("circleActive");
+            var $circle = oTile.$().find(".circleButton");
+            $circle.addClass("circleActive");
 
-    setTimeout(() => {
-        $circle.removeClass("circleActive");
-        this._navigateToResults(oService);
-    }, 450);
-},
-
+            setTimeout(() => {
+                $circle.removeClass("circleActive");
+                this._navigateToResults(oService);
+            }, 450);
+        },
 
         _navigateToResults: function(oService) {
             var oModel = this.getModel("appData");
@@ -162,13 +292,11 @@ sap.ui.define([
             var oNav = this.byId("navContainer");
             if (oNav) {
                 oNav.to(this.byId("searchPage"));
-                // Init map after SAP UI5 renders + slide animation completes (~400ms)
                 if (!this._mapInitialized) {
                     setTimeout(function() {
                         this._initMap();
                         this._mapInitialized = true;
                         this._updateProviderMarkers(aFiltered);
-                        // Fix grey tiles caused by container size change during animation
                         if (this._oMap) {
                             setTimeout(function() {
                                 this._oMap.invalidateSize();
@@ -181,22 +309,20 @@ sap.ui.define([
             }
         },
 
+        // ── PROFILE EDITING ───────────────────────────────────────────────────
         onEditProfile: function() {
             var oModel = this.getModel("appData");
 
-            // Load countries if not yet loaded
             if (!oModel.getProperty("/countries").length) {
                 oModel.setProperty("/countries", CountryStates.getCountries());
             }
 
-            // Auto-detect country if not already set
             var sCountry = oModel.getProperty("/user/address/country");
             if (!sCountry) {
                 sCountry = CountryStates.detectCountryCode();
                 oModel.setProperty("/user/address/country", sCountry);
             }
 
-            // Populate states for detected/saved country
             oModel.setProperty("/stateOptions", CountryStates.getStates(sCountry));
 
             this.byId("navContainer").to(this.byId("editPage"));
@@ -219,7 +345,6 @@ sap.ui.define([
 
             oModel.setProperty("/user/availabilityFlags", oFlags);
 
-            // Keep availability array in sync for saving
             var aKeys = ["weekdays","weekends","morning","afternoon","evening","night"]
                 .filter(function(k) { return oFlags[k]; });
             if (oFlags.all_day) aKeys.unshift("all_day");
@@ -227,7 +352,7 @@ sap.ui.define([
         },
 
         onCountryChange: function(oEvent) {
-            var sCode = oEvent.getParameter("selectedItem").getKey();
+            var sCode  = oEvent.getParameter("selectedItem").getKey();
             var oModel = this.getModel("appData");
             oModel.setProperty("/user/address/country", sCode);
             oModel.setProperty("/stateOptions", CountryStates.getStates(sCode));
@@ -235,16 +360,15 @@ sap.ui.define([
         },
 
         onChangePhoto: function() {
-            // Programmatically open the FileUploader's native file picker
             var oUploader = this.byId("avatarFileUploader");
             if (!oUploader) { MessageToast.show("File uploader not ready."); return; }
             oUploader.getDomRef("fu").click();
         },
 
         onAvatarFileSelected: function(oEvent) {
-            var that    = this;
-            var oFiles  = oEvent.getParameter("files");
-            var oFile   = oFiles && oFiles[0];
+            var that   = this;
+            var oFiles = oEvent.getParameter("files");
+            var oFile  = oFiles && oFiles[0];
             if (!oFile) return;
 
             if (oFile.size > 5 * 1024 * 1024) {
@@ -252,14 +376,12 @@ sap.ui.define([
                 return;
             }
 
-            // Immediate local preview
             var oReader = new FileReader();
             oReader.onload = function(e) {
                 that.getModel("appData").setProperty("/user/photo", e.target.result);
             };
             oReader.readAsDataURL(oFile);
 
-            // Upload to server
             var sUserId = that.getModel("appData").getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
             if (!sUserId) { MessageToast.show("Please log in again to upload a photo."); return; }
 
@@ -283,7 +405,7 @@ sap.ui.define([
         },
 
         onNavBack: function() {
-            var oNavContainer = this.byId("navContainer");
+            var oNavContainer  = this.byId("navContainer");
             var sCurrentPageId = oNavContainer.getCurrentPage().getId();
 
             if (!sCurrentPageId.includes("dashboardPage")) {
@@ -298,7 +420,6 @@ sap.ui.define([
             var oUser  = oModel.getProperty("/user");
             var oAddr  = oUser.address || {};
 
-            // Reset validation
             var oVal = { name: "None", street: "None", houseNumber: "None", city: "None", state: "None", postalCode: "None", country: "None" };
             var bValid = true;
 
@@ -329,20 +450,20 @@ sap.ui.define([
                     "Authorization": "Bearer " + (sessionStorage.getItem("helpmate_token") || "")
                 },
                 body: JSON.stringify({
-                    name:             oUser.name,
-                    bio:              oUser.bio,
-                    languages:        oUser.languages,
-                    years:            oUser.years,
-                    phone:            oUser.phone,
-                    rate:             oUser.rate,
-                    availability:     oUser.availability,
+                    name:              oUser.name,
+                    bio:               oUser.bio,
+                    languages:         oUser.languages,
+                    years:             oUser.years,
+                    phone:             oUser.phone,
+                    rate:              oUser.rate,
+                    availability:      oUser.availability,
                     serviceCategories: oUser.serviceCategories,
-                    street_name:      oAddr.street,
-                    street_number:    oAddr.houseNumber,
-                    city:             oAddr.city,
-                    state:            oAddr.state,
-                    country:          oAddr.country,
-                    pincode:          oAddr.postalCode
+                    street_name:       oAddr.street,
+                    street_number:     oAddr.houseNumber,
+                    city:              oAddr.city,
+                    state:             oAddr.state,
+                    country:           oAddr.country,
+                    pincode:           oAddr.postalCode
                 })
             })
             .then(function(r) { return r.json(); })
@@ -350,9 +471,7 @@ sap.ui.define([
                 if (oData.success) {
                     MessageToast.show("Profile saved successfully.");
 
-                    // Sync updated user data back into the local providers array so
-                    // "View Profile" immediately reflects the changes
-                    var sUserId = oUser.id || sessionStorage.getItem("helpmate_user_id");
+                    var sUserId    = oUser.id || sessionStorage.getItem("helpmate_user_id");
                     var aProviders = (oModel.getProperty("/providers") || []).slice();
                     var iIdx = -1;
                     for (var i = 0; i < aProviders.length; i++) {
@@ -380,1557 +499,22 @@ sap.ui.define([
                 }
             }.bind(this))
             .catch(function() { MessageToast.show("Could not reach the server."); });
-        },
-
-        // FILTER HANDLERS
-        onDistanceChange: function(oEvent) {
-            var iVal = oEvent.getParameter("value");
-            var oModel = this.getModel("appData");
-            oModel.setProperty("/filters/distance", iVal);
-            oModel.setProperty("/filters/distanceLabel", "Within " + iVal + " km");
-
-            // Update circle radius live
-            if (this._oRadiusCircle) {
-                this._oRadiusCircle.setRadius(iVal * 1000);
-            }
-
-            this._refreshCurrentFilters();
-        },
-
-        onFilterAll: function() {
-            this.getModel("appData").setProperty("/filters/priceCategory", "all");
-            this._updateActiveFilterCount();
-            this._refreshCurrentFilters();
-        },
-
-        onFilterTopRated: function() {
-            this.getModel("appData").setProperty("/filters/priceCategory", "top");
-            this._updateActiveFilterCount();
-            this._refreshCurrentFilters();
-        },
-
-        onFilterBudget: function() {
-            this.getModel("appData").setProperty("/filters/priceCategory", "budget");
-            this._updateActiveFilterCount();
-            this._refreshCurrentFilters();
-        },
-
-        onFilterAvailableNow: function() {
-            var oModel = this.getModel("appData");
-            var bCurrent = oModel.getProperty("/filters/availableNow");
-            oModel.setProperty("/filters/availableNow", !bCurrent);
-            this._updateActiveFilterCount();
-            this._refreshCurrentFilters();
-        },
-
-        onRatingFilter: function(oEvent) {
-            var sRating = oEvent.getSource().data("rating");
-            this.getModel("appData").setProperty("/filters/minRating", parseFloat(sRating));
-            this._updateActiveFilterCount();
-            this._refreshCurrentFilters();
-        },
-
-        onPriceFilterChange: function(oEvent) {
-            var iVal = oEvent.getParameter("value");
-            this.getModel("appData").setProperty("/filters/maxPrice", iVal);
-            this._updateActiveFilterCount();
-            this._refreshCurrentFilters();
-        },
-
-        onLangFilter: function(oEvent) {
-            var sLang = oEvent.getSource().data("lang");
-            this.getModel("appData").setProperty("/filters/language", sLang);
-            this._updateActiveFilterCount();
-            this._refreshCurrentFilters();
-        },
-
-        _updateActiveFilterCount: function() {
-            var oModel = this.getModel("appData");
-            var oFilters = oModel.getProperty("/filters");
-            var iCount = 0;
-            if (oFilters.priceCategory !== "all") iCount++;
-            if (oFilters.availableNow) iCount++;
-            if (oFilters.minRating > 0) iCount++;
-            if (oFilters.maxPrice < 200) iCount++;
-            if (oFilters.language) iCount++;
-            oModel.setProperty("/filters/activeCount", iCount);
-        },
-
-        _refreshCurrentFilters: function() {
-            var oModel = this.getModel("appData");
-            var sCategory = oModel.getProperty("/selectedCategoryName");
-            if (sCategory) {
-                var aFiltered = this._applyFiltersForService(sCategory);
-                oModel.setProperty("/filteredProviders", aFiltered);
-                this._updateProviderMarkers(aFiltered);
-            }
-        },
-
-        _applyFiltersForService: function(sServiceName) {
-            var oModel   = this.getModel("appData");
-            var aAll     = oModel.getProperty("/providers") || [];
-            var oFilters = oModel.getProperty("/filters");
-            var oUserLoc = oModel.getProperty("/user/location");
-            var that     = this;
-
-            var sQuery     = (oModel.getProperty("/searchQuery") || "").toLowerCase();
-            var fMinRating = parseFloat(oFilters.minRating) || 0;
-            var sLangFilter = (oFilters.language || "").trim().toLowerCase();
-            var iMaxPrice  = parseFloat(oFilters.maxPrice);
-            if (isNaN(iMaxPrice) || iMaxPrice >= 200) { iMaxPrice = Infinity; }
-            var bAvailableNow = oFilters.availableNow;
-
-            var aFiltered = aAll.filter(function(p) {
-                var aCategories = (p.serviceType || '').split(',').map(function(s) { return s.trim(); });
-                if (aCategories.indexOf(sServiceName) < 0) { return false; }
-
-                var fDist = that._calculateDistanceKm(oUserLoc, { lat: p.lat, lng: p.lng });
-                if (fDist > oFilters.distance) { return false; }
-
-                if (oFilters.priceCategory === "budget" && p.rate > 25) { return false; }
-                if (oFilters.priceCategory === "top"    && p.rating < 4.8) { return false; }
-
-                if (bAvailableNow && !that._isAvailableNow(p.availability)) { return false; }
-
-                if (sQuery) {
-                    var sName = (p.name || "").toLowerCase();
-                    var sType = (p.serviceType || "").toLowerCase();
-                    if (!sName.includes(sQuery) && !sType.includes(sQuery)) { return false; }
-                }
-
-                if (fMinRating > 0 && (!p.rating || p.rating < fMinRating)) { return false; }
-
-                if (sLangFilter) {
-                    var sProvLang = (p.languages || "").toLowerCase();
-                    if (!sProvLang.includes(sLangFilter)) { return false; }
-                }
-
-                if (iMaxPrice < Infinity && p.rate > iMaxPrice) { return false; }
-
-                return true;
-            });
-
-            if (!aFiltered.length) {
-                // Fallback: no providers within radius — show all for this category regardless of distance
-                aFiltered = aAll.filter(function(p) {
-                    var aCategories = (p.serviceType || '').split(',').map(function(s) { return s.trim(); });
-                    if (aCategories.indexOf(sServiceName) < 0) { return false; }
-                    if (oFilters.priceCategory === "budget" && p.rate > 25) { return false; }
-                    if (oFilters.priceCategory === "top"    && p.rating < 4.8) { return false; }
-                    if (bAvailableNow && !that._isAvailableNow(p.availability)) { return false; }
-                    if (sQuery) {
-                        var sName = (p.name || "").toLowerCase();
-                        var sType = (p.serviceType || "").toLowerCase();
-                        if (!sName.includes(sQuery) && !sType.includes(sQuery)) { return false; }
-                    }
-                    if (fMinRating > 0 && (!p.rating || p.rating < fMinRating)) { return false; }
-                    if (sLangFilter) {
-                        var sProvLang = (p.languages || "").toLowerCase();
-                        if (!sProvLang.includes(sLangFilter)) { return false; }
-                    }
-                    if (iMaxPrice < Infinity && p.rate > iMaxPrice) { return false; }
-                    return true;
-                });
-                oModel.setProperty("/filters/distanceLabel",
-                    aFiltered.length
-                        ? "No helpers within " + oFilters.distance + " km — showing all available helpers"
-                        : "No helpers found for this category yet");
-            }
-
-            aFiltered.sort(function(a, b) {
-                var da = that._calculateDistanceKm(oUserLoc, { lat: a.lat, lng: a.lng });
-                var db = that._calculateDistanceKm(oUserLoc, { lat: b.lat, lng: b.lng });
-                return da - db;
-            });
-
-            return aFiltered;
-        },
-
-        _calculateDistanceKm: function(oA, oB) {
-            if (!oA || !oB) { return 999; }
-            var R = 6371;
-            var dLat = (oB.lat - oA.lat) * Math.PI / 180;
-            var dLon = (oB.lng - oA.lng) * Math.PI / 180;
-            var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                Math.cos(oA.lat * Math.PI / 180) * Math.cos(oB.lat * Math.PI / 180) *
-                Math.sin(dLon/2) * Math.sin(dLon/2);
-            var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-            return R * c;
-        },
-
-        _initMap: function () {
-            if (!window.L) return;
-
-            var oModel  = this.getModel("appData");
-            var oUserLoc = oModel.getProperty("/user/location") || { lat: 52.52, lng: 13.405 };
-            var iRadius  = (oModel.getProperty("/filters/distance") || 10) * 1000; // km → metres
-
-            // Build the map
-            this._oMap = L.map("googleMap", { zoomControl: true }).setView(
-                [oUserLoc.lat, oUserLoc.lng], 13
-            );
-
-            L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-                attribution: "© OpenStreetMap contributors",
-                maxZoom: 19
-            }).addTo(this._oMap);
-
-            // "You are here" marker
-            this._oUserMarker = L.marker([oUserLoc.lat, oUserLoc.lng])
-                .addTo(this._oMap)
-                .bindPopup("<b>You are here</b>")
-                .openPopup();
-
-            // Radius circle
-            this._oRadiusCircle = L.circle([oUserLoc.lat, oUserLoc.lng], {
-                radius: iRadius,
-                color: "#3b82f6",
-                fillColor: "#3b82f6",
-                fillOpacity: 0.08,
-                weight: 2
-            }).addTo(this._oMap);
-
-            this._aProviderMarkers = [];
-
-            // Try to get real GPS position
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(function(pos) {
-                    var oRealLoc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-                    oModel.setProperty("/user/location", oRealLoc);
-                    this._oMap.setView([oRealLoc.lat, oRealLoc.lng], 13);
-                    this._oUserMarker.setLatLng([oRealLoc.lat, oRealLoc.lng]);
-                    this._oRadiusCircle.setLatLng([oRealLoc.lat, oRealLoc.lng]);
-                }.bind(this), function() {
-                    // Permission denied or unavailable — keep Berlin default
-                });
-            }
-        },
-
-        _updateProviderMarkers: function(aProviders) {
-            if (!this._oMap || !window.L) return;
-
-            // Remove old markers
-            (this._aProviderMarkers || []).forEach(function(m) { m.remove(); });
-            this._aProviderMarkers = [];
-
-            // Update radius circle size
-            var oModel  = this.getModel("appData");
-            var iRadius = (oModel.getProperty("/filters/distance") || 10) * 1000;
-            if (this._oRadiusCircle) {
-                this._oRadiusCircle.setRadius(iRadius);
-            }
-
-            // Add new markers
-            (aProviders || []).forEach(function(p) {
-                var oMarker = L.marker([p.lat, p.lng])
-                    .addTo(this._oMap)
-                    .bindPopup(
-                        "<b>" + p.name + "</b><br>" +
-                        (p.serviceType || "") + "<br>" +
-                        "$" + (p.rate || 0) + "/hr • ⭐ " + (p.rating || "")
-                    );
-                this._aProviderMarkers.push(oMarker);
-            }.bind(this));
-        },
-
-        _initTaskMap: function() {
-            if (!window.L) return;
-            var oModel   = this.getModel("appData");
-            var oUserLoc = oModel.getProperty("/user/location") || { lat: 52.52, lng: 13.405 };
-
-            this._oTaskMap = L.map("taskMap", { zoomControl: true }).setView(
-                [oUserLoc.lat, oUserLoc.lng], 13
-            );
-            L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-                attribution: "© OpenStreetMap contributors",
-                maxZoom: 19
-            }).addTo(this._oTaskMap);
-
-            L.marker([oUserLoc.lat, oUserLoc.lng])
-                .addTo(this._oTaskMap)
-                .bindPopup("<b>You are here</b>");
-
-            this._aTaskMarkers = [];
-
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(function(pos) {
-                    var oLoc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-                    oModel.setProperty("/user/location", oLoc);
-                    this._oTaskMap.setView([oLoc.lat, oLoc.lng], 13);
-                }.bind(this), function() {});
-            }
-
-            // Show tasks already loaded
-            var aTasks = oModel.getProperty("/tasksFeed") || [];
-            this._updateTaskMarkers(aTasks);
-
-            setTimeout(function() {
-                if (this._oTaskMap) { this._oTaskMap.invalidateSize(); }
-            }.bind(this), 200);
-        },
-
-        _updateTaskMarkers: function(aTasks) {
-            if (!this._oTaskMap || !window.L) return;
-            (this._aTaskMarkers || []).forEach(function(m) { m.remove(); });
-            this._aTaskMarkers = [];
-            (aTasks || []).forEach(function(t) {
-                if (!t.lat || !t.lng) return;
-                var oMarker = L.marker([t.lat, t.lng])
-                    .addTo(this._oTaskMap)
-                    .bindPopup(
-                        "<b>" + (t.title || "Task") + "</b><br>" +
-                        (t.category || "") + "<br>" +
-                        (t.budget ? "€" + t.budget : "Open budget") +
-                        (t.location ? "<br>" + t.location : "")
-                    );
-                this._aTaskMarkers.push(oMarker);
-            }.bind(this));
-        },
-
-        // FORMATTERS
-        formatDistance: function(oProvider) {
-            if (!oProvider || !oProvider.lat) return "Distance unknown";
-            var oModel = this.getModel("appData");
-            var userLoc = oModel ? oModel.getProperty("/user/location") : null;
-            if (!userLoc) return "Calculating...";
-
-            var R = 6371;
-            var dLat = (oProvider.lat - userLoc.lat) * Math.PI / 180;
-            var dLon = (oProvider.lng - userLoc.lng) * Math.PI / 180;
-            var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                      Math.cos(userLoc.lat * Math.PI / 180) * Math.cos(oProvider.lat * Math.PI / 180) *
-                      Math.sin(dLon/2) * Math.sin(dLon/2);
-            var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-            return (R * c).toFixed(1) + " km away";
-        },
-
-        formatPriceDisplay: function(oProvider) {
-            if (!oProvider) return "";
-            return (oProvider.currency || "$") + (oProvider.rate || "0") + "/hr";
-        },
-
-        _isAvailableNow: function(sAvailability) {
-            if (!sAvailability) return false;
-            var aSlots = sAvailability.toLowerCase().split(",").map(function(s) { return s.trim(); });
-
-            // If all_day is set, always available
-            if (aSlots.indexOf("all_day") >= 0) return true;
-
-            var now = new Date();
-            var iHour = now.getHours();
-            var iDay = now.getDay(); // 0=Sun, 6=Sat
-            var bWeekend = (iDay === 0 || iDay === 6);
-            var bWeekday = !bWeekend;
-
-            // Check day match
-            var bDayMatch = false;
-            if (aSlots.indexOf("weekdays") >= 0 && bWeekday) bDayMatch = true;
-            if (aSlots.indexOf("weekends") >= 0 && bWeekend) bDayMatch = true;
-            // If no day preference set, assume any day
-            if (aSlots.indexOf("weekdays") < 0 && aSlots.indexOf("weekends") < 0) bDayMatch = true;
-
-            if (!bDayMatch) return false;
-
-            // Check time slot match
-            var bTimeMatch = false;
-            if (aSlots.indexOf("morning") >= 0 && iHour >= 6 && iHour < 12) bTimeMatch = true;
-            if (aSlots.indexOf("afternoon") >= 0 && iHour >= 12 && iHour < 17) bTimeMatch = true;
-            if (aSlots.indexOf("evening") >= 0 && iHour >= 17 && iHour < 22) bTimeMatch = true;
-            if (aSlots.indexOf("night") >= 0 && (iHour >= 22 || iHour < 6)) bTimeMatch = true;
-            // If no time preference set, assume any time
-            if (aSlots.indexOf("morning") < 0 && aSlots.indexOf("afternoon") < 0 &&
-                aSlots.indexOf("evening") < 0 && aSlots.indexOf("night") < 0) bTimeMatch = true;
-
-            return bTimeMatch;
-        },
-
-        formatAvailabilityStatus: function(oProvider) {
-            if (!oProvider) return "";
-            return this._isAvailableNow(oProvider.availability) ? "Available" : "Unavailable";
-        },
-
-        formatAvailabilityState: function(oProvider) {
-            if (!oProvider) return "None";
-            return this._isAvailableNow(oProvider.availability) ? "Success" : "None";
-        },
-
-        onViewProfile: function (oEvent) {
-            // Button → VBox → HBox → CustomListItem
-            var oListItem = oEvent.getSource().getParent().getParent().getParent();
-            var oCtx = oListItem.getBindingContext("appData");
-            if (!oCtx) return;
-
-            var oProvider = Object.assign({}, oCtx.getObject());
-            if (oProvider.name && !oProvider.initials) {
-                oProvider.initials = oProvider.name
-                    .split(" ").map(function(p) { return p[0]; })
-                    .join("").substring(0, 2).toUpperCase();
-            }
-            oProvider.reviews = [];
-
-            var oModel = this.getModel("appData");
-            oModel.setProperty("/selectedProfile", oProvider);
-            this._trackRecentlyViewed(oProvider);
-
-            // Reset rating input
-            var oStars = this.byId("newRatingStars");
-            var oComment = this.byId("newRatingComment");
-            if (oStars) oStars.setValue(0);
-            if (oComment) oComment.setValue("");
-
-            var oDialog = this.byId("profileDialog");
-            oDialog.open();
-
-            // Load real ratings from backend
-            fetch(API_BASE + "/api/providers/" + encodeURIComponent(oProvider.id) + "/ratings")
-                .then(function(r) { return r.json(); })
-                .then(function(oData) {
-                    if (oData.success) {
-                        oModel.setProperty("/selectedProfile/reviews", oData.ratings);
-                    }
-                })
-                .catch(function() { /* keep empty */ });
-        },
-
-        onSubmitRating: function() {
-            var oModel   = this.getModel("appData");
-            var oStars   = this.byId("newRatingStars");
-            var oComment = this.byId("newRatingComment");
-            var iStars   = oStars ? oStars.getValue() : 0;
-
-            if (!iStars || iStars < 1) {
-                MessageToast.show("Please select at least 1 star.");
-                return;
-            }
-
-            var sProviderId = oModel.getProperty("/selectedProfile/id");
-            var sUserId     = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
-            var sName       = oModel.getProperty("/user/name") || "Anonymous";
-            var sComment    = oComment ? oComment.getValue().trim() : "";
-
-            fetch(API_BASE + "/api/ratings", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    provider_id:   sProviderId,
-                    user_id:       sUserId,
-                    reviewer_name: sName,
-                    stars:         iStars,
-                    comment:       sComment
-                })
-            })
-            .then(function(r) { return r.json(); })
-            .then(function(oData) {
-                if (oData.success) {
-                    MessageToast.show(oData.updated ? "Rating updated!" : "Thank you for your rating!");
-                    if (oStars)   oStars.setValue(0);
-                    if (oComment) oComment.setValue("");
-                    if (oData.newAverage) {
-                        oModel.setProperty("/selectedProfile/rating", oData.newAverage);
-                    }
-                    // Reload reviews from server to reflect the upsert correctly
-                    var sId = oModel.getProperty("/selectedProfile/id");
-                    fetch(API_BASE + "/api/providers/" + encodeURIComponent(sId) + "/ratings")
-                        .then(function(r) { return r.json(); })
-                        .then(function(d) {
-                            if (d.success) oModel.setProperty("/selectedProfile/reviews", d.ratings);
-                        });
-                } else {
-                    MessageToast.show(oData.error || "Could not submit rating.");
-                }
-            }.bind(this))
-            .catch(function() { MessageToast.show("Could not reach the server."); });
-        },
-
-        onCloseProfile: function() {
-            this.byId("profileDialog").close();
-        },
-
-        _renderChatBubbles: function(aMessages) {
-            var oHtml   = this.byId("chatMessagesHtml");
-            var oScroll = this.byId("chatScrollContainer");
-            if (!oHtml) return;
-
-            var iLast = aMessages.length - 1;
-            var sHtml = aMessages.map(function(m, i) {
-                var sEsc = (m.content || "").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, "<br>");
-                if (m.role === "user") {
-                    var bRead    = (i < iLast) || (aMessages[i + 1] && aMessages[i + 1].role === "assistant");
-                    var sReceipt = bRead
-                        ? '<span style="font-size:11px;color:#93c5fd;margin-left:4px">✓✓</span>'
-                        : '<span style="font-size:11px;color:#bfdbfe;margin-left:4px">✓</span>';
-                    return '<div style="text-align:right;margin:4px 0">'
-                         + '<span style="background:#3b82f6;color:white;padding:8px 12px;border-radius:16px 16px 4px 16px;display:inline-block;max-width:80%;word-wrap:break-word;text-align:left">'
-                         + sEsc + '</span>' + sReceipt + '</div>';
-                }
-                return '<div style="text-align:left;margin:4px 0"><span style="background:#f1f5f9;color:#1e293b;padding:8px 12px;border-radius:16px 16px 16px 4px;display:inline-block;max-width:80%;word-wrap:break-word">' + sEsc + '</span></div>';
-            }).join("");
-
-            oHtml.setContent("<div>" + sHtml + "</div>");
-
-            // Scroll to bottom after SAP re-renders the HTML control
-            if (oScroll) {
-                setTimeout(function() { oScroll.scrollTo(0, 99999, 0); }, 50);
-            }
-        },
-
-        onOpenChat: function() {
-            var oModel = this.getModel("appData");
-            var sName  = oModel.getProperty("/selectedProfile/name") || "Helper";
-
-            this._chatMessages = [{
-                role: "assistant",
-                content: "Hi! I'm here to help you learn about " + sName + ". Ask me anything — availability, pricing, services, or anything else!"
-            }];
-
-            this.byId("profileDialog").close();
-            var oDialog = this.byId("chatDialog");
-            oDialog.setTitle("Chat with " + sName);
-            oDialog.open();
-
-            var that = this;
-            setTimeout(function() { that._renderChatBubbles(that._chatMessages); }, 100);
-        },
-
-        onChatSend: function() {
-            var oModel      = this.getModel("appData");
-            var oInput      = this.byId("chatInput");
-            var sText       = oInput.getValue().trim();
-            if (!sText) return;
-
-            var sProviderId = oModel.getProperty("/selectedProfile/id");
-            if (!this._chatMessages) this._chatMessages = [];
-
-            this._chatMessages.push({ role: "user", content: sText });
-            this._renderChatBubbles(this._chatMessages);
-            oInput.setValue("");
-
-            var oTyping  = this.byId("chatTypingIndicator");
-            var oSendBtn = this.byId("chatSendBtn");
-            if (oTyping)  oTyping.setVisible(true);
-            if (oSendBtn) oSendBtn.setEnabled(false);
-
-            var aApiMessages = this._chatMessages.map(function(m) {
-                return { role: m.role, content: m.content };
-            });
-
-            var that = this;
-            var sFullReply   = "";
-            var iPlaceholder = this._chatMessages.length;
-            this._chatMessages.push({ role: "assistant", content: "" });
-
-            var sUserId = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
-
-            fetch(API_BASE + "/api/chat", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ provider_id: sProviderId, messages: aApiMessages, user_id: sUserId })
-            })
-            .then(function(res) {
-                var oReader  = res.body.getReader();
-                var oDecoder = new TextDecoder();
-                function pump() {
-                    return oReader.read().then(function(chunk) {
-                        if (chunk.done) {
-                            if (oTyping)  oTyping.setVisible(false);
-                            if (oSendBtn) oSendBtn.setEnabled(true);
-                            return;
-                        }
-                        oDecoder.decode(chunk.value, { stream: true }).split("\n").forEach(function(sLine) {
-                            if (!sLine.startsWith("data: ")) return;
-                            var sData = sLine.slice(6).trim();
-                            if (sData === "[DONE]") return;
-                            try {
-                                var o = JSON.parse(sData);
-                                if (o.text) {
-                                    sFullReply += o.text;
-                                    that._chatMessages[iPlaceholder].content = sFullReply;
-                                    that._renderChatBubbles(that._chatMessages);
-                                }
-                            } catch (e) { /* skip */ }
-                        });
-                        return pump();
-                    });
-                }
-                return pump();
-            })
-            .catch(function() {
-                if (oTyping)  oTyping.setVisible(false);
-                if (oSendBtn) oSendBtn.setEnabled(true);
-                that._chatMessages[iPlaceholder].content = "Sorry, I couldn't reach the server. Please try again.";
-                that._renderChatBubbles(that._chatMessages);
-            });
-        },
-
-        onCloseChat: function() {
-            this.byId("chatDialog").close();
-        },
-
-        // ── QUICK REPLIES ─────────────────────────────────────────────────────
-        onQuickReply: function(oEvent) {
-            var sText = oEvent.getSource().getText().replace(/[\uD800-\uDFFF]./g, "").replace(/[^\x00-\x7E]/g, "").trim();
-            // Use full button text (with emoji) as the message
-            sText = oEvent.getSource().getText().trim();
-            var oInput = this.byId("chatInput");
-            if (oInput) {
-                oInput.setValue(sText);
-                this.onChatSend();
-            }
-        },
-
-        // ── IN-APP PUSH TOAST ─────────────────────────────────────────────────
-        _showInAppToast: function(sIcon, sTitle, sMessage) {
-            MessageToast.show(sIcon + " " + sTitle + "\n" + sMessage, {
-                duration:    5000,
-                width:       "20em",
-                my:          "center top",
-                at:          "center top",
-                offset:      "0 64",
-                autoClose:   true
-            });
-        },
-
-        // Quick actions directly from the provider card (no profile dialog needed)
-        _getProviderFromEvent: function(oEvent) {
-            var oListItem = oEvent.getSource().getParent().getParent();
-            var oCtx = oListItem.getBindingContext("appData");
-            if (!oCtx) return null;
-            var oProvider = Object.assign({}, oCtx.getObject());
-            if (oProvider.name && !oProvider.initials) {
-                oProvider.initials = oProvider.name.split(" ").map(function(p) { return p[0]; }).join("").substring(0, 2).toUpperCase();
-            }
-            return oProvider;
-        },
-
-        onQuickBook: function(oEvent) {
-            var oProvider = this._getProviderFromEvent(oEvent);
-            if (!oProvider) return;
-            this.getModel("appData").setProperty("/selectedProfile", oProvider);
-            this.onOpenBooking();
-        },
-
-        onQuickChat: function(oEvent) {
-            var oProvider = this._getProviderFromEvent(oEvent);
-            if (!oProvider) return;
-            oProvider.reviews = [];
-            this.getModel("appData").setProperty("/selectedProfile", oProvider);
-            this.onOpenChat();
-        },
-
-        onQuickMessage: function(oEvent) {
-            var oProvider = this._getProviderFromEvent(oEvent);
-            if (!oProvider) return;
-            this.getModel("appData").setProperty("/selectedProfile", oProvider);
-            this.onStartDm();
-        },
-
-        // ── BOOKING ───────────────────────────────────────────────────────────
-        onOpenBooking: function() {
-            var oModel = this.getModel("appData");
-            oModel.setProperty("/bookingForm/date", "");
-            oModel.setProperty("/bookingForm/time", "");
-            oModel.setProperty("/bookingForm/message", "");
-            this.byId("profileDialog").close();
-            this.byId("bookingDialog").open();
-        },
-
-        onCloseBooking: function() {
-            this.byId("bookingDialog").close();
-        },
-
-        onConfirmBooking: function() {
-            var oModel      = this.getModel("appData");
-            var sDate       = oModel.getProperty("/bookingForm/date");
-            var sTime       = oModel.getProperty("/bookingForm/time");
-            var sMessage    = oModel.getProperty("/bookingForm/message");
-            var sProviderId = oModel.getProperty("/selectedProfile/id");
-            var sService    = oModel.getProperty("/selectedProfile/serviceType");
-            var sCustomerId = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
-
-            if (!sDate) { MessageToast.show("Please select a date."); return; }
-            if (!sCustomerId) { MessageToast.show("Please log in to book a helper."); return; }
-
-            fetch(API_BASE + "/api/bookings", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    customer_id:    sCustomerId,
-                    provider_id:    sProviderId,
-                    service:        sService,
-                    scheduled_date: sDate,
-                    scheduled_time: sTime,
-                    message:        sMessage
-                })
-            })
-            .then(function(r) { return r.json(); })
-            .then(function(oData) {
-                if (oData.success) {
-                    this.byId("bookingDialog").close();
-                    MessageBox.success("Booking request sent! The helper will confirm shortly.", {
-                        title: "Request Sent",
-                        onClose: function() {
-                            this._loadSchedule();
-                        }.bind(this)
-                    });
-                } else {
-                    MessageToast.show("Booking failed: " + (oData.error || "Unknown error"));
-                }
-            }.bind(this))
-            .catch(function() { MessageToast.show("Could not reach the server."); });
-        },
-
-        onAcceptBooking: function(oEvent) {
-            this._updateBookingStatus(oEvent, "confirmed");
-        },
-
-        onDeclineBooking: function(oEvent) {
-            this._updateBookingStatus(oEvent, "declined");
-        },
-
-        _updateBookingStatus: function(oEvent, sStatus) {
-            var oCtx = oEvent.getSource().getParent().getParent().getBindingContext("appData");
-            if (!oCtx) return;
-            var sBookingId = oCtx.getObject().id;
-            var sUserId    = this.getModel("appData").getProperty("/user/id");
-
-            fetch(API_BASE + "/api/bookings/" + encodeURIComponent(sBookingId) + "/status", {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ status: sStatus, user_id: sUserId })
-            })
-            .then(function(r) { return r.json(); })
-            .then(function(oData) {
-                if (oData.success) {
-                    MessageToast.show("Booking " + sStatus + ".");
-                    this._loadSchedule();
-                }
-            }.bind(this))
-            .catch(function() { MessageToast.show("Could not update booking."); });
-        },
-
-        _loadSchedule: function() {
-            var oModel   = this.getModel("appData");
-            var sUserId  = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
-            if (!sUserId) return;
-
-            fetch(API_BASE + "/api/bookings/user/" + encodeURIComponent(sUserId))
-                .then(function(r) { return r.json(); })
-                .then(function(oData) {
-                    if (oData.success) {
-                        oModel.setProperty("/upcomingBookings", oData.bookings);
-                        // Only show badge count for NEW (unseen) bookings
-                        oModel.setProperty("/bookingCount", oData.newCount || 0);
-                    }
-                })
-                .catch(function() { /* keep empty */ });
-        },
-
-        _markBookingsSeen: function() {
-            var oModel  = this.getModel("appData");
-            var sUserId = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
-            if (!sUserId) return;
-            fetch(API_BASE + "/api/bookings/user/" + encodeURIComponent(sUserId) + "/mark-seen", { method: "PUT" })
-                .then(function() {
-                    oModel.setProperty("/bookingCount", 0);
-                })
-                .catch(function() { /* silent */ });
-        },
-
-        formatBookingDate: function(sDate) {
-            if (!sDate) return "";
-            try {
-                var d = new Date(sDate);
-                if (isNaN(d.getTime())) return sDate;
-                return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-            } catch (e) { return sDate; }
-        },
-
-        formatBookingState: function(sStatus) {
-            switch (sStatus) {
-                case "confirmed":  return "Success";
-                case "declined":   return "Error";
-                case "completed":  return "None";
-                default:           return "Warning"; // pending
-            }
-        },
-
-        // ── NOTIFICATIONS ─────────────────────────────────────────────────────
-        _startNotificationPolling: function() {
-            var that = this;
-            this._loadNotificationCount();
-            this._notifInterval = setInterval(function() {
-                that._loadNotificationCount();
-                that._loadUnreadDmCount();
-            }, 60000); // poll every 60s
-        },
-
-        _loadNotificationCount: function() {
-            var oModel   = this.getModel("appData");
-            var sUserId  = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
-            if (!sUserId) return;
-            var iPrev    = oModel.getProperty("/unreadCount") || 0;
-
-            fetch(API_BASE + "/api/notifications/" + encodeURIComponent(sUserId) + "/unread-count")
-                .then(function(r) { return r.json(); })
-                .then(function(oData) {
-                    if (oData.success) {
-                        var iNew = oData.count || 0;
-                        oModel.setProperty("/unreadCount", iNew);
-                        this._setNotifDot(iNew > 0);
-                        // Show in-app toast when new notification arrives
-                        if (iNew > iPrev) {
-                            this._showInAppToast("🔔", "New notification", "You have " + iNew + " unread notification" + (iNew > 1 ? "s" : ""));
-                        }
-                    }
-                }.bind(this))
-                .catch(function() { /* silent */ });
-        },
-
-        onShowNotifications: function() {
-            var oModel  = this.getModel("appData");
-            var sUserId = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
-            if (!sUserId) { MessageToast.show("Please log in first."); return; }
-
-            fetch(API_BASE + "/api/notifications/" + encodeURIComponent(sUserId))
-                .then(function(r) { return r.json(); })
-                .then(function(oData) {
-                    if (oData.success) {
-                        oModel.setProperty("/notifications", oData.notifications);
-                    }
-                    this.byId("notificationsDialog").open();
-                }.bind(this))
-                .catch(function() { this.byId("notificationsDialog").open(); }.bind(this));
-        },
-
-        onMarkAllRead: function() {
-            var oModel  = this.getModel("appData");
-            var sUserId = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
-            if (!sUserId) return;
-
-            fetch(API_BASE + "/api/notifications/read-all/" + encodeURIComponent(sUserId), {
-                method: "PUT"
-            })
-            .then(function(r) { return r.json(); })
-            .then(function(oData) {
-                if (oData.success) {
-                    // Mark all as read in model
-                    var aNotifs = oModel.getProperty("/notifications") || [];
-                    aNotifs.forEach(function(n) { n.is_read = 1; });
-                    oModel.setProperty("/notifications", aNotifs);
-                    oModel.setProperty("/unreadCount", 0);
-                    this._setNotifDot(false);
-                    MessageToast.show("All notifications marked as read.");
-                }
-            }.bind(this))
-            .catch(function() { /* silent */ });
-        },
-
-        onCloseNotifications: function() {
-            this.byId("notificationsDialog").close();
-        },
-
-        // ── SEARCH ────────────────────────────────────────────────────────────
-        onHelperSearch: function(oEvent) {
-            var sQuery = oEvent.getParameter("query") || oEvent.getParameter("value") || "";
-            this.getModel("appData").setProperty("/searchQuery", sQuery.trim().toLowerCase());
-            this._refreshCurrentFilters();
-        },
-
-        // ── RESET FILTERS ────────────────────────────────────────────────────
-        onResetFilters: function() {
-            var oModel = this.getModel("appData");
-            oModel.setProperty("/filters/minRating", 0);
-            oModel.setProperty("/filters/language", "");
-            oModel.setProperty("/filters/maxPrice", 200);
-            oModel.setProperty("/filters/priceCategory", "all");
-            oModel.setProperty("/filters/availableNow", false);
-            oModel.setProperty("/filters/activeCount", 0);
-            this._refreshCurrentFilters();
-        },
-
-        // ── ONBOARDING ────────────────────────────────────────────────────────
-        _checkOnboarding: function() {
-            if (!localStorage.getItem("hhOnboarded")) {
-                var oModel = this.getModel("appData");
-                oModel.setProperty("/onboarding/step", 1);
-                oModel.setProperty("/onboarding/interests", []);
-                this.byId("onboardingDialog").open();
-            }
-        },
-
-        onOnboardingNext: function() {
-            var oModel = this.getModel("appData");
-            var iStep  = oModel.getProperty("/onboarding/step");
-            if (iStep < 3) {
-                oModel.setProperty("/onboarding/step", iStep + 1);
-            } else {
-                this._finishOnboarding();
-            }
-        },
-
-        onOnboardingSkip: function() {
-            this._finishOnboarding();
-        },
-
-        _finishOnboarding: function() {
-            localStorage.setItem("hhOnboarded", "1");
-            var aInterests = this.getModel("appData").getProperty("/onboarding/interests") || [];
-            if (aInterests.length) {
-                localStorage.setItem("hhInterests", JSON.stringify(aInterests));
-            }
-            this.byId("onboardingDialog").close();
-        },
-
-        onToggleInterest: function(oEvent) {
-            var oBtn   = oEvent.getSource();
-            var sKey   = oBtn.data("interestKey");
-            var oModel = this.getModel("appData");
-            var aInterests = (oModel.getProperty("/onboarding/interests") || []).slice();
-            var iIdx = aInterests.indexOf(sKey);
-            if (iIdx >= 0) {
-                aInterests.splice(iIdx, 1);
-                oBtn.setType("Default");
-            } else {
-                aInterests.push(sKey);
-                oBtn.setType("Emphasized");
-            }
-            oModel.setProperty("/onboarding/interests", aInterests);
-        },
-
-        // ── FAVORITES ─────────────────────────────────────────────────────────
-        _loadFavorites: function() {
-            var oModel = this.getModel("appData");
-            try {
-                var aFavIds = JSON.parse(localStorage.getItem("hhFavorites") || "[]");
-                oModel.setProperty("/favorites", aFavIds);
-                this._syncFavoriteProviders();
-            } catch(e) { /* ignore */ }
-            try {
-                var aRecent = JSON.parse(localStorage.getItem("hhRecentlyViewed") || "[]");
-                oModel.setProperty("/recentlyViewed", aRecent);
-            } catch(e) { /* ignore */ }
-        },
-
-        _syncFavoriteProviders: function() {
-            var oModel = this.getModel("appData");
-            var aIds   = oModel.getProperty("/favorites") || [];
-            var aAll   = oModel.getProperty("/providers") || [];
-            oModel.setProperty("/favoriteProviders", aAll.filter(function(p) {
-                return aIds.indexOf(p.id) >= 0;
-            }));
-        },
-
-        onToggleFavorite: function(oEvent) {
-            var oModel  = this.getModel("appData");
-            var oSource = oEvent.getSource();
-            var oCtx    = oSource.getBindingContext("appData");
-            if (!oCtx) {
-                var oParent = oSource.getParent();
-                while (oParent && !oCtx) {
-                    oCtx = oParent.getBindingContext("appData");
-                    oParent = oParent.getParent ? oParent.getParent() : null;
-                }
-            }
-            if (!oCtx) return;
-            var sId  = oCtx.getObject().id;
-            var aFavs = (oModel.getProperty("/favorites") || []).slice();
-            var iIdx  = aFavs.indexOf(sId);
-            if (iIdx >= 0) {
-                aFavs.splice(iIdx, 1);
-                MessageToast.show("Removed from saved.");
-            } else {
-                aFavs.push(sId);
-                MessageToast.show("Saved to your helpers!");
-            }
-            oModel.setProperty("/favorites", aFavs);
-            localStorage.setItem("hhFavorites", JSON.stringify(aFavs));
-            this._syncFavoriteProviders();
-        },
-
-        onViewFavoriteProfile: function(oEvent) {
-            this._openProfileFromEvent(oEvent);
-        },
-
-        onViewRecentProfile: function(oEvent) {
-            this._openProfileFromEvent(oEvent);
-        },
-
-        // Walk up the control tree to find binding context — works for any list structure
-        _openProfileFromEvent: function(oEvent) {
-            var oModel  = this.getModel("appData");
-            var oControl = oEvent.getSource();
-            var oCtx = null;
-            while (oControl && !oCtx) {
-                oCtx = oControl.getBindingContext("appData");
-                oControl = oControl.getParent ? oControl.getParent() : null;
-            }
-            if (!oCtx) return;
-
-            var oProvider = Object.assign({}, oCtx.getObject());
-            if (oProvider.name && !oProvider.initials) {
-                oProvider.initials = oProvider.name.split(" ")
-                    .map(function(p) { return p[0]; }).join("").substring(0, 2).toUpperCase();
-            }
-            oProvider.reviews = [];
-            oModel.setProperty("/selectedProfile", oProvider);
-            this._trackRecentlyViewed(oProvider);
-
-            var oStars = this.byId("newRatingStars");
-            var oComment = this.byId("newRatingComment");
-            if (oStars)   oStars.setValue(0);
-            if (oComment) oComment.setValue("");
-
-            this.byId("profileDialog").open();
-
-            fetch(API_BASE + "/api/providers/" + encodeURIComponent(oProvider.id) + "/ratings")
-                .then(function(r) { return r.json(); })
-                .then(function(oData) {
-                    if (oData.success) {
-                        oModel.setProperty("/selectedProfile/reviews", oData.ratings);
-                    }
-                })
-                .catch(function() {});
-        },
-
-        // ── RECENTLY VIEWED ───────────────────────────────────────────────────
-        _trackRecentlyViewed: function(oProvider) {
-            var oModel  = this.getModel("appData");
-            var aRecent = (oModel.getProperty("/recentlyViewed") || []).slice();
-            aRecent = aRecent.filter(function(p) { return p.id !== oProvider.id; });
-            aRecent.unshift({
-                id:          oProvider.id,
-                name:        oProvider.name,
-                photo:       oProvider.photo,
-                serviceType: oProvider.serviceType
-            });
-            if (aRecent.length > 5) { aRecent = aRecent.slice(0, 5); }
-            oModel.setProperty("/recentlyViewed", aRecent);
-            localStorage.setItem("hhRecentlyViewed", JSON.stringify(aRecent));
-        },
-
-        // ── DIRECT MESSAGING ─────────────────────────────────────────────────
-        _loadConversations: function() {
-            var oModel  = this.getModel("appData");
-            var sUserId = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
-            if (!sUserId) return;
-
-            fetch(API_BASE + "/api/conversations/" + encodeURIComponent(sUserId))
-                .then(function(r) { return r.json(); })
-                .then(function(oData) {
-                    if (oData.success) {
-                        oModel.setProperty("/conversations", oData.conversations);
-                        oModel.setProperty("/unreadDmCount", oData.totalUnread || 0);
-                    }
-                })
-                .catch(function() { /* silent */ });
-        },
-
-        _loadUnreadDmCount: function() {
-            var oModel  = this.getModel("appData");
-            var sUserId = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
-            if (!sUserId) return;
-
-            fetch(API_BASE + "/api/messages/unread-count/" + encodeURIComponent(sUserId))
-                .then(function(r) { return r.json(); })
-                .then(function(oData) {
-                    if (oData.success) {
-                        oModel.setProperty("/unreadDmCount", oData.count || 0);
-                    }
-                })
-                .catch(function() { /* silent */ });
-        },
-
-        onStartDm: function() {
-            var oModel      = this.getModel("appData");
-            var sUserId     = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
-            var sProviderId = oModel.getProperty("/selectedProfile/id");
-            var sProviderName = oModel.getProperty("/selectedProfile/name") || "Helper";
-
-            if (!sUserId) { MessageToast.show("Please log in first."); return; }
-            if (sUserId === sProviderId) { MessageToast.show("You can't message yourself."); return; }
-
-            var that = this;
-            fetch(API_BASE + "/api/conversations", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ user1_id: sUserId, user2_id: sProviderId })
-            })
-            .then(function(r) { return r.json(); })
-            .then(function(oData) {
-                if (oData.success) {
-                    that.byId("profileDialog").close();
-                    that._currentConvoId = oData.conversation.id;
-                    that._currentConvoOtherName = sProviderName;
-                    that._currentConvoOtherId = sProviderId;
-                    that._openDmChatForConversation(oData.conversation.id, sProviderName);
-                }
-            })
-            .catch(function() { MessageToast.show("Could not start conversation."); });
-        },
-
-        onOpenDmChat: function(oEvent) {
-            var oCtx = oEvent.getSource().getBindingContext("appData");
-            if (!oCtx) return;
-            var oConvo = oCtx.getObject();
-            this._currentConvoId = oConvo.id;
-            this._currentConvoOtherName = oConvo.other_name;
-            this._currentConvoOtherId = oConvo.other_id;
-            this._openDmChatForConversation(oConvo.id, oConvo.other_name);
-        },
-
-        _openDmChatForConversation: function(sConvoId, sOtherName) {
-            var that = this;
-            var oModel = this.getModel("appData");
-            var sUserId = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
-
-            var oDialog = this.byId("dmChatDialog");
-            oDialog.setTitle("Chat with " + sOtherName);
-            oDialog.open();
-
-            fetch(API_BASE + "/api/messages/" + encodeURIComponent(sConvoId))
-                .then(function(r) { return r.json(); })
-                .then(function(oData) {
-                    if (oData.success) {
-                        that._dmMessages = oData.messages;
-                        that._renderDmBubbles();
-                        // Mark as read
-                        fetch(API_BASE + "/api/messages/" + encodeURIComponent(sConvoId) + "/read", {
-                            method: "PUT",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ user_id: sUserId })
-                        }).catch(function() {});
-                        that._loadUnreadDmCount();
-                    }
-                })
-                .catch(function() { that._dmMessages = []; that._renderDmBubbles(); });
-        },
-
-        _renderDmBubbles: function() {
-            var oHtml   = this.byId("dmBubblesHtml");
-            var oScroll = this.byId("dmScrollContainer");
-            if (!oHtml) return;
-
-            var oModel  = this.getModel("appData");
-            var sUserId = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
-            var aMessages = this._dmMessages || [];
-
-            var sHtml = aMessages.map(function(m) {
-                var sEsc = (m.content || "").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, "<br>");
-                var sTime = m.created_at ? new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
-                if (m.sender_id === sUserId) {
-                    var sRead = m.is_read
-                        ? '<span style="font-size:11px;color:#93c5fd;margin-left:4px">✓✓</span>'
-                        : '<span style="font-size:11px;color:#bfdbfe;margin-left:4px">✓</span>';
-                    return '<div style="text-align:right;margin:4px 0">'
-                         + '<span style="background:#3b82f6;color:white;padding:8px 12px;border-radius:16px 16px 4px 16px;display:inline-block;max-width:80%;word-wrap:break-word;text-align:left">'
-                         + sEsc + '</span>' + sRead
-                         + '<div style="font-size:10px;color:#94a3b8;margin-top:2px">' + sTime + '</div></div>';
-                }
-                return '<div style="text-align:left;margin:4px 0">'
-                     + '<span style="background:#f1f5f9;color:#1e293b;padding:8px 12px;border-radius:16px 16px 16px 4px;display:inline-block;max-width:80%;word-wrap:break-word">'
-                     + sEsc + '</span>'
-                     + '<div style="font-size:10px;color:#94a3b8;margin-top:2px">' + sTime + '</div></div>';
-            }).join("");
-
-            oHtml.setContent("<div style='display:flex;flex-direction:column;gap:8px;padding:12px'>" + sHtml + "</div>");
-
-            if (oScroll) {
-                setTimeout(function() { oScroll.scrollTo(0, 99999, 0); }, 50);
-            }
-        },
-
-        onDmSend: function() {
-            var oInput  = this.byId("dmInput");
-            var sText   = oInput.getValue().trim();
-            if (!sText) return;
-
-            var oModel  = this.getModel("appData");
-            var sUserId = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
-            var sConvoId = this._currentConvoId;
-            if (!sConvoId || !sUserId) return;
-
-            oInput.setValue("");
-
-            // Optimistic local update
-            this._dmMessages.push({
-                sender_id: sUserId,
-                content: sText,
-                is_read: 0,
-                created_at: new Date().toISOString()
-            });
-            this._renderDmBubbles();
-
-            var that = this;
-            fetch(API_BASE + "/api/messages", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    conversation_id: sConvoId,
-                    sender_id: sUserId,
-                    content: sText
-                })
-            })
-            .then(function(r) { return r.json(); })
-            .then(function(oData) {
-                if (!oData.success) {
-                    MessageToast.show("Message failed to send.");
-                }
-            })
-            .catch(function() { MessageToast.show("Could not reach the server."); });
-        },
-
-        onDmQuickReply: function(oEvent) {
-            var sText = oEvent.getSource().getText().replace(/\s*[\u{1F600}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}]+$/u, "").trim();
-            this.byId("dmInput").setValue(sText);
-            this.onDmSend();
-        },
-
-        onCloseDmChat: function() {
-            this.byId("dmChatDialog").close();
-            this._loadConversations();
-        },
-
-        formatConvoTime: function(sTime) {
-            if (!sTime) return "";
-            var d = new Date(sTime);
-            var now = new Date();
-            if (d.toDateString() === now.toDateString()) {
-                return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            }
-            return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
-        },
-
-        // ── POST A TASK ──────────────────────────────────────────────────────
-        _loadTasksFeed: function() {
-            var oModel = this.getModel("appData");
-            var sSearch = oModel.getProperty("/taskSearchQuery") || "";
-            var sCategory = oModel.getProperty("/taskCategoryFilter") || "";
-            var sUrl = API_BASE + "/api/tasks?status=open";
-            if (sCategory) { sUrl += "&category=" + encodeURIComponent(sCategory); }
-            if (sSearch) { sUrl += "&search=" + encodeURIComponent(sSearch); }
-
-            fetch(sUrl)
-                .then(function(r) { return r.json(); })
-                .then(function(oData) {
-                    if (oData.success) {
-                        oModel.setProperty("/tasksFeed", oData.tasks);
-                        oModel.setProperty("/openTaskCount", oData.tasks.length || 0);
-                        this._updateTaskMarkers(oData.tasks);
-                    }
-                }.bind(this))
-                .catch(function() { /* silent */ });
-        },
-
-        _loadMyTasks: function() {
-            var oModel  = this.getModel("appData");
-            var sUserId = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
-            if (!sUserId) return;
-
-            fetch(API_BASE + "/api/tasks?poster_id=" + encodeURIComponent(sUserId))
-                .then(function(r) { return r.json(); })
-                .then(function(oData) {
-                    if (oData.success) {
-                        oModel.setProperty("/myTasks", oData.tasks);
-                    }
-                })
-                .catch(function() { /* silent */ });
-        },
-
-        onToggleTaskView: function(oEvent) {
-            var sMode = oEvent.getSource().data("mode");
-            var oModel = this.getModel("appData");
-            oModel.setProperty("/taskViewMode", sMode);
-            if (sMode === "mine") {
-                this._loadMyTasks();
-            } else {
-                this._loadTasksFeed();
-            }
-        },
-
-        onTaskSearch: function(oEvent) {
-            var sQuery = oEvent.getParameter("query") || oEvent.getParameter("newValue") || "";
-            this.getModel("appData").setProperty("/taskSearchQuery", sQuery.trim());
-            clearTimeout(this._taskSearchTimer);
-            var that = this;
-            this._taskSearchTimer = setTimeout(function() { that._loadTasksFeed(); }, 300);
-        },
-
-        onTaskCategoryFilter: function(oEvent) {
-            var sCat = oEvent.getSource().data("cat");
-            this.getModel("appData").setProperty("/taskCategoryFilter", sCat);
-            this._loadTasksFeed();
-        },
-
-        onTaskCategoryMore: function() {
-            var oModel = this.getModel("appData");
-            var aServices = oModel.getProperty("/services") || [];
-            var aNames = aServices.map(function(s) { return s.name; });
-
-            var oActionSheet = new sap.m.ActionSheet({ placement: "Bottom" });
-            var that = this;
-            aNames.forEach(function(name) {
-                oActionSheet.addButton(new sap.m.Button({
-                    text: name,
-                    press: function() {
-                        oModel.setProperty("/taskCategoryFilter", name);
-                        that._loadTasksFeed();
-                    }
-                }));
-            });
-            oActionSheet.openBy(this.byId("taskSearch") || this.getView());
-        },
-
-        onOpenPostTask: function() {
-            var oModel = this.getModel("appData");
-            oModel.setProperty("/taskForm", {
-                title: "", description: "", category: "", budget: "", task_date: "", location: ""
-            });
-            this.byId("postTaskDialog").open();
-        },
-
-        onConfirmPostTask: function() {
-            var oModel  = this.getModel("appData");
-            var oForm   = oModel.getProperty("/taskForm");
-            var sUserId = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
-
-            if (!oForm.title || !oForm.title.trim()) { MessageToast.show("Please enter a title."); return; }
-            if (!oForm.category) { MessageToast.show("Please select a category."); return; }
-            if (!sUserId) { MessageToast.show("Please log in first."); return; }
-
-            var that = this;
-            var oUserLoc = oModel.getProperty("/user/location");
-            fetch(API_BASE + "/api/tasks", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    poster_id:   sUserId,
-                    title:       oForm.title.trim(),
-                    description: oForm.description,
-                    category:    oForm.category,
-                    budget:      oForm.budget ? parseFloat(oForm.budget) : null,
-                    task_date:   oForm.task_date || null,
-                    location:    oForm.location,
-                    lat:         oUserLoc ? oUserLoc.lat : null,
-                    lng:         oUserLoc ? oUserLoc.lng : null
-                })
-            })
-            .then(function(r) { return r.json(); })
-            .then(function(oData) {
-                if (oData.success) {
-                    that.byId("postTaskDialog").close();
-                    MessageToast.show("Task posted!");
-                    that._loadTasksFeed();
-                    that._loadMyTasks();
-                } else {
-                    MessageToast.show("Failed: " + (oData.error || "Unknown error"));
-                }
-            })
-            .catch(function() { MessageToast.show("Could not reach the server."); });
-        },
-
-        onClosePostTask: function() {
-            this.byId("postTaskDialog").close();
-        },
-
-        onTaskPress: function(oEvent) {
-            var oCtx = oEvent.getSource().getBindingContext("appData");
-            if (!oCtx) return;
-            var oTask = oCtx.getObject();
-
-            var oModel = this.getModel("appData");
-            oModel.setProperty("/selectedTask", oTask);
-            oModel.setProperty("/taskApplications", []);
-
-            var that = this;
-            fetch(API_BASE + "/api/tasks/" + encodeURIComponent(oTask.id))
-                .then(function(r) { return r.json(); })
-                .then(function(oData) {
-                    if (oData.success) {
-                        oModel.setProperty("/selectedTask", oData.task);
-                        oModel.setProperty("/taskApplications", oData.applications || []);
-                    }
-                    that.byId("taskDetailDialog").open();
-                })
-                .catch(function() { that.byId("taskDetailDialog").open(); });
-        },
-
-        onApplyToTask: function() {
-            var oModel     = this.getModel("appData");
-            var sTaskId    = oModel.getProperty("/selectedTask/id");
-            var sUserId    = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
-
-            if (!sUserId) { MessageToast.show("Please log in first."); return; }
-
-            var that = this;
-            fetch(API_BASE + "/api/tasks/" + encodeURIComponent(sTaskId) + "/apply", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ provider_id: sUserId })
-            })
-            .then(function(r) { return r.json(); })
-            .then(function(oData) {
-                if (oData.success) {
-                    MessageToast.show("Applied! The poster will review your application.");
-                    that.byId("taskDetailDialog").close();
-                    that._loadTasksFeed();
-                } else {
-                    MessageToast.show(oData.error || "Could not apply.");
-                }
-            })
-            .catch(function() { MessageToast.show("Could not reach the server."); });
-        },
-
-        onAssignProvider: function(oEvent) {
-            var oCtx = oEvent.getSource().getParent().getParent().getBindingContext("appData");
-            if (!oCtx) return;
-            var sProviderId = oCtx.getObject().provider_id;
-            var oModel  = this.getModel("appData");
-            var sTaskId = oModel.getProperty("/selectedTask/id");
-
-            var that = this;
-            fetch(API_BASE + "/api/tasks/" + encodeURIComponent(sTaskId) + "/assign", {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ provider_id: sProviderId })
-            })
-            .then(function(r) { return r.json(); })
-            .then(function(oData) {
-                if (oData.success) {
-                    MessageToast.show("Provider assigned!");
-                    that.byId("taskDetailDialog").close();
-                    that._loadTasksFeed();
-                    that._loadMyTasks();
-                }
-            })
-            .catch(function() { MessageToast.show("Could not assign provider."); });
-        },
-
-        onCompleteTask: function() {
-            var oModel  = this.getModel("appData");
-            var sTaskId = oModel.getProperty("/selectedTask/id");
-
-            var that = this;
-            fetch(API_BASE + "/api/tasks/" + encodeURIComponent(sTaskId) + "/status", {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ status: "completed" })
-            })
-            .then(function(r) { return r.json(); })
-            .then(function(oData) {
-                if (oData.success) {
-                    MessageToast.show("Task completed!");
-                    that.byId("taskDetailDialog").close();
-                    that._loadTasksFeed();
-                    that._loadMyTasks();
-                }
-            })
-            .catch(function() { MessageToast.show("Could not update task."); });
-        },
-
-        onDeleteTask: function() {
-            var oModel  = this.getModel("appData");
-            var sTaskId = oModel.getProperty("/selectedTask/id");
-            var sUserId = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
-            var sTitle  = oModel.getProperty("/selectedTask/title") || "this task";
-
-            if (!sUserId) { MessageToast.show("Please log in first."); return; }
-
-            var that = this;
-            MessageBox.confirm("Delete \"" + sTitle + "\"? This cannot be undone.", {
-                title: "Delete Task",
-                onClose: function(sAction) {
-                    if (sAction !== MessageBox.Action.OK) return;
-                    fetch(API_BASE + "/api/tasks/" + encodeURIComponent(sTaskId), {
-                        method: "DELETE",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ user_id: sUserId })
-                    })
-                    .then(function(r) { return r.json(); })
-                    .then(function(oData) {
-                        if (oData.success) {
-                            MessageToast.show("Task deleted.");
-                            that.byId("taskDetailDialog").close();
-                            that._loadTasksFeed();
-                            that._loadMyTasks();
-                        } else {
-                            MessageToast.show(oData.error || "Could not delete task.");
-                        }
-                    })
-                    .catch(function() { MessageToast.show("Could not reach the server."); });
-                }
-            });
-        },
-
-        onCloseTaskDetail: function() {
-            this.byId("taskDetailDialog").close();
-        },
-
-        onMessageTaskPoster: function() {
-            var oModel  = this.getModel("appData");
-            var sUserId = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
-            var sPosterId = oModel.getProperty("/selectedTask/poster_id");
-            var sPosterName = oModel.getProperty("/selectedTask/poster_name") || "Task Poster";
-
-            if (!sUserId) { MessageToast.show("Please log in first."); return; }
-            if (sUserId === sPosterId) { MessageToast.show("This is your own task."); return; }
-
-            var that = this;
-            this.byId("taskDetailDialog").close();
-            fetch(API_BASE + "/api/conversations", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ user1_id: sUserId, user2_id: sPosterId })
-            })
-            .then(function(r) { return r.json(); })
-            .then(function(oData) {
-                if (oData.success) {
-                    that._currentConvoId = oData.conversation.id;
-                    that._currentConvoOtherName = sPosterName;
-                    that._currentConvoOtherId = sPosterId;
-                    that._openDmChatForConversation(oData.conversation.id, sPosterName);
-                }
-            })
-            .catch(function() { MessageToast.show("Could not start conversation."); });
-        },
-
-        onMessageApplicant: function(oEvent) {
-            var oCtx = oEvent.getSource().getParent().getParent().getParent().getBindingContext("appData");
-            if (!oCtx) return;
-            var oApplicant = oCtx.getObject();
-            var oModel  = this.getModel("appData");
-            var sUserId = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
-            var sProviderId = oApplicant.provider_id;
-            var sProviderName = oApplicant.provider_name || "Applicant";
-
-            if (!sUserId) { MessageToast.show("Please log in first."); return; }
-
-            var that = this;
-            this.byId("taskDetailDialog").close();
-            fetch(API_BASE + "/api/conversations", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ user1_id: sUserId, user2_id: sProviderId })
-            })
-            .then(function(r) { return r.json(); })
-            .then(function(oData) {
-                if (oData.success) {
-                    that._currentConvoId = oData.conversation.id;
-                    that._currentConvoOtherName = sProviderName;
-                    that._currentConvoOtherId = sProviderId;
-                    that._openDmChatForConversation(oData.conversation.id, sProviderName);
-                }
-            })
-            .catch(function() { MessageToast.show("Could not start conversation."); });
-        },
-
-        formatTaskState: function(sStatus) {
-            switch (sStatus) {
-                case "open":      return "Success";
-                case "assigned":  return "Warning";
-                case "completed": return "None";
-                default:          return "Information";
-            }
         }
 
     });
+
+    // ── MIXIN MERGE ──────────────────────────────────────────────────────────────
+    Object.assign(DashboardController.prototype,
+        NotificationMixin,
+        MapMixin,
+        FilterMixin,
+        BookingMixin,
+        AiChatMixin,
+        DmMixin,
+        OnboardingFavoritesMixin,
+        ProfileMixin,
+        TaskMixin
+    );
+
+    return DashboardController;
 });

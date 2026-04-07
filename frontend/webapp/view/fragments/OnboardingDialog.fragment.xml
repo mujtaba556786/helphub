@@ -1,0 +1,88 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:data="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1">
+
+    <Dialog id="onboardingDialog" contentWidth="92%" verticalScrolling="true">
+        <customHeader>
+            <Bar>
+                <contentLeft>
+                    <Title text="{= ${appData>/onboarding/step} === 1 ? '👋 Welcome to HelpHub' : ${appData>/onboarding/step} === 2 ? '⚙️ How it works' : '🎯 Pick your interests'}" level="H4"/>
+                </contentLeft>
+                <contentRight>
+                    <Text text="{= ${appData>/onboarding/step} + ' / 3'}" class="grayText smallText sapUiTinyMarginEnd"/>
+                </contentRight>
+            </Bar>
+        </customHeader>
+        <!-- Step 1: Welcome -->
+        <VBox visible="{= ${appData>/onboarding/step} === 1}" class="sapUiMediumMargin hhOnboardStep">
+            <core:HTML content="&lt;div style='text-align:center;font-size:64px;margin-bottom:12px'&gt;🏠&lt;/div&gt;"/>
+            <Title text="Find trusted helpers near you" level="H2" class="sapUiSmallMarginBottom textCenter"/>
+            <Text text="HelpHub connects you with verified local helpers for everyday tasks — gardening, babysitting, IT support and more." class="grayText sapUiSmallMarginBottom textCenter"/>
+            <VBox class="sapUiSmallMarginTop">
+                <HBox alignItems="Center" class="sapUiTinyMarginBottom">
+                    <core:HTML content="&lt;span style='font-size:20px;margin-right:8px'&gt;📍&lt;/span&gt;"/>
+                    <Text text="Find helpers near your location"/>
+                </HBox>
+                <HBox alignItems="Center" class="sapUiTinyMarginBottom">
+                    <core:HTML content="&lt;span style='font-size:20px;margin-right:8px'&gt;💬&lt;/span&gt;"/>
+                    <Text text="Chat and book in seconds"/>
+                </HBox>
+            </VBox>
+        </VBox>
+        <!-- Step 2: How it works -->
+        <VBox visible="{= ${appData>/onboarding/step} === 2}" class="sapUiMediumMargin hhOnboardStep">
+            <VBox class="hhOnboardCard sapUiSmallMarginBottom">
+                <HBox alignItems="Center">
+                    <core:HTML content="&lt;div class='hhOnboardNum'&gt;1&lt;/div&gt;"/>
+                    <VBox class="sapUiTinyMarginBegin">
+                        <Title text="Choose a service" level="H5"/>
+                        <Text text="Pick from 12 categories like gardening, cleaning, IT support and more." class="grayText smallText"/>
+                    </VBox>
+                </HBox>
+            </VBox>
+            <VBox class="hhOnboardCard sapUiSmallMarginBottom">
+                <HBox alignItems="Center">
+                    <core:HTML content="&lt;div class='hhOnboardNum'&gt;2&lt;/div&gt;"/>
+                    <VBox class="sapUiTinyMarginBegin">
+                        <Title text="Browse &amp; compare helpers" level="H5"/>
+                        <Text text="See ratings, experience, price, distance and availability at a glance." class="grayText smallText"/>
+                    </VBox>
+                </HBox>
+            </VBox>
+            <VBox class="hhOnboardCard sapUiSmallMarginBottom">
+                <HBox alignItems="Center">
+                    <core:HTML content="&lt;div class='hhOnboardNum'&gt;3&lt;/div&gt;"/>
+                    <VBox class="sapUiTinyMarginBegin">
+                        <Title text="Book &amp; relax" level="H5"/>
+                        <Text text="Send a booking request, chat with the helper and track your schedule." class="grayText smallText"/>
+                    </VBox>
+                </HBox>
+            </VBox>
+        </VBox>
+        <!-- Step 3: Pick interests -->
+        <VBox visible="{= ${appData>/onboarding/step} === 3}" class="sapUiMediumMargin hhOnboardStep">
+            <Text text="Select services you're most interested in." class="grayText sapUiSmallMarginBottom"/>
+            <FlexBox wrap="Wrap" class="sapUiTinyMarginTop">
+                <Button text="🌱 Gardening"    data:interestKey="Gardening"    press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                <Button text="👶 Babysitting"  data:interestKey="Babysitting"  press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                <Button text="🚗 Transport"    data:interestKey="Transport"    press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                <Button text="🛒 Groceries"    data:interestKey="Groceries"    press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                <Button text="📐 Math Tuition" data:interestKey="Math Tuition" press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                <Button text="🧹 Cleaning"     data:interestKey="Cleaning"     press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                <Button text="🐕 Pet Care"     data:interestKey="Pet Care"     press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                <Button text="🔧 Handyman"     data:interestKey="Handyman"     press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                <Button text="👨‍🍳 Cooking"    data:interestKey="Cooking"      press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                <Button text="📦 Moving"       data:interestKey="Moving"       press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                <Button text="💻 IT Support"   data:interestKey="IT Support"   press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+            </FlexBox>
+        </VBox>
+        <beginButton>
+            <Button text="Skip" type="Transparent" press="onOnboardingSkip" visible="{= ${appData>/onboarding/step} === 1}"/>
+        </beginButton>
+        <endButton>
+            <Button text="{= ${appData>/onboarding/step} === 3 ? 'Get Started 🚀' : 'Next →'}" type="Emphasized" press="onOnboardingNext"/>
+        </endButton>
+    </Dialog>
+
+</core:FragmentDefinition>
