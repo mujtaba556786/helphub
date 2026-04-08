@@ -5,6 +5,13 @@ import { User, Service, Review, Booking, UserStatus, UserRole } from '../types';
 // Direct absolute URL to backend to avoid proxy and CORS issues
 const BASE_URL = 'http://localhost:3000/api';
 
+// Shared secret for the backend admin panel — must match ADMIN_PANEL_TOKEN in server.js
+const ADMIN_TOKEN = 'helphub-admin-panel';
+
+function capitalizeFirst(s: string): string {
+    return s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : s;
+}
+
 export const apiService = {
     async login(email: string, password: string): Promise<User | null> {
         if (email === 'admin@servicelink.com' && password === 'admin123') {
@@ -104,10 +111,22 @@ export const apiService = {
 
     async moderateReview(id: string, status: 'Approved' | 'Rejected') {
         try {
-            const res = await fetch(`${BASE_URL}/reviews/${id}/moderate`, {
+            const action = status === 'Approved' ? 'approve' : 'reject';
+            const res = await fetch(`${BASE_URL}/admin/reviews/${id}/${action}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ status })
+                headers: { 'x-admin-token': ADMIN_TOKEN }
+            });
+            return res.ok;
+        } catch {
+            return true;
+        }
+    },
+
+    async deleteReview(id: string): Promise<boolean> {
+        try {
+            const res = await fetch(`${BASE_URL}/admin/reviews/${id}`, {
+                method: 'DELETE',
+                headers: { 'x-admin-token': ADMIN_TOKEN }
             });
             return res.ok;
         } catch {
@@ -171,8 +190,26 @@ export const apiService = {
 
     async getReviews(): Promise<Review[]> {
         try {
-            const res = await fetch(`${BASE_URL}/reviews`);
-            if (res.ok) return await res.json();
+            const res = await fetch(`${BASE_URL}/admin/reviews?status=all`, {
+                headers: { 'x-admin-token': ADMIN_TOKEN }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                if (data.success && Array.isArray(data.reviews)) {
+                    return data.reviews.map((r: any) => ({
+                        id: String(r.id),
+                        customerName: r.reviewer_name || 'Anonymous',
+                        providerId: r.provider_id ? String(r.provider_id) : undefined,
+                        rating: r.stars || 0,
+                        comment: r.comment || '',
+                        serviceName: r.provider_name || 'Unknown',
+                        status: capitalizeFirst(r.status) as Review['status'],
+                        date: new Date(r.created_at).toLocaleDateString('en-US', {
+                            month: 'short', day: 'numeric', year: 'numeric'
+                        })
+                    }));
+                }
+            }
         } catch { }
         return MOCK_REVIEWS;
     }

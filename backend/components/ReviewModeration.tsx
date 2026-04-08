@@ -20,6 +20,14 @@ const ReviewModerationView: React.FC<ReviewModerationProps> = ({ reviews, setRev
     }
   };
 
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('Permanently delete this review? This cannot be undone.')) return;
+    const success = await apiService.deleteReview(id);
+    if (success) {
+      setReviews(prev => prev.filter(r => r.id !== id));
+    }
+  };
+
   const aiScan = async (review: Review) => {
     setScanning(review.id);
     try {
@@ -93,7 +101,7 @@ const ReviewModerationView: React.FC<ReviewModerationProps> = ({ reviews, setRev
                 }`}>
                     {review.status}
                 </span>
-                <button 
+                <button
                     onClick={() => aiScan(review)}
                     disabled={scanning === review.id}
                     className="flex items-center space-x-1 text-[10px] font-black text-indigo-600 hover:text-indigo-800 disabled:opacity-50"
@@ -103,24 +111,47 @@ const ReviewModerationView: React.FC<ReviewModerationProps> = ({ reviews, setRev
                 </button>
               </div>
 
-              {review.status === 'Pending' || review.status === 'Flagged' ? (
-                <div className="flex space-x-2">
-                    <button 
+              <div className="flex items-center space-x-2">
+                {(review.status === 'Pending' || review.status === 'Flagged') && (
+                  <>
+                    <button
                         onClick={() => handleStatusChange(review.id, 'Rejected')}
                         className="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl text-xs font-black hover:bg-red-50 hover:text-red-600 transition-colors"
                     >
                         Reject
                     </button>
-                    <button 
+                    <button
                         onClick={() => handleStatusChange(review.id, 'Approved')}
                         className="px-6 py-2 bg-indigo-600 text-white rounded-xl text-xs font-black hover:bg-indigo-700 shadow-lg shadow-indigo-600/20"
                     >
-                        Approve Review
+                        Approve
                     </button>
-                </div>
-              ) : (
-                  <p className="text-xs text-slate-400 font-bold italic">Moderated on {new Date().toLocaleDateString()}</p>
-              )}
+                  </>
+                )}
+                {review.status === 'Approved' && (
+                  <button
+                      onClick={() => handleStatusChange(review.id, 'Rejected')}
+                      className="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl text-xs font-black hover:bg-red-50 hover:text-red-600 transition-colors"
+                  >
+                      Reject
+                  </button>
+                )}
+                {review.status === 'Rejected' && (
+                  <button
+                      onClick={() => handleStatusChange(review.id, 'Approved')}
+                      className="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl text-xs font-black hover:bg-green-50 hover:text-green-600 transition-colors"
+                  >
+                      Re-approve
+                  </button>
+                )}
+                <button
+                    onClick={() => handleDelete(review.id)}
+                    className="px-3 py-2 bg-slate-50 text-slate-400 rounded-xl text-xs font-black hover:bg-red-50 hover:text-red-500 transition-colors"
+                    title="Delete review"
+                >
+                    ✕
+                </button>
+              </div>
             </div>
           </div>
         ))}

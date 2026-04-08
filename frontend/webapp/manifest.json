@@ -87,6 +87,11 @@
           "name": "profile",
           "pattern": "profile",
           "target": "profile"
+        },
+        {
+          "name": "admin",
+          "pattern": "admin",
+          "target": "admin"
         }
       ],
       "targets": {
@@ -107,6 +112,12 @@
           "viewType": "XML",
           "viewId": "profile",
           "viewLevel": 3
+        },
+        "admin": {
+          "viewName": "Admin",
+          "viewType": "XML",
+          "viewId": "admin",
+          "viewLevel": 2
         }
       }
      

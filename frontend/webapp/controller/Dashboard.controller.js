@@ -254,6 +254,10 @@ sap.ui.define([
                 .catch(function() { /* keep mock data on network error */ });
         },
 
+        onNavToAdmin: function() {
+            this.navTo("admin");
+        },
+
         onLogout: function() {
             MessageBox.confirm("Sign out of HelpMate?", {
                 onClose: (oAction) => {

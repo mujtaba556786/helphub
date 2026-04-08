@@ -28,17 +28,24 @@
             </HBox>
 
             <Title text="Reviews" level="H4" class="sapUiSmallMarginBottom"/>
-            <List id="reviewsList" items="{appData>/selectedProfile/reviews}" noDataText="No reviews yet — be the first!">
-                <CustomListItem>
-                    <VBox class="sapUiTinyMargin">
-                        <HBox alignItems="Center" class="sapUiTinyMarginBottom">
-                            <RatingIndicator value="{appData>stars}" maxValue="5" displayOnly="true" iconSize="12px" class="sapUiTinyMarginEnd"/>
-                            <Text text="{appData>reviewer_name}" class="fontBold smallText"/>
+            <ScrollContainer height="220px" vertical="true" horizontal="false" class="sapUiTinyMarginBottom">
+                <List id="reviewsList" items="{appData>/selectedProfile/reviews}" noDataText="No approved reviews yet — be the first!">
+                    <CustomListItem>
+                        <HBox alignItems="Start" class="sapUiTinyMargin">
+                            <Avatar initials="{appData>reviewer_initials}" displaySize="XS"
+                                class="sapUiTinyMarginEnd sapUiFlexAlignSelf-Start"/>
+                            <VBox width="100%">
+                                <HBox justifyContent="SpaceBetween" alignItems="Center">
+                                    <Text text="{appData>reviewer_name}" class="fontBold smallText"/>
+                                    <RatingIndicator value="{appData>stars}" maxValue="5" displayOnly="true" iconSize="12px"/>
+                                </HBox>
+                                <Text text="{appData>created_at_relative}" class="smallText grayText sapUiTinyMarginBottom"/>
+                                <Text text="{appData>comment}" class="smallText grayText" wrapping="true"/>
+                            </VBox>
                         </HBox>
-                        <Text text="{appData>comment}" class="smallText grayText"/>
-                    </VBox>
-                </CustomListItem>
-            </List>
+                    </CustomListItem>
+                </List>
+            </ScrollContainer>
 
             <!-- Rate this helper -->
             <Panel headerText="Rate this helper" expandable="true" expanded="false" class="sapUiSmallMarginTop">

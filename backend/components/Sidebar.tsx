@@ -13,6 +13,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, userRole }) 
   const adminItems = [
     { id: 'dashboard', label: 'Overview', icon: ICONS.Dashboard },
     { id: 'users', label: 'Moderation Queue', icon: ICONS.Users },
+    { id: 'reviews', label: 'Reviews', icon: ICONS.Reviews },
     { id: 'services', label: 'Categories', icon: ICONS.Services },
     { id: 'bookings', label: 'Audit Log', icon: ICONS.Bookings },
     { id: 'revenue', label: 'Ad Performance', icon: ICONS.Analytics },

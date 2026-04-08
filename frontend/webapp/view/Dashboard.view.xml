@@ -22,6 +22,8 @@
                     <contentRight>
                         <HBox alignItems="Center" class="sapUiTinyMarginEnd">
                             <Button id="notifBtn" icon="sap-icon://bell" type="Transparent" press="onShowNotifications" tooltip="Notifications"/>
+                            <Button icon="sap-icon://it-system" type="Transparent" press="onNavToAdmin" tooltip="Admin Panel"
+                                visible="{= ${appData>/user/role} === 'admin'}"/>
                             <Avatar src="{appData>/user/photo}" initials="{appData>/user/initials}" displaySize="XS" backgroundColor="Accent6" press="onEditProfile" class="sapUiTinyMarginEnd" />
                             <Button icon="sap-icon://log" press="onLogout" type="Transparent" tooltip="Sign out"/>
                         </HBox>

@@ -154,10 +154,17 @@ async function initDb() {
                 reviewer_name VARCHAR(100),
                 stars INT NOT NULL,
                 comment TEXT,
+                status VARCHAR(20) DEFAULT 'pending',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 INDEX idx_provider (provider_id)
             )
         `);
+        // Add status column to existing ratings tables that predate this migration
+        // Use SHOW COLUMNS to check first — avoids syntax issues on MySQL < 8.0
+        const [ratingCols] = await connection.query(`SHOW COLUMNS FROM ratings LIKE 'status'`);
+        if (ratingCols.length === 0) {
+            await connection.query(`ALTER TABLE ratings ADD COLUMN status VARCHAR(20) DEFAULT 'pending'`).catch(() => {});
+        }
 
         await connection.query(`
             CREATE TABLE IF NOT EXISTS services (
@@ -437,7 +444,7 @@ app.get('/api/providers/:id/ratings', handleAsync(async (req, res) => {
                 u.avatar AS reviewer_avatar
          FROM ratings r
          LEFT JOIN users u ON u.id = r.user_id
-         WHERE r.provider_id = ?
+         WHERE r.provider_id = ? AND r.status = 'approved'
          ORDER BY r.created_at DESC`,
         [req.params.id]
     );
@@ -462,26 +469,109 @@ app.post('/api/ratings', handleAsync(async (req, res) => {
     );
 
     if (existing) {
-        // Update existing rating
+        // Reset to pending on update so admin re-reviews
         await pool.execute(
-            'UPDATE ratings SET stars = ?, comment = ?, reviewer_name = ?, created_at = NOW() WHERE provider_id = ? AND user_id = ?',
-            [iStars, comment || null, reviewer_name || 'Anonymous', provider_id, user_id]
+            'UPDATE ratings SET stars = ?, comment = ?, reviewer_name = ?, status = ?, created_at = NOW() WHERE provider_id = ? AND user_id = ?',
+            [iStars, comment || null, reviewer_name || 'Anonymous', 'pending', provider_id, user_id]
         );
     } else {
         await pool.execute(
-            'INSERT INTO ratings (provider_id, user_id, reviewer_name, stars, comment) VALUES (?, ?, ?, ?, ?)',
-            [provider_id, user_id, reviewer_name || 'Anonymous', iStars, comment || null]
+            'INSERT INTO ratings (provider_id, user_id, reviewer_name, stars, comment, status) VALUES (?, ?, ?, ?, ?, ?)',
+            [provider_id, user_id, reviewer_name || 'Anonymous', iStars, comment || null, 'pending']
         );
     }
 
-    // Recalculate provider average rating
+    // Recalculate provider average (approved reviews only)
     const [[{ avg }]] = await pool.query(
-        'SELECT ROUND(AVG(stars), 1) AS avg FROM ratings WHERE provider_id = ?',
+        "SELECT ROUND(AVG(stars), 1) AS avg FROM ratings WHERE provider_id = ? AND status = 'approved'",
         [provider_id]
     );
-    await pool.execute('UPDATE users SET rating = ? WHERE id = ?', [avg, provider_id]);
+    await pool.execute('UPDATE users SET rating = ? WHERE id = ?', [avg || 0, provider_id]);
 
-    res.json({ success: true, newAverage: avg, updated: !!existing });
+    res.json({ success: true, newAverage: avg, updated: !!existing, pending: true });
+}));
+
+// ── ADMIN MIDDLEWARE ──────────────────────────────────────────────────────────
+const ADMIN_PANEL_TOKEN = process.env.ADMIN_PANEL_TOKEN || 'helphub-admin-panel';
+
+async function requireAdmin(req, res, next) {
+    // Allow the backend admin panel via shared secret token
+    if (req.headers['x-admin-token'] === ADMIN_PANEL_TOKEN) return next();
+
+    const userId = req.headers['x-user-id'] || req.query.user_id;
+    if (!userId) return res.status(401).json({ success: false, error: 'Not authenticated' });
+    const [[user]] = await pool.query('SELECT role FROM users WHERE id = ?', [userId]);
+    if (!user || user.role !== 'admin') return res.status(403).json({ success: false, error: 'Admin only' });
+    next();
+}
+
+// ── GET /api/admin/reviews ────────────────────────────────────────────────────
+app.get('/api/admin/reviews', requireAdmin, handleAsync(async (req, res) => {
+    const sStatus = req.query.status || 'pending';
+    // 'all' fetches every status for the admin panel overview
+    const [rows] = sStatus === 'all'
+        ? await pool.query(
+            `SELECT r.id, r.stars, r.comment, r.status, r.created_at,
+                    r.provider_id,
+                    COALESCE(u.name, r.reviewer_name, 'Anonymous') AS reviewer_name,
+                    p.name AS provider_name
+             FROM ratings r
+             LEFT JOIN users u ON u.id = r.user_id
+             LEFT JOIN users p ON p.id = r.provider_id
+             ORDER BY r.created_at DESC`
+          )
+        : await pool.query(
+            `SELECT r.id, r.stars, r.comment, r.status, r.created_at,
+                    r.provider_id,
+                    COALESCE(u.name, r.reviewer_name, 'Anonymous') AS reviewer_name,
+                    p.name AS provider_name
+             FROM ratings r
+             LEFT JOIN users u ON u.id = r.user_id
+             LEFT JOIN users p ON p.id = r.provider_id
+             WHERE r.status = ?
+             ORDER BY r.created_at DESC`,
+            [sStatus]
+          );
+    res.json({ success: true, reviews: rows });
+}));
+
+// ── PUT /api/admin/reviews/:id/approve ────────────────────────────────────────
+app.put('/api/admin/reviews/:id/approve', requireAdmin, handleAsync(async (req, res) => {
+    const [[review]] = await pool.query('SELECT provider_id FROM ratings WHERE id = ?', [req.params.id]);
+    if (!review) return res.status(404).json({ success: false, error: 'Review not found' });
+    await pool.execute("UPDATE ratings SET status = 'approved' WHERE id = ?", [req.params.id]);
+    const [[{ avg }]] = await pool.query(
+        "SELECT ROUND(AVG(stars), 1) AS avg FROM ratings WHERE provider_id = ? AND status = 'approved'",
+        [review.provider_id]
+    );
+    await pool.execute('UPDATE users SET rating = ? WHERE id = ?', [avg || 0, review.provider_id]);
+    res.json({ success: true, newAverage: avg });
+}));
+
+// ── PUT /api/admin/reviews/:id/reject ─────────────────────────────────────────
+app.put('/api/admin/reviews/:id/reject', requireAdmin, handleAsync(async (req, res) => {
+    const [[review]] = await pool.query('SELECT provider_id FROM ratings WHERE id = ?', [req.params.id]);
+    if (!review) return res.status(404).json({ success: false, error: 'Review not found' });
+    await pool.execute("UPDATE ratings SET status = 'rejected' WHERE id = ?", [req.params.id]);
+    const [[{ avg }]] = await pool.query(
+        "SELECT ROUND(AVG(stars), 1) AS avg FROM ratings WHERE provider_id = ? AND status = 'approved'",
+        [review.provider_id]
+    );
+    await pool.execute('UPDATE users SET rating = ? WHERE id = ?', [avg || 0, review.provider_id]);
+    res.json({ success: true, newAverage: avg });
+}));
+
+// ── DELETE /api/admin/reviews/:id ─────────────────────────────────────────────
+app.delete('/api/admin/reviews/:id', requireAdmin, handleAsync(async (req, res) => {
+    const [[review]] = await pool.query('SELECT provider_id FROM ratings WHERE id = ?', [req.params.id]);
+    if (!review) return res.status(404).json({ success: false, error: 'Review not found' });
+    await pool.execute('DELETE FROM ratings WHERE id = ?', [req.params.id]);
+    const [[{ avg }]] = await pool.query(
+        "SELECT ROUND(AVG(stars), 1) AS avg FROM ratings WHERE provider_id = ? AND status = 'approved'",
+        [review.provider_id]
+    );
+    await pool.execute('UPDATE users SET rating = ? WHERE id = ?', [avg || 0, review.provider_id]);
+    res.json({ success: true });
 }));
 
 // ── POST /api/chat ────────────────────────────────────────────────────────────

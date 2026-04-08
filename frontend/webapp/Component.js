@@ -52,6 +52,7 @@ sap.ui.define([
                     oAppData.setProperty("/user/address/state",       u.state         || "");
                     oAppData.setProperty("/user/address/country",     u.country       || "");
                     oAppData.setProperty("/user/address/postalCode",  u.pincode       || "");
+                    oAppData.setProperty("/user/role",  u.role  || "Customer");
                     oAppData.setProperty("/isLoggedIn", true);
                 })
                 .catch(function() { /* token invalid, stay on login */ });

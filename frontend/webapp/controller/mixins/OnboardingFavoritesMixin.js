@@ -138,11 +138,12 @@ sap.ui.define([
 
             this._getProfileDialog().then(function(oDialog) { oDialog.open(); }.bind(this));
 
+            var that = this;
             fetch(API_BASE + "/api/providers/" + encodeURIComponent(oProvider.id) + "/ratings")
                 .then(function(r) { return r.json(); })
                 .then(function(oData) {
                     if (oData.success) {
-                        oModel.setProperty("/selectedProfile/reviews", oData.ratings);
+                        oModel.setProperty("/selectedProfile/reviews", that._formatReviews(oData.ratings));
                     }
                 })
                 .catch(function() {});

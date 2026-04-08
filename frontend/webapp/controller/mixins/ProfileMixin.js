@@ -7,6 +7,33 @@ sap.ui.define([
 
     return {
 
+        // Shared helper — exposed as this.this._formatReviews() so other mixins can use it
+        _formatReviews: function(aRatings) {
+            var now = new Date();
+            return (aRatings || []).map(function(r) {
+                var sName     = r.reviewer_name || "Anonymous";
+                var sInitials = sName.split(" ").map(function(p) { return p[0] || ""; })
+                    .join("").substring(0, 2).toUpperCase() || "?";
+
+                var d = r.created_at ? new Date(r.created_at) : null;
+                var sRelative = "";
+                if (d && !isNaN(d.getTime())) {
+                    var iDiff = Math.floor((now - d) / 1000);
+                    if (iDiff < 60)           { sRelative = "just now"; }
+                    else if (iDiff < 3600)    { sRelative = Math.floor(iDiff / 60) + " min ago"; }
+                    else if (iDiff < 86400)   { sRelative = Math.floor(iDiff / 3600) + " hr ago"; }
+                    else if (iDiff < 2592000) { sRelative = Math.floor(iDiff / 86400) + " days ago"; }
+                    else {
+                        sRelative = d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+                    }
+                }
+                return Object.assign({}, r, {
+                    reviewer_initials:  sInitials,
+                    created_at_relative: sRelative
+                });
+            });
+        },
+
         onViewProfile: function(oEvent) {
             // Button → VBox → HBox → CustomListItem
             var oListItem = oEvent.getSource().getParent().getParent().getParent();
@@ -36,9 +63,11 @@ sap.ui.define([
                 .then(function(r) { return r.json(); })
                 .then(function(oData) {
                     if (oData.success) {
-                        oModel.setProperty("/selectedProfile/reviews", oData.ratings);
+                        var oProfile = oModel.getProperty("/selectedProfile");
+                        oProfile.reviews = this._formatReviews(oData.ratings);
+                        oModel.setProperty("/selectedProfile", oProfile);
                     }
-                })
+                }.bind(this))
                 .catch(function() { /* keep empty */ });
         },
 
@@ -72,17 +101,15 @@ sap.ui.define([
             .then(function(r) { return r.json(); })
             .then(function(oData) {
                 if (oData.success) {
-                    MessageToast.show(oData.updated ? "Rating updated!" : "Thank you for your rating!");
+                    MessageToast.show("Your review has been submitted and is pending approval.");
                     if (oStars)   oStars.setValue(0);
                     if (oComment) oComment.setValue("");
-                    if (oData.newAverage) {
-                        oModel.setProperty("/selectedProfile/rating", oData.newAverage);
-                    }
+                    // Note: average and review list only update after admin approval
                     var sId = oModel.getProperty("/selectedProfile/id");
                     fetch(API_BASE + "/api/providers/" + encodeURIComponent(sId) + "/ratings")
                         .then(function(r) { return r.json(); })
                         .then(function(d) {
-                            if (d.success) oModel.setProperty("/selectedProfile/reviews", d.ratings);
+                            if (d.success) oModel.setProperty("/selectedProfile/reviews", this._formatReviews(d.ratings));
                         });
                 } else {
                     MessageToast.show(oData.error || "Could not submit rating.");
