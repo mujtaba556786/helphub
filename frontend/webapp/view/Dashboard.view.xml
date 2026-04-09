@@ -11,21 +11,22 @@
     <NavContainer id="navContainer">
 
         <!-- PAGE 1: CATEGORY SELECTION -->
-        <Page id="dashboardPage" title="HelpMate" showHeader="true"  enableScrolling="true">
+        <Page id="dashboardPage" title="{i18n>dashboardTitle}" showHeader="true"  enableScrolling="true">
             <customHeader>
                 <Bar>
                     <contentLeft>
                         <HBox alignItems="Center">
-                            <Title text="HelpMate" level="H3" class="sapUiTinyMarginBegin"/>
+                            <Title text="{i18n>dashboardTitle}" level="H3" class="sapUiTinyMarginBegin"/>
                         </HBox>
                     </contentLeft>
                     <contentRight>
                         <HBox alignItems="Center" class="sapUiTinyMarginEnd">
-                            <Button id="notifBtn" icon="sap-icon://bell" type="Transparent" press="onShowNotifications" tooltip="Notifications"/>
-                            <Button icon="sap-icon://it-system" type="Transparent" press="onNavToAdmin" tooltip="Admin Panel"
+                            <Button id="notifBtn" icon="sap-icon://bell" type="Transparent" press="onShowNotifications" tooltip="{i18n>notifications}"/>
+                            <Button icon="sap-icon://world" type="Transparent" press="onLanguageMenu" tooltip="{i18n>changeLanguage}"/>
+                            <Button icon="sap-icon://it-system" type="Transparent" press="onNavToAdmin" tooltip="{i18n>adminPanel}"
                                 visible="{= ${appData>/user/role} === 'admin'}"/>
                             <Avatar src="{appData>/user/photo}" initials="{appData>/user/initials}" displaySize="XS" backgroundColor="Accent6" press="onEditProfile" class="sapUiTinyMarginEnd" />
-                            <Button icon="sap-icon://log" press="onLogout" type="Transparent" tooltip="Sign out"/>
+                            <Button icon="sap-icon://log" press="onLogout" type="Transparent" tooltip="{i18n>signOut}"/>
                         </HBox>
                     </contentRight>
                 </Bar>
@@ -36,11 +37,11 @@
 
                     <!-- TAB 1: Find Help -->
                     <items>
-                        <IconTabFilter key="findHelp" text="Find Help" icon="sap-icon://question-mark">
+                        <IconTabFilter key="findHelp" text="{i18n>findHelp}" icon="sap-icon://question-mark">
                             <ScrollContainer vertical="true" horizontal="false" height="100%">
                                 <VBox class="sapUiSmallMargin mainContent">
-                                    <Title text="How can we help you today?" level="H2" class="sapUiLargeMarginBottom"/>
-                                    <Text text="Choose a service below to find trusted helpers near you." class="grayText sapUiSmallMarginBottom"/>
+                                    <Title text="{i18n>howCanWeHelp}" level="H2" class="sapUiLargeMarginBottom"/>
+                                    <Text text="{i18n>chooseService}" class="grayText sapUiSmallMarginBottom"/>
 
                                     <!-- Service tiles -->
                                     <FlexBox class="serviceTilesContainer" direction="Row" wrap="Wrap" justifyContent="Center" items="{appData>/services}">
@@ -61,26 +62,26 @@
                         </IconTabFilter>
 
                         <!-- TAB 2: Tasks -->
-                        <IconTabFilter key="tasks" text="Tasks" icon="sap-icon://task" count="{appData>/openTaskCount}">
+                        <IconTabFilter key="tasks" text="{i18n>tasks}" icon="sap-icon://task" count="{appData>/openTaskCount}">
                             <ScrollContainer vertical="true" horizontal="false" height="100%">
                                 <VBox class="sapUiSmallMargin mainContent">
                                     <HBox justifyContent="SpaceBetween" alignItems="Center" class="sapUiSmallMarginBottom">
                                         <HBox>
-                                            <Button text="Browse" type="{= ${appData>/taskViewMode} === 'browse' ? 'Emphasized' : 'Default'}" press="onToggleTaskView" class="sapUiTinyMarginEnd hhTaskToggle">
+                                            <Button text="{i18n>browse}" type="{= ${appData>/taskViewMode} === 'browse' ? 'Emphasized' : 'Default'}" press="onToggleTaskView" class="sapUiTinyMarginEnd hhTaskToggle">
                                                 <customData><core:CustomData key="mode" value="browse"/></customData>
                                             </Button>
-                                            <Button text="My Tasks" type="{= ${appData>/taskViewMode} === 'mine' ? 'Emphasized' : 'Default'}" press="onToggleTaskView" class="hhTaskToggle">
+                                            <Button text="{i18n>myTasks}" type="{= ${appData>/taskViewMode} === 'mine' ? 'Emphasized' : 'Default'}" press="onToggleTaskView" class="hhTaskToggle">
                                                 <customData><core:CustomData key="mode" value="mine"/></customData>
                                             </Button>
                                         </HBox>
-                                        <Button text="+ Post Task" type="Emphasized" press="onOpenPostTask"/>
+                                        <Button text="{i18n>postTask}" type="Emphasized" press="onOpenPostTask"/>
                                     </HBox>
 
                                     <!-- Search & Filter (Browse mode) -->
                                     <VBox visible="{= ${appData>/taskViewMode} === 'browse'}" class="sapUiTinyMarginBottom">
-                                        <SearchField id="taskSearch" placeholder="Search tasks by title, description, or location…" search="onTaskSearch" liveChange="onTaskSearch" width="100%" class="sapUiTinyMarginBottom"/>
+                                        <SearchField id="taskSearch" placeholder="{i18n>searchTasksPlaceholder}" search="onTaskSearch" liveChange="onTaskSearch" width="100%" class="sapUiTinyMarginBottom"/>
                                         <HBox wrap="Wrap" alignItems="Center">
-                                            <Button text="All" type="{= ${appData>/taskCategoryFilter} === '' ? 'Emphasized' : 'Default'}" press="onTaskCategoryFilter" class="sapUiTinyMarginEnd sapUiTinyMarginBottom hhTaskToggle">
+                                            <Button text="{i18n>all}" type="{= ${appData>/taskCategoryFilter} === '' ? 'Emphasized' : 'Default'}" press="onTaskCategoryFilter" class="sapUiTinyMarginEnd sapUiTinyMarginBottom hhTaskToggle">
                                                 <customData><core:CustomData key="cat" value=""/></customData>
                                             </Button>
                                             <Button text="🌱 Gardening" type="{= ${appData>/taskCategoryFilter} === 'Gardening' ? 'Emphasized' : 'Default'}" press="onTaskCategoryFilter" class="sapUiTinyMarginEnd sapUiTinyMarginBottom hhTaskToggle">
@@ -95,7 +96,7 @@
                                             <Button text="🔧 Handyman" type="{= ${appData>/taskCategoryFilter} === 'Handyman' ? 'Emphasized' : 'Default'}" press="onTaskCategoryFilter" class="sapUiTinyMarginEnd sapUiTinyMarginBottom hhTaskToggle">
                                                 <customData><core:CustomData key="cat" value="Handyman"/></customData>
                                             </Button>
-                                            <Button text="More ▾" type="Transparent" press="onTaskCategoryMore" class="sapUiTinyMarginBottom"/>
+                                            <Button text="{i18n>more}" type="Transparent" press="onTaskCategoryMore" class="sapUiTinyMarginBottom"/>
                                         </HBox>
                                     </VBox>
 
@@ -106,7 +107,7 @@
 
                                     <!-- Browse Tasks -->
                                     <VBox visible="{= ${appData>/taskViewMode} === 'browse'}">
-                                        <List id="taskFeedList" items="{appData>/tasksFeed}" noDataText="No tasks found. Try a different search or category.">
+                                        <List id="taskFeedList" items="{appData>/tasksFeed}" noDataText="{i18n>noTasksFound}">
                                             <CustomListItem type="Active" press="onTaskPress">
                                                 <VBox class="sapUiSmallMargin">
                                                     <HBox justifyContent="SpaceBetween" alignItems="Start">
@@ -138,7 +139,7 @@
 
                                     <!-- My Tasks -->
                                     <VBox visible="{= ${appData>/taskViewMode} === 'mine'}">
-                                        <List id="myTasksList" items="{appData>/myTasks}" noDataText="You haven't posted any tasks yet.">
+                                        <List id="myTasksList" items="{appData>/myTasks}" noDataText="{i18n>noMyTasksYet}">
                                             <CustomListItem type="Active" press="onTaskPress">
                                                 <VBox class="sapUiSmallMargin">
                                                     <HBox justifyContent="SpaceBetween" alignItems="Start">
@@ -168,11 +169,11 @@
                         </IconTabFilter>
 
                         <!-- TAB 3: Messages -->
-                        <IconTabFilter key="messages" text="Messages" icon="sap-icon://discussion" count="{appData>/unreadDmCount}">
+                        <IconTabFilter key="messages" text="{i18n>messages}" icon="sap-icon://discussion" count="{appData>/unreadDmCount}">
                             <ScrollContainer vertical="true" horizontal="false" height="100%">
                                 <VBox class="sapUiSmallMargin mainContent">
-                                    <Title text="Messages" level="H4" class="sapUiSmallMarginBottom"/>
-                                    <List id="conversationsList" items="{appData>/conversations}" noDataText="No messages yet. Tap 'Message' on a helper's profile or task to start a conversation.">
+                                    <Title text="{i18n>messages}" level="H4" class="sapUiSmallMarginBottom"/>
+                                    <List id="conversationsList" items="{appData>/conversations}" noDataText="{i18n>noMessagesYet}">
                                         <CustomListItem type="Active" press="onOpenDmChat">
                                             <HBox class="sapUiSmallMargin" alignItems="Center">
                                                 <Avatar displaySize="S" src="{appData>other_avatar}" initials="P" backgroundColor="Accent1" class="sapUiTinyMarginEnd"/>
@@ -194,11 +195,11 @@
                         </IconTabFilter>
 
                         <!-- TAB 4: My Schedule -->
-                        <IconTabFilter key="mySchedule" text="My Schedule" icon="sap-icon://calendar" count="{appData>/bookingCount}">
+                        <IconTabFilter key="mySchedule" text="{i18n>mySchedule}" icon="sap-icon://calendar" count="{appData>/bookingCount}">
                             <ScrollContainer vertical="true" horizontal="false" height="100%">
                                 <VBox class="sapUiSmallMargin">
-                                    <Title text="Your Bookings" level="H4" class="sapUiSmallMarginBottom"/>
-                                    <List id="bookingsList" items="{appData>/upcomingBookings}" noDataText="No bookings yet. Book a helper to get started!">
+                                    <Title text="{i18n>yourBookings}" level="H4" class="sapUiSmallMarginBottom"/>
+                                    <List id="bookingsList" items="{appData>/upcomingBookings}" noDataText="{i18n>noBookingsYet}">
                                         <CustomListItem>
                                             <VBox class="sapUiSmallMargin">
                                                 <HBox justifyContent="SpaceBetween" alignItems="Start">
@@ -210,8 +211,8 @@
                                                     <ObjectStatus text="{appData>status}" state="{path:'appData>status', formatter:'.formatBookingState'}"/>
                                                 </HBox>
                                                 <HBox class="sapUiTinyMarginTop" wrap="Wrap" visible="{= ${appData>status} === 'pending' &amp;&amp; ${appData>/user/id} === ${appData>provider_id}}">
-                                                    <Button text="✓ Accept" type="Accept" press="onAcceptBooking" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
-                                                    <Button text="✗ Decline" type="Reject" press="onDeclineBooking" class="sapUiTinyMarginBottom"/>
+                                                    <Button text="{i18n>accept}" type="Accept" press="onAcceptBooking" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                                                    <Button text="{i18n>decline}" type="Reject" press="onDeclineBooking" class="sapUiTinyMarginBottom"/>
                                                 </HBox>
                                                 <Text text="{appData>message}" class="smallText grayText sapUiTinyMarginTop" visible="{= !!${appData>message}}"/>
                                             </VBox>
@@ -222,13 +223,13 @@
                         </IconTabFilter>
 
                         <!-- TAB 5: Saved -->
-                        <IconTabFilter key="saved" text="Saved" icon="sap-icon://heart">
+                        <IconTabFilter key="saved" text="{i18n>saved}" icon="sap-icon://heart">
                             <ScrollContainer vertical="true" horizontal="false" height="100%">
                                 <VBox class="sapUiSmallMargin mainContent">
 
                                     <!-- Recently Viewed -->
-                                    <Title text="Recently Viewed" level="H4" class="sapUiSmallMarginBottom"/>
-                                    <List id="recentlyViewedList" items="{appData>/recentlyViewed}" noDataText="No helpers viewed yet.">
+                                    <Title text="{i18n>recentlyViewed}" level="H4" class="sapUiSmallMarginBottom"/>
+                                    <List id="recentlyViewedList" items="{appData>/recentlyViewed}" noDataText="{i18n>noHelpersViewed}">
                                         <CustomListItem>
                                             <HBox class="sapUiSmallMargin" justifyContent="SpaceBetween" alignItems="Center">
                                                 <HBox alignItems="Center">
@@ -238,14 +239,14 @@
                                                         <Text text="{appData>serviceType}" class="grayText smallText"/>
                                                     </VBox>
                                                 </HBox>
-                                                <Button text="Profile" type="Transparent" press="onViewRecentProfile"/>
+                                                <Button text="{i18n>profile}" type="Transparent" press="onViewRecentProfile"/>
                                             </HBox>
                                         </CustomListItem>
                                     </List>
 
                                     <!-- Saved Helpers -->
-                                    <Title text="Saved Helpers" level="H4" class="sapUiSmallMarginTop sapUiSmallMarginBottom"/>
-                                    <List id="favoritesList" items="{appData>/favoriteProviders}" noDataText="No saved helpers yet. Tap ♡ on a helper card to save them.">
+                                    <Title text="{i18n>savedHelpers}" level="H4" class="sapUiSmallMarginTop sapUiSmallMarginBottom"/>
+                                    <List id="favoritesList" items="{appData>/favoriteProviders}" noDataText="{i18n>noSavedHelpers}">
                                         <CustomListItem>
                                             <HBox class="sapUiSmallMargin" justifyContent="SpaceBetween" alignItems="Center">
                                                 <HBox alignItems="Center">
@@ -260,8 +261,8 @@
                                                     </VBox>
                                                 </HBox>
                                                 <VBox alignItems="End">
-                                                    <Button icon="sap-icon://favorite" type="Emphasized" press="onToggleFavorite" tooltip="Remove from saved" class="sapUiTinyMarginBottom"/>
-                                                    <Button text="Profile" type="Transparent" press="onViewFavoriteProfile"/>
+                                                    <Button icon="sap-icon://favorite" type="Emphasized" press="onToggleFavorite" tooltip="{i18n>removeFromSaved}" class="sapUiTinyMarginBottom"/>
+                                                    <Button text="{i18n>profile}" type="Transparent" press="onViewFavoriteProfile"/>
                                                 </VBox>
                                             </HBox>
                                         </CustomListItem>
@@ -278,7 +279,7 @@
         </Page>
 
         <!-- PAGE 2: Search & Results -->
-        <Page id="searchPage" title="Local Experts" showNavButton="true" navButtonPress="onNavBack" enableScrolling="true">
+        <Page id="searchPage" title="{i18n>localExperts}" showNavButton="true" navButtonPress="onNavBack" enableScrolling="true">
             <content>
                 <VBox>
                     <VBox id="mapContainer" height="25vh" width="100%" class="mapPlaceholder">
@@ -290,20 +291,20 @@
                             <Title text="{appData>/selectedCategoryName} Experts Nearby" level="H3"/>
                         </HBox>
 
-                        <SearchField id="helperSearch" placeholder="Search by name or skill…" search="onHelperSearch" liveChange="onHelperSearch" width="100%" class="sapUiTinyMarginBottom"/>
+                        <SearchField id="helperSearch" placeholder="{i18n>searchByNameOrSkill}" search="onHelperSearch" liveChange="onHelperSearch" width="100%" class="sapUiTinyMarginBottom"/>
 
                         <!-- Filter pills -->
                         <HBox wrap="Wrap" alignItems="Center" class="sapUiTinyMarginBottom">
-                            <Button text="🟢 Available now" type="{= ${appData>/filters/availableNow} ? 'Emphasized' : 'Default'}" press="onFilterAvailableNow" class="sapUiTinyMarginEnd sapUiTinyMarginBottom hhFilterPill"/>
-                            <Button text="All" type="{= ${appData>/filters/priceCategory} === 'all' ? 'Emphasized' : 'Default'}" press="onFilterAll" class="sapUiTinyMarginEnd sapUiTinyMarginBottom hhFilterPill"/>
-                            <Button text="⭐ Top rated" type="{= ${appData>/filters/priceCategory} === 'top' ? 'Emphasized' : 'Default'}" press="onFilterTopRated" class="sapUiTinyMarginEnd sapUiTinyMarginBottom hhFilterPill"/>
-                            <Button text="💸 Budget" type="{= ${appData>/filters/priceCategory} === 'budget' ? 'Emphasized' : 'Default'}" press="onFilterBudget" class="sapUiTinyMarginEnd sapUiTinyMarginBottom hhFilterPill"/>
+                            <Button text="{i18n>availableNow}" type="{= ${appData>/filters/availableNow} ? 'Emphasized' : 'Default'}" press="onFilterAvailableNow" class="sapUiTinyMarginEnd sapUiTinyMarginBottom hhFilterPill"/>
+                            <Button text="{i18n>all}" type="{= ${appData>/filters/priceCategory} === 'all' ? 'Emphasized' : 'Default'}" press="onFilterAll" class="sapUiTinyMarginEnd sapUiTinyMarginBottom hhFilterPill"/>
+                            <Button text="{i18n>topRated}" type="{= ${appData>/filters/priceCategory} === 'top' ? 'Emphasized' : 'Default'}" press="onFilterTopRated" class="sapUiTinyMarginEnd sapUiTinyMarginBottom hhFilterPill"/>
+                            <Button text="{i18n>budgetFilter}" type="{= ${appData>/filters/priceCategory} === 'budget' ? 'Emphasized' : 'Default'}" press="onFilterBudget" class="sapUiTinyMarginEnd sapUiTinyMarginBottom hhFilterPill"/>
                         </HBox>
 
                         <!-- Distance slider -->
                         <VBox class="sapUiTinyMarginBottom">
                             <HBox justifyContent="SpaceBetween" alignItems="Center">
-                                <Text text="📍 Distance" class="smallText grayText"/>
+                                <Text text="{i18n>distanceFilter}" class="smallText grayText"/>
                                 <Text text="{appData>/filters/distanceLabel}" class="smallText blueText fontBold"/>
                             </HBox>
                             <Slider min="1" max="50" step="1" value="{appData>/filters/distance}" liveChange="onDistanceChange"/>
@@ -311,19 +312,19 @@
 
                         <!-- Language filter -->
                         <HBox alignItems="Center" class="sapUiTinyMarginBottom">
-                            <Text text="🌐 Language" class="smallText grayText sapUiSmallMarginEnd"/>
-                            <Input value="{appData>/filters/language}" placeholder="e.g. EN, DE" liveChange="onLangFilter" width="120px"/>
+                            <Text text="{i18n>languageFilter}" class="smallText grayText sapUiSmallMarginEnd"/>
+                            <Input value="{appData>/filters/language}" placeholder="{i18n>languagePlaceholder}" liveChange="onLangFilter" width="120px"/>
                         </HBox>
 
                         <!-- Reset filters -->
                         <HBox visible="{= ${appData>/filters/activeCount} > 0}" class="sapUiTinyMarginBottom">
-                            <Button text="✕ Reset filters" type="Transparent" press="onResetFilters" class="hhFilterPill"/>
+                            <Button text="{i18n>resetFilters}" type="Transparent" press="onResetFilters" class="hhFilterPill"/>
                         </HBox>
 
                         <!-- Ad slot: banner between filters and helper list (non-intrusive) -->
                         <core:HTML content='&lt;div id="ad-slot-top" style="text-align:center;margin:4px 0;min-height:50px;background:#f5f5f5;border:1px dashed #ccc;display:flex;align-items:center;justify-content:center;"&gt;&lt;ins class="adsbygoogle" style="display:inline-block;width:100%;height:50px;" data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="1111111111"&gt;&lt;/ins&gt;&lt;span style="color:#aaa;font-size:11px;font-family:sans-serif;position:absolute;"&gt;Advertisement&lt;/span&gt;&lt;/div&gt;'/>
 
-                        <List items="{appData>/filteredProviders}" noDataText="No helpers nearby yet. Showing more helpers as they join.">
+                        <List items="{appData>/filteredProviders}" noDataText="{i18n>noHelpersNearby}">
                             <CustomListItem>
                                 <VBox class="sapUiSmallMargin">
                                     <HBox justifyContent="SpaceBetween" alignItems="Start">
@@ -348,12 +349,12 @@
                                         <ObjectStatus text="{appData>languages}" state="None" class="smallText"/>
                                     </HBox>
                                     <HBox class="sapUiTinyMarginTop helperCardActions" wrap="Wrap" alignItems="Center">
-                                        <Button icon="{= ${appData>/favorites}.indexOf(${appData>id}) >= 0 ? 'sap-icon://favorite' : 'sap-icon://unfavorite'}" type="{= ${appData>/favorites}.indexOf(${appData>id}) >= 0 ? 'Emphasized' : 'Transparent'}" press="onToggleFavorite" tooltip="Save helper" class="sapUiTinyMarginEnd"
+                                        <Button icon="{= ${appData>/favorites}.indexOf(${appData>id}) >= 0 ? 'sap-icon://favorite' : 'sap-icon://unfavorite'}" type="{= ${appData>/favorites}.indexOf(${appData>id}) >= 0 ? 'Emphasized' : 'Transparent'}" press="onToggleFavorite" tooltip="{i18n>saveHelper}" class="sapUiTinyMarginEnd"
                                             visible="{= ${appData>id} !== ${appData>/user/id}}"/>
-                                        <Button text="Profile" type="Transparent" press="onViewProfile" class="sapUiTinyMarginEnd"/>
-                                        <Button text="📅 Book" type="Emphasized" press="onQuickBook" class="sapUiTinyMarginEnd"
+                                        <Button text="{i18n>profile}" type="Transparent" press="onViewProfile" class="sapUiTinyMarginEnd"/>
+                                        <Button text="{i18n>book}" type="Emphasized" press="onQuickBook" class="sapUiTinyMarginEnd"
                                             visible="{= ${appData>id} !== ${appData>/user/id}}"/>
-                                        <Button text="✉️ Message" type="Accept" press="onQuickMessage"
+                                        <Button text="{i18n>messageHelper}" type="Accept" press="onQuickMessage"
                                             visible="{= ${appData>id} !== ${appData>/user/id}}"/>
                                     </HBox>
                                 </VBox>
@@ -369,14 +370,14 @@
         </Page>
 
         <!-- PAGE 3: Edit Profile -->
-        <Page id="editPage" title="My Profile" showNavButton="true" navButtonPress="onNavBack" enableScrolling="true">
+        <Page id="editPage" title="{i18n>myProfile}" showNavButton="true" navButtonPress="onNavBack" enableScrolling="true">
             <content>
                 <VBox class="sapUiSmallMargin">
 
                     <!-- PROFILE PHOTO -->
                     <VBox alignItems="Center" class="sapUiMediumMarginBottom">
                         <Avatar id="profileAvatar" src="{appData>/user/photo}" displaySize="XL" backgroundColor="Accent6" initials="{appData>/user/avatar}" class="sapUiSmallMarginBottom"/>
-                        <Button text="Change Photo" icon="sap-icon://camera" press="onChangePhoto" type="Transparent"/>
+                        <Button text="{i18n>changePhoto}" icon="sap-icon://camera" press="onChangePhoto" type="Transparent"/>
                         <u:FileUploader id="avatarFileUploader" fileType="jpg,jpeg,png,gif,webp" maximumFileSize="5" visible="false" change="onAvatarFileSelected" uploadOnChange="false" buttonOnly="true" buttonText=""/>
                         <Text id="photoError" text="" class="errorText" visible="false"/>
                     </VBox>
@@ -384,45 +385,45 @@
                     <f:SimpleForm editable="true" layout="ResponsiveGridLayout" columnsL="2" columnsM="2">
 
                         <!-- Basic Info -->
-                        <core:Title text="Basic Information"/>
+                        <core:Title text="{i18n>basicInfo}"/>
 
-                        <Label text="Display Name" required="true"/>
-                        <Input value="{appData>/user/name}" valueState="{appData>/validation/name}" valueStateText="Display name is required"/>
+                        <Label text="{i18n>displayName}" required="true"/>
+                        <Input value="{appData>/user/name}" valueState="{appData>/validation/name}" valueStateText="{i18n>displayNameRequired}"/>
 
-                        <Label text="Phone Number"/>
+                        <Label text="{i18n>phoneNumber}"/>
                         <Input value="{appData>/user/phone}" type="Tel"/>
 
-                        <Label text="Languages"/>
-                        <Input value="{appData>/user/languages}" placeholder="e.g. EN, DE"/>
+                        <Label text="{i18n>languagesLabel}"/>
+                        <Input value="{appData>/user/languages}" placeholder="{i18n>languagesPlaceholder}"/>
 
-                        <Label text="Bio"/>
-                        <TextArea rows="3" value="{appData>/user/bio}" placeholder="Tell clients about your experience…"/>
+                        <Label text="{i18n>bio}"/>
+                        <TextArea rows="3" value="{appData>/user/bio}" placeholder="{i18n>bioPlaceholder}"/>
 
                         <!-- Provider Info -->
-                        <core:Title text="Provider Settings"/>
+                        <core:Title text="{i18n>providerSettings}"/>
 
-                        <Label text="Service Categories"/>
+                        <Label text="{i18n>serviceCategories}"/>
                         <MultiComboBox selectedKeys="{appData>/user/serviceCategories}" items="{appData>/services}">
                             <core:Item key="{appData>name}" text="{appData>name}"/>
                         </MultiComboBox>
 
-                        <Label text="Hourly Rate (EUR)"/>
+                        <Label text="{i18n>hourlyRate}"/>
                         <Input value="{appData>/user/rate}" type="Number"/>
 
-                        <Label text="Availability"/>
+                        <Label text="{i18n>availability}"/>
                         <!-- Quick picks row -->
                         <FlexBox wrap="Wrap" class="sapUiTinyMarginBottom">
-                            <Button text="All Day" press="onAvailabilityToggle" type="{= ${appData>/user/availabilityFlags/all_day} ? 'Emphasized' : 'Default'}" class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
+                            <Button text="{i18n>allDay}" press="onAvailabilityToggle" type="{= ${appData>/user/availabilityFlags/all_day} ? 'Emphasized' : 'Default'}" class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
                                 <customData>
                                     <core:CustomData key="availKey" value="all_day"/>
                                 </customData>
                             </Button>
-                            <Button text="Weekdays" press="onAvailabilityToggle" type="{= ${appData>/user/availabilityFlags/weekdays} ? 'Emphasized' : 'Default'}" class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
+                            <Button text="{i18n>weekdays}" press="onAvailabilityToggle" type="{= ${appData>/user/availabilityFlags/weekdays} ? 'Emphasized' : 'Default'}" class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
                                 <customData>
                                     <core:CustomData key="availKey" value="weekdays"/>
                                 </customData>
                             </Button>
-                            <Button text="Weekends" press="onAvailabilityToggle" type="{= ${appData>/user/availabilityFlags/weekends} ? 'Emphasized' : 'Default'}" class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
+                            <Button text="{i18n>weekends}" press="onAvailabilityToggle" type="{= ${appData>/user/availabilityFlags/weekends} ? 'Emphasized' : 'Default'}" class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
                                 <customData>
                                     <core:CustomData key="availKey" value="weekends"/>
                                 </customData>
@@ -430,59 +431,59 @@
                         </FlexBox>
                         <!-- Time of day row -->
                         <FlexBox wrap="Wrap">
-                            <Button text="🌅 Morning (6–12)" press="onAvailabilityToggle" type="{= ${appData>/user/availabilityFlags/morning} ? 'Emphasized' : 'Default'}" class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
+                            <Button text="{i18n>morning}" press="onAvailabilityToggle" type="{= ${appData>/user/availabilityFlags/morning} ? 'Emphasized' : 'Default'}" class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
                                 <customData>
                                     <core:CustomData key="availKey" value="morning"/>
                                 </customData>
                             </Button>
-                            <Button text="☀️ Afternoon (12–17)" press="onAvailabilityToggle" type="{= ${appData>/user/availabilityFlags/afternoon} ? 'Emphasized' : 'Default'}" class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
+                            <Button text="{i18n>afternoon}" press="onAvailabilityToggle" type="{= ${appData>/user/availabilityFlags/afternoon} ? 'Emphasized' : 'Default'}" class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
                                 <customData>
                                     <core:CustomData key="availKey" value="afternoon"/>
                                 </customData>
                             </Button>
-                            <Button text="🌆 Evening (17–22)" press="onAvailabilityToggle" type="{= ${appData>/user/availabilityFlags/evening} ? 'Emphasized' : 'Default'}" class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
+                            <Button text="{i18n>evening}" press="onAvailabilityToggle" type="{= ${appData>/user/availabilityFlags/evening} ? 'Emphasized' : 'Default'}" class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
                                 <customData>
                                     <core:CustomData key="availKey" value="evening"/>
                                 </customData>
                             </Button>
-                            <Button text="🌙 Night (22+)" press="onAvailabilityToggle" type="{= ${appData>/user/availabilityFlags/night} ? 'Emphasized' : 'Default'}" class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
+                            <Button text="{i18n>night}" press="onAvailabilityToggle" type="{= ${appData>/user/availabilityFlags/night} ? 'Emphasized' : 'Default'}" class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
                                 <customData>
                                     <core:CustomData key="availKey" value="night"/>
                                 </customData>
                             </Button>
                         </FlexBox>
 
-                        <Label text="Years of Experience"/>
+                        <Label text="{i18n>yearsOfExperience}"/>
                         <Input value="{appData>/user/years}" type="Number"/>
 
                         <!-- Address -->
-                        <core:Title text="Address"/>
+                        <core:Title text="{i18n>addressSection}"/>
 
-                        <Label text="Country" required="true"/>
+                        <Label text="{i18n>country}" required="true"/>
                         <Select id="countrySelect" change="onCountryChange" selectedKey="{appData>/user/address/country}" items="{appData>/countries}">
                             <core:Item key="{appData>code}" text="{appData>name}"/>
                         </Select>
 
-                        <Label text="State / Province" required="true"/>
+                        <Label text="{i18n>stateProvince}" required="true"/>
                         <Select id="stateSelect" selectedKey="{appData>/user/address/state}" items="{appData>/stateOptions}">
                             <core:Item key="{appData>name}" text="{appData>name}"/>
                         </Select>
 
-                        <Label text="City" required="true"/>
-                        <Input id="cityInput" value="{appData>/user/address/city}" valueState="{appData>/validation/city}" valueStateText="City is required"/>
+                        <Label text="{i18n>city}" required="true"/>
+                        <Input id="cityInput" value="{appData>/user/address/city}" valueState="{appData>/validation/city}" valueStateText="{i18n>cityRequired}"/>
 
-                        <Label text="Street" required="true"/>
-                        <Input id="streetInput" value="{appData>/user/address/street}" valueState="{appData>/validation/street}" valueStateText="Street is required"/>
+                        <Label text="{i18n>street}" required="true"/>
+                        <Input id="streetInput" value="{appData>/user/address/street}" valueState="{appData>/validation/street}" valueStateText="{i18n>streetRequired}"/>
 
-                        <Label text="House Number" required="true"/>
-                        <Input id="houseInput" value="{appData>/user/address/houseNumber}" valueState="{appData>/validation/houseNumber}" valueStateText="House number is required"/>
+                        <Label text="{i18n>houseNumber}" required="true"/>
+                        <Input id="houseInput" value="{appData>/user/address/houseNumber}" valueState="{appData>/validation/houseNumber}" valueStateText="{i18n>houseNumberRequired}"/>
 
-                        <Label text="Postal Code" required="true"/>
-                        <Input id="postalInput" value="{appData>/user/address/postalCode}" valueState="{appData>/validation/postalCode}" valueStateText="Enter a valid postal code (3–10 characters)"/>
+                        <Label text="{i18n>postalCode}" required="true"/>
+                        <Input id="postalInput" value="{appData>/user/address/postalCode}" valueState="{appData>/validation/postalCode}" valueStateText="{i18n>postalCodeRequired}"/>
 
                     </f:SimpleForm>
 
-                    <Button text="Save Profile Changes" type="Emphasized" press="onSaveProfile" class="sapUiMediumMarginTop sapUiLargeMarginBottom" width="100%"/>
+                    <Button text="{i18n>saveProfile}" type="Emphasized" press="onSaveProfile" class="sapUiMediumMarginTop sapUiLargeMarginBottom" width="100%"/>
 
                 </VBox>
 

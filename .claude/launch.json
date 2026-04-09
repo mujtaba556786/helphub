@@ -3,16 +3,22 @@
   "configurations": [
     {
       "name": "frontend",
-      "runtimeExecutable": "npx",
-      "runtimeArgs": ["serve", "frontend/webapp"],
+      "runtimeExecutable": "/opt/homebrew/bin/python3",
+      "runtimeArgs": ["-m", "http.server", "8080", "--directory", "frontend/webapp"],
       "port": 8080,
       "autoPort": false
     },
     {
       "name": "backend",
-      "runtimeExecutable": "node",
+      "runtimeExecutable": "/opt/homebrew/bin/node",
       "runtimeArgs": ["backend/server.js"],
       "port": 3000
+    },
+    {
+      "name": "admin",
+      "runtimeExecutable": "/opt/homebrew/bin/node",
+      "runtimeArgs": ["/Users/mujtaba/Documents/myProj/helphub/backend/node_modules/.bin/vite", "--config", "/Users/mujtaba/Documents/myProj/helphub/backend/vite.config.ts"],
+      "port": 5173
     }
   ]
 }

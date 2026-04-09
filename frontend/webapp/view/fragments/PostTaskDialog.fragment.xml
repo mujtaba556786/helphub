@@ -2,28 +2,28 @@
     xmlns="sap.m"
     xmlns:core="sap.ui.core">
 
-    <Dialog id="postTaskDialog" title="Post a Task" contentWidth="92%" stretch="{device>/system/phone}">
+    <Dialog id="postTaskDialog" title="{i18n>postTaskTitle}" contentWidth="92%" stretch="{device>/system/phone}">
         <VBox class="sapUiMediumMargin">
-            <Label text="What do you need help with?" required="true"/>
-            <Input value="{appData>/taskForm/title}" placeholder="e.g. Mow my lawn this Saturday" width="100%" class="sapUiTinyMarginBottom"/>
-            <Label text="Description"/>
-            <TextArea value="{appData>/taskForm/description}" rows="3" width="100%" placeholder="Add details — size, tools needed, special instructions…" class="sapUiTinyMarginBottom"/>
-            <Label text="Category" required="true"/>
+            <Label text="{i18n>whatNeedHelp}" required="true"/>
+            <Input value="{appData>/taskForm/title}" placeholder="{i18n>taskTitlePlaceholder}" width="100%" class="sapUiTinyMarginBottom"/>
+            <Label text="{i18n>description}"/>
+            <TextArea value="{appData>/taskForm/description}" rows="3" width="100%" placeholder="{i18n>taskDescriptionPlaceholder}" class="sapUiTinyMarginBottom"/>
+            <Label text="{i18n>category}" required="true"/>
             <Select id="taskCategorySelect" selectedKey="{appData>/taskForm/category}" width="100%" class="sapUiTinyMarginBottom" items="{appData>/services}">
                 <core:Item key="{appData>name}" text="{= ${appData>icon} + ' ' + ${appData>name}}"/>
             </Select>
-            <Label text="Budget (EUR)"/>
+            <Label text="{i18n>budgetEur}"/>
             <Input value="{appData>/taskForm/budget}" type="Number" placeholder="e.g. 50" width="100%" class="sapUiTinyMarginBottom"/>
-            <Label text="When"/>
+            <Label text="{i18n>when}"/>
             <DatePicker value="{appData>/taskForm/task_date}" valueFormat="yyyy-MM-dd" displayFormat="MMM dd, yyyy" width="100%" class="sapUiTinyMarginBottom"/>
-            <Label text="Location"/>
-            <Input value="{appData>/taskForm/location}" placeholder="e.g. Mitte, Berlin" width="100%" class="sapUiTinyMarginBottom"/>
+            <Label text="{i18n>location}"/>
+            <Input value="{appData>/taskForm/location}" placeholder="{i18n>locationPlaceholder}" width="100%" class="sapUiTinyMarginBottom"/>
         </VBox>
         <beginButton>
-            <Button text="Post Task" type="Emphasized" press="onConfirmPostTask"/>
+            <Button text="{i18n>postTaskBtn}" type="Emphasized" press="onConfirmPostTask"/>
         </beginButton>
         <endButton>
-            <Button text="Cancel" press="onClosePostTask"/>
+            <Button text="{i18n>cancel}" press="onClosePostTask"/>
         </endButton>
     </Dialog>
 

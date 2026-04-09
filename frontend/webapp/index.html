@@ -29,6 +29,12 @@
             height: 100%;
         }
     </style>
+    <!-- Apply saved language before UI5 boots (also activates RTL for Arabic) -->
+    <script>
+        window['sap-ui-config'] = {
+            language: localStorage.getItem('helpmate_lang') || ''
+        };
+    </script>
     <script
         id="sap-ui-bootstrap"
         src="https://ui5.sap.com/resources/sap-ui-core.js"

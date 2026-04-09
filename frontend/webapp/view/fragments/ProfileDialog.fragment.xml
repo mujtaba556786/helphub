@@ -2,7 +2,7 @@
     xmlns="sap.m"
     xmlns:core="sap.ui.core">
 
-    <Dialog id="profileDialog" title="Helper profile" verticalScrolling="true" stretch="{device>/system/phone}">
+    <Dialog id="profileDialog" title="{i18n>helperProfile}" verticalScrolling="true" stretch="{device>/system/phone}">
         <VBox class="sapUiMediumMargin">
             <HBox alignItems="Center" class="sapUiSmallMarginBottom">
                 <Avatar src="{appData>/selectedProfile/photo}" initials="{appData>/selectedProfile/initials}" displaySize="L" class="sapUiTinyMarginEnd"/>
@@ -18,7 +18,7 @@
                 <Text text="{= ${appData>/selectedProfile/rating} ? ${appData>/selectedProfile/rating} + ' / 5.0 rating' : 'No rating'}" class="smallText"/>
             </HBox>
 
-            <Title text="About &amp; hobbies" level="H4" class="sapUiSmallMarginBottom"/>
+            <Title text="{i18n>aboutAndHobbies}" level="H4" class="sapUiSmallMarginBottom"/>
             <Text text="{appData>/selectedProfile/hobbies}" class="smallText sapUiTinyMarginBottom"/>
 
             <HBox class="sapUiTinyMarginBottom" justifyContent="Start" wrap="Wrap">
@@ -27,9 +27,9 @@
                 <ObjectStatus text="{appData>/selectedProfile/rate} {appData>/selectedProfile/currency}/hr" state="None" class="smallText"/>
             </HBox>
 
-            <Title text="Reviews" level="H4" class="sapUiSmallMarginBottom"/>
+            <Title text="{i18n>reviews}" level="H4" class="sapUiSmallMarginBottom"/>
             <ScrollContainer height="220px" vertical="true" horizontal="false" class="sapUiTinyMarginBottom">
-                <List id="reviewsList" items="{appData>/selectedProfile/reviews}" noDataText="No approved reviews yet — be the first!">
+                <List id="reviewsList" items="{appData>/selectedProfile/reviews}" noDataText="{i18n>noReviewsYet}">
                     <CustomListItem>
                         <HBox alignItems="Start" class="sapUiTinyMargin">
                             <Avatar initials="{appData>reviewer_initials}" displaySize="XS"
@@ -48,26 +48,26 @@
             </ScrollContainer>
 
             <!-- Rate this helper -->
-            <Panel headerText="Rate this helper" expandable="true" expanded="false" class="sapUiSmallMarginTop">
+            <Panel headerText="{i18n>rateThisHelper}" expandable="true" expanded="false" class="sapUiSmallMarginTop">
                 <VBox class="sapUiSmallMargin">
-                    <Label text="Your rating" required="true"/>
+                    <Label text="{i18n>yourRating}" required="true"/>
                     <RatingIndicator id="newRatingStars" maxValue="5" value="0" class="sapUiTinyMarginBottom"/>
-                    <Label text="Your comment (optional)"/>
-                    <TextArea id="newRatingComment" rows="3" width="100%" placeholder="Tell others about your experience…" class="sapUiTinyMarginBottom"/>
-                    <Button text="Submit Rating" type="Emphasized" press="onSubmitRating" class="sapUiTinyMarginTop"/>
+                    <Label text="{i18n>yourComment}"/>
+                    <TextArea id="newRatingComment" rows="3" width="100%" placeholder="{i18n>ratingPlaceholder}" class="sapUiTinyMarginBottom"/>
+                    <Button text="{i18n>submitRating}" type="Emphasized" press="onSubmitRating" class="sapUiTinyMarginTop"/>
                 </VBox>
             </Panel>
 
             <!-- Actions -->
             <HBox justifyContent="Center" wrap="Wrap" class="sapUiMediumMarginTop sapUiMediumMarginBottom">
-                <Button text="📅 Book Helper" type="Emphasized" press="onOpenBooking" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"
+                <Button text="{i18n>bookHelper}" type="Emphasized" press="onOpenBooking" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"
                     visible="{= ${appData>/selectedProfile/id} !== ${appData>/user/id}}"/>
-                <Button text="✉️ Message" type="Accept" press="onStartDm" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"
+                <Button text="{i18n>messageHelper}" type="Accept" press="onStartDm" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"
                     visible="{= ${appData>/selectedProfile/id} !== ${appData>/user/id}}"/>
             </HBox>
         </VBox>
         <endButton>
-            <Button text="Close" press="onCloseProfile"/>
+            <Button text="{i18n>close}" press="onCloseProfile"/>
         </endButton>
     </Dialog>
 

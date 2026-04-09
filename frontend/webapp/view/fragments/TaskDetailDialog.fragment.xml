@@ -2,7 +2,7 @@
     xmlns="sap.m"
     xmlns:core="sap.ui.core">
 
-    <Dialog id="taskDetailDialog" title="Task Details" contentWidth="92%" verticalScrolling="true" stretch="{device>/system/phone}">
+    <Dialog id="taskDetailDialog" title="{i18n>taskDetails}" contentWidth="92%" verticalScrolling="true" stretch="{device>/system/phone}">
         <VBox class="sapUiMediumMargin">
             <Title text="{appData>/selectedTask/title}" level="H3" class="sapUiSmallMarginBottom"/>
             <HBox alignItems="Center" class="sapUiTinyMarginBottom" wrap="Wrap">
@@ -28,15 +28,15 @@
 
             <!-- Action buttons (for providers viewing others' tasks) -->
             <HBox visible="{= ${appData>/selectedTask/poster_id} !== ${appData>/user/id}}" class="sapUiSmallMarginBottom" wrap="Wrap">
-                <Button text="Apply for this Task" type="Emphasized" press="onApplyToTask" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"
+                <Button text="{i18n>applyForTask}" type="Emphasized" press="onApplyToTask" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"
                     visible="{= ${appData>/selectedTask/status} === 'open'}"/>
-                <Button text="✉️ Message Poster" type="Default" press="onMessageTaskPoster" class="sapUiTinyMarginBottom"/>
+                <Button text="{i18n>messagePoster}" type="Default" press="onMessageTaskPoster" class="sapUiTinyMarginBottom"/>
             </HBox>
 
             <!-- Applicants (visible to poster) -->
             <VBox visible="{= ${appData>/selectedTask/poster_id} === ${appData>/user/id} &amp;&amp; ${appData>/taskApplications}.length > 0}">
-                <Title text="Applicants" level="H4" class="sapUiSmallMarginBottom"/>
-                <List id="taskApplicantsList" items="{appData>/taskApplications}" noDataText="No applicants yet.">
+                <Title text="{i18n>applicants}" level="H4" class="sapUiSmallMarginBottom"/>
+                <List id="taskApplicantsList" items="{appData>/taskApplications}" noDataText="{i18n>noApplicantsYet}">
                     <CustomListItem>
                         <HBox class="sapUiSmallMargin" justifyContent="SpaceBetween" alignItems="Center">
                             <HBox alignItems="Center">
@@ -50,8 +50,8 @@
                                 </VBox>
                             </HBox>
                             <VBox alignItems="End">
-                                <Button text="Assign" type="Emphasized" press="onAssignProvider" class="sapUiTinyMarginBottom" visible="{= ${appData>/selectedTask/status} === 'open'}"/>
-                                <Button text="✉️ Message" type="Default" press="onMessageApplicant"/>
+                                <Button text="{i18n>assign}" type="Emphasized" press="onAssignProvider" class="sapUiTinyMarginBottom" visible="{= ${appData>/selectedTask/status} === 'open'}"/>
+                                <Button text="{i18n>messageHelper}" type="Default" press="onMessageApplicant"/>
                             </VBox>
                         </HBox>
                     </CustomListItem>
@@ -59,15 +59,15 @@
             </VBox>
 
             <!-- Complete task button (for poster, when assigned) -->
-            <Button text="Mark as Completed" type="Accept" press="onCompleteTask" width="100%" class="sapUiSmallMarginTop"
+            <Button text="{i18n>markAsCompleted}" type="Accept" press="onCompleteTask" width="100%" class="sapUiSmallMarginTop"
                 visible="{= ${appData>/selectedTask/status} === 'assigned' &amp;&amp; ${appData>/selectedTask/poster_id} === ${appData>/user/id}}"/>
 
             <!-- Delete task (for poster only) -->
-            <Button text="Delete Task" type="Reject" press="onDeleteTask" width="100%" class="sapUiSmallMarginTop"
+            <Button text="{i18n>deleteTask}" type="Reject" press="onDeleteTask" width="100%" class="sapUiSmallMarginTop"
                 visible="{= ${appData>/selectedTask/poster_id} === ${appData>/user/id}}"/>
         </VBox>
         <endButton>
-            <Button text="Close" press="onCloseTaskDetail"/>
+            <Button text="{i18n>close}" press="onCloseTaskDetail"/>
         </endButton>
     </Dialog>
 

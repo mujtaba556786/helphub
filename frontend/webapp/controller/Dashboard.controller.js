@@ -258,6 +258,29 @@ sap.ui.define([
             this.navTo("admin");
         },
 
+        onLanguageMenu: function(oEvent) {
+            var oButton = oEvent.getSource();
+            if (!this._oLangSheet) {
+                this._oLangSheet = new sap.m.ActionSheet({
+                    title: "Select Language",
+                    showCancelButton: true,
+                    buttons: [
+                        new sap.m.Button({ text: "🇬🇧  English",  press: this._applyLanguage.bind(this, "en") }),
+                        new sap.m.Button({ text: "🇩🇪  Deutsch",  press: this._applyLanguage.bind(this, "de") }),
+                        new sap.m.Button({ text: "🇹🇷  Türkçe",   press: this._applyLanguage.bind(this, "tr") }),
+                        new sap.m.Button({ text: "🇸🇦  العربية",  press: this._applyLanguage.bind(this, "ar") })
+                    ]
+                });
+                this.getView().addDependent(this._oLangSheet);
+            }
+            this._oLangSheet.openBy(oButton);
+        },
+
+        _applyLanguage: function(sLang) {
+            localStorage.setItem("helpmate_lang", sLang);
+            window.location.reload();
+        },
+
         onLogout: function() {
             MessageBox.confirm("Sign out of HelpMate?", {
                 onClose: (oAction) => {

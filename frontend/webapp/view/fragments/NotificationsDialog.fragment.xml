@@ -2,12 +2,12 @@
     xmlns="sap.m"
     xmlns:core="sap.ui.core">
 
-    <Dialog id="notificationsDialog" title="Notifications" stretch="{device>/system/phone}">
+    <Dialog id="notificationsDialog" title="{i18n>notifications}" stretch="{device>/system/phone}">
         <VBox class="sapUiSmallMargin">
             <HBox justifyContent="End" class="sapUiTinyMarginBottom">
-                <Button text="Mark all read" type="Transparent" press="onMarkAllRead"/>
+                <Button text="{i18n>markAllRead}" type="Transparent" press="onMarkAllRead"/>
             </HBox>
-            <List id="notificationsList" items="{appData>/notifications}" noDataText="No notifications yet.">
+            <List id="notificationsList" items="{appData>/notifications}" noDataText="{i18n>noNotificationsYet}">
                 <CustomListItem>
                     <VBox class="sapUiSmallMargin">
                         <HBox justifyContent="SpaceBetween" alignItems="Center">
@@ -21,7 +21,7 @@
             </List>
         </VBox>
         <endButton>
-            <Button text="Close" press="onCloseNotifications"/>
+            <Button text="{i18n>close}" press="onCloseNotifications"/>
         </endButton>
     </Dialog>
 
