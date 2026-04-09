@@ -29,6 +29,20 @@
             height: 100%;
         }
     </style>
+    <!-- Magic link: pick up tokens from URL after redirect and store in sessionStorage -->
+    <script>
+        (function () {
+            var params = new URLSearchParams(window.location.search);
+            var access  = params.get('accessToken');
+            var refresh = params.get('refreshToken');
+            if (access && refresh) {
+                sessionStorage.setItem('helpmate_token', access);
+                sessionStorage.setItem('helphub_refresh_token', refresh);
+                // Clean the URL so tokens don't linger in the address bar
+                window.history.replaceState({}, '', window.location.pathname);
+            }
+        })();
+    </script>
     <!-- Apply saved language before UI5 boots (also activates RTL for Arabic) -->
     <script>
         window['sap-ui-config'] = {

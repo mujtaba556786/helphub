@@ -20,22 +20,19 @@
                 <VBox id="stepEmail" class="sapUiMediumMargin">
                     <Label text="Email Address"/>
                     <Input id="emailInput" type="Email" placeholder="you@example.com" class="sapUiSmallMarginBottom"/>
-                    <Button text="Send Verification Code" type="Emphasized" width="100%" press="onSendOtp"/>
+                    <Button text="Send Sign-in Link" type="Emphasized" width="100%" press="onSendMagicLink"/>
                     <!-- Demo login -->
                     <Button text="Demo Login" icon="sap-icon://person-placeholder" width="100%" type="Ghost" class="sapUiSmallMarginTop" press="onDemoLogin"/>
                 </VBox>
 
-                <!-- Step 2: Enter OTP -->
-                <VBox id="stepOtp" class="sapUiMediumMargin" visible="false">
+                <!-- Step 2: Link sent confirmation -->
+                <VBox id="stepLinkSent" class="sapUiMediumMargin" visible="false">
                     <VBox alignItems="Center" class="sapUiSmallMarginBottom">
-                        <Title id="otpHintTitle" text="Check your inbox" level="H3"/>
-                        <Text id="otpHintText" text="" class="grayText textCenter sapUiTinyMarginTop"/>
+                        <Title text="Check your inbox" level="H3"/>
+                        <Text id="linkSentHint" text="" class="grayText textCenter sapUiTinyMarginTop sapUiSmallMarginBottom"/>
+                        <Text text="Click the link in the email to sign in — no code needed." class="grayText textCenter"/>
                     </VBox>
-                    <Label text="Verification Code"/>
-                    <Input id="otpInput" placeholder="6-digit code" maxLength="6" class="sapUiSmallMarginBottom" type="Number"/>
-                    <Button text="Verify &amp; Sign In" type="Emphasized" width="100%" press="onVerifyOtp"/>
-                    <Button text="Resend Code" type="Transparent" width="100%" class="sapUiSmallMarginTop" press="onResendOtp"/>
-                    <Button text="← Back" type="Ghost" width="100%" class="sapUiTinyMarginTop" press="onBackToEmail"/>
+                    <Button text="← Use a different email" type="Ghost" width="100%" class="sapUiSmallMarginTop" press="onBackToEmail"/>
                 </VBox>
             </VBox>
         </FlexBox>

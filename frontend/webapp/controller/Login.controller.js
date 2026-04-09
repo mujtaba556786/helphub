@@ -64,8 +64,8 @@ sap.ui.define([
             this.navTo("dashboard");
         },
 
-        // ── Step 1: Send OTP to email ──────────────────────────────────────────
-        onSendOtp: function () {
+        // ── Send magic link to email ───────────────────────────────────────────
+        onSendMagicLink: function () {
             var sEmail = this.byId("emailInput").getValue().trim();
             if (!sEmail) {
                 MessageToast.show("Please enter your email address.");
@@ -75,7 +75,7 @@ sap.ui.define([
             var that = this;
             this._oBusyDialog.open();
 
-            fetch(API_BASE + "/api/auth/send-otp", {
+            fetch(API_BASE + "/api/auth/send-magic-link", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email: sEmail })
@@ -84,66 +84,23 @@ sap.ui.define([
             .then(function(oData) {
                 that._oBusyDialog.close();
                 if (oData.success) {
-                    // Switch to OTP step
                     that.byId("stepEmail").setVisible(false);
-                    that.byId("stepOtp").setVisible(true);
-                    that.byId("otpHintText").setText("We sent a 6-digit code to " + sEmail + ". It expires in 10 minutes.");
-                    that._sPendingEmail = sEmail;
-                    MessageToast.show("Verification code sent!");
+                    that.byId("stepLinkSent").setVisible(true);
+                    that.byId("linkSentHint").setText("We sent a sign-in link to " + sEmail + ". It expires in 15 minutes.");
                 } else {
-                    MessageToast.show(oData.error || "Could not send code. Try again.");
+                    MessageToast.show(oData.error || "Could not send link. Try again.");
                 }
             })
             .catch(function() {
                 that._oBusyDialog.close();
                 MessageToast.show("Could not reach the server. Please try again.");
             });
-        },
-
-        // ── Step 2: Verify OTP ─────────────────────────────────────────────────
-        onVerifyOtp: function () {
-            var sOtp = this.byId("otpInput").getValue().trim();
-            if (!sOtp || sOtp.length < 6) {
-                MessageToast.show("Please enter the 6-digit code from your email.");
-                return;
-            }
-
-            var that = this;
-            this._oBusyDialog.open();
-
-            fetch(API_BASE + "/api/auth/verify-otp", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email: that._sPendingEmail, otp: sOtp })
-            })
-            .then(function(r) { return r.json(); })
-            .then(function(oData) {
-                that._oBusyDialog.close();
-                if (oData.success) {
-                    that._applySession(oData);
-                } else {
-                    MessageToast.show(oData.error || "Invalid or expired code.");
-                }
-            })
-            .catch(function() {
-                that._oBusyDialog.close();
-                MessageToast.show("Could not reach the server. Please try again.");
-            });
-        },
-
-        // ── Resend OTP ─────────────────────────────────────────────────────────
-        onResendOtp: function () {
-            this.byId("stepOtp").setVisible(false);
-            this.byId("stepEmail").setVisible(true);
-            this.byId("otpInput").setValue("");
-            this.onSendOtp();
         },
 
         // ── Back to email step ─────────────────────────────────────────────────
         onBackToEmail: function () {
-            this.byId("stepOtp").setVisible(false);
+            this.byId("stepLinkSent").setVisible(false);
             this.byId("stepEmail").setVisible(true);
-            this.byId("otpInput").setValue("");
         },
 
         // ── Demo Login ─────────────────────────────────────────────────────────

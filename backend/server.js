@@ -147,6 +147,18 @@ async function initDb() {
         `);
 
         await connection.query(`
+            CREATE TABLE IF NOT EXISTS magic_link_tokens (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                token_hash VARCHAR(255) NOT NULL UNIQUE,
+                email VARCHAR(100) NOT NULL,
+                expires_at DATETIME NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_ml_token_hash (token_hash),
+                INDEX idx_ml_email (email)
+            )
+        `);
+
+        await connection.query(`
             CREATE TABLE IF NOT EXISTS ratings (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 provider_id VARCHAR(50) NOT NULL,
@@ -1266,6 +1278,120 @@ app.post('/api/auth/verify-otp', authLimiter, handleAsync(async (req, res) => {
 
     const { accessToken, refreshToken } = await issueTokens(user);
     return res.json({ success: true, user, accessToken, refreshToken });
+}));
+
+// ─── POST /api/auth/send-magic-link ──────────────────────────────────────────
+app.post('/api/auth/send-magic-link', authLimiter, handleAsync(async (req, res) => {
+    if (!pool) throw new Error("Database pool not ready");
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ success: false, error: 'email is required' });
+
+    const crypto = require('crypto');
+    const rawToken   = crypto.randomBytes(32).toString('hex');
+    const tokenHash  = crypto.createHash('sha256').update(rawToken).digest('hex');
+    const expiresAt  = new Date(Date.now() + 15 * 60 * 1000); // 15 min
+
+    // Remove any existing tokens for this email (one active link at a time)
+    await pool.execute('DELETE FROM magic_link_tokens WHERE email = ?', [email]);
+    await pool.execute(
+        'INSERT INTO magic_link_tokens (token_hash, email, expires_at) VALUES (?, ?, ?)',
+        [tokenHash, email, expiresAt]
+    );
+
+    const backendUrl = process.env.BACKEND_URL || 'http://localhost:3000';
+    const magicUrl   = `${backendUrl}/api/auth/magic?token=${rawToken}`;
+
+    const transporter = nodemailer.createTransport({
+        host:   process.env.SMTP_HOST   || 'smtp.gmail.com',
+        port:   parseInt(process.env.SMTP_PORT || '587'),
+        secure: process.env.SMTP_SECURE === 'true',
+        auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
+    });
+
+    try {
+        await transporter.sendMail({
+            from:    process.env.SMTP_FROM || `"HelpHub" <${process.env.SMTP_USER}>`,
+            to:      email,
+            subject: 'Sign in to HelpHub',
+            html: `
+                <div style="font-family:sans-serif;max-width:420px;margin:auto">
+                    <h2 style="color:#f97316">HelpHub</h2>
+                    <p>Click the button below to sign in. This link expires in <strong>15 minutes</strong> and can only be used once.</p>
+                    <a href="${magicUrl}" style="display:inline-block;padding:12px 28px;background:#f97316;color:#fff;border-radius:8px;text-decoration:none;font-weight:bold;font-size:16px;margin:16px 0">
+                        Sign in to HelpHub
+                    </a>
+                    <p style="color:#888;font-size:12px">If you didn't request this, you can safely ignore this email.</p>
+                </div>
+            `
+        });
+        console.log(`[AUTH] Magic link sent to ${email}`);
+    } catch (err) {
+        console.error('[AUTH] Failed to send magic link email:', err.message);
+        // Dev fallback — log to console so you can test without SMTP
+        console.log(`[DEV] Magic link for ${email}: ${magicUrl}`);
+    }
+
+    return res.json({ success: true, message: 'Sign-in link sent — check your inbox.' });
+}));
+
+// ─── GET /api/auth/magic ──────────────────────────────────────────────────────
+app.get('/api/auth/magic', handleAsync(async (req, res) => {
+    if (!pool) throw new Error("Database pool not ready");
+    const { token } = req.query;
+    if (!token) return res.status(400).send('Missing token.');
+
+    const crypto    = require('crypto');
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+
+    const [[record]] = await pool.query(
+        'SELECT * FROM magic_link_tokens WHERE token_hash = ?', [tokenHash]
+    );
+
+    if (!record) {
+        return res.status(400).send(`
+            <html><body style="font-family:sans-serif;text-align:center;padding:40px">
+            <h2 style="color:#f97316">HelpHub</h2>
+            <p>This sign-in link is invalid or has already been used.</p>
+            <p><a href="http://localhost:8080">Request a new link</a></p>
+            </body></html>
+        `);
+    }
+
+    if (new Date() > new Date(record.expires_at)) {
+        await pool.execute('DELETE FROM magic_link_tokens WHERE token_hash = ?', [tokenHash]);
+        return res.status(400).send(`
+            <html><body style="font-family:sans-serif;text-align:center;padding:40px">
+            <h2 style="color:#f97316">HelpHub</h2>
+            <p>This sign-in link has expired. Links are valid for 15 minutes.</p>
+            <p><a href="http://localhost:8080">Request a new link</a></p>
+            </body></html>
+        `);
+    }
+
+    // One-time use — delete immediately
+    await pool.execute('DELETE FROM magic_link_tokens WHERE token_hash = ?', [tokenHash]);
+
+    // Find or create user
+    const email = record.email;
+    const [users] = await pool.query('SELECT * FROM users WHERE email = ?', [email]);
+    let user;
+    if (users.length > 0) {
+        user = users[0];
+    } else {
+        const id     = 'U' + Date.now();
+        const avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(email)}`;
+        await pool.execute(
+            'INSERT INTO users (id, name, email, role, status, avatar, onboarded, provider) VALUES (?, ?, ?, "Customer", "Active", ?, 1, "Email")',
+            [id, email.split('@')[0], email, avatar]
+        );
+        const [newUser] = await pool.query('SELECT * FROM users WHERE id = ?', [id]);
+        user = newUser[0];
+    }
+
+    const { accessToken, refreshToken } = await issueTokens(user);
+
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:8080';
+    return res.redirect(`${frontendUrl}/?accessToken=${encodeURIComponent(accessToken)}&refreshToken=${encodeURIComponent(refreshToken)}`);
 }));
 
 // ─── GET /api/auth/me ─────────────────────────────────────────────────────────
