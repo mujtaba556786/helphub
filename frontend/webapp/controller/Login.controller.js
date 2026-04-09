@@ -97,6 +97,12 @@ sap.ui.define([
             });
         },
 
+        // ── Resend magic link to same email ───────────────────────────────────
+        onResendMagicLink: function () {
+            this.byId("linkSentHint").setText("");
+            this.onSendMagicLink();
+        },
+
         // ── Back to email step ─────────────────────────────────────────────────
         onBackToEmail: function () {
             this.byId("stepLinkSent").setVisible(false);

@@ -32,7 +32,8 @@
                         <Text id="linkSentHint" text="" class="grayText textCenter sapUiTinyMarginTop sapUiSmallMarginBottom"/>
                         <Text text="Click the link in the email to sign in — no code needed." class="grayText textCenter"/>
                     </VBox>
-                    <Button text="← Use a different email" type="Ghost" width="100%" class="sapUiSmallMarginTop" press="onBackToEmail"/>
+                    <Button text="Resend link" type="Transparent" width="100%" class="sapUiSmallMarginTop" press="onResendMagicLink"/>
+                    <Button text="← Use a different email" type="Ghost" width="100%" class="sapUiTinyMarginTop" press="onBackToEmail"/>
                 </VBox>
             </VBox>
         </FlexBox>
