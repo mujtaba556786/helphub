@@ -86,7 +86,8 @@ sap.ui.define([
                 if (oData.success) {
                     that.byId("stepEmail").setVisible(false);
                     that.byId("stepLinkSent").setVisible(true);
-                    that.byId("linkSentHint").setText("We sent a sign-in link to " + sEmail + ". It expires in 15 minutes.");
+                    var sHint = that.getResourceBundle().getText("loginLinkSentHint", [sEmail]);
+                    that.byId("linkSentHint").setText(sHint);
                 } else {
                     MessageToast.show(oData.error || "Could not send link. Try again.");
                 }

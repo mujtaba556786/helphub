@@ -9,31 +9,31 @@
             <VBox width="90%" class="loginCard maxWidth400">
                 <VBox alignItems="Center" class="sapUiMediumMargin">
                     <Avatar displaySize="XL" backgroundColor="Accent6" initials="❤️" class="sapUiSmallMarginBottom"/>
-                    <Title text="HelpMate" level="H1" class="sapUiTinyMarginBottom"/>
-                    <Text text="Neighborhood Help Network" class="grayText"/>
-                    <Text text="Get everyday tasks done by trusted neighbors." class="grayText textCenter"/>
+                    <Title text="{i18n>loginTitle}" level="H1" class="sapUiTinyMarginBottom"/>
+                    <Text text="{i18n>loginNeighborhoodNetwork}" class="grayText"/>
+                    <Text text="{i18n>loginTagline}" class="grayText textCenter"/>
                     <HBox class="sapUiTinyMarginTop" justifyContent="Center">
                     </HBox>
                 </VBox>
 
                 <!-- Step 1: Enter Email -->
                 <VBox id="stepEmail" class="sapUiMediumMargin">
-                    <Label text="Email Address"/>
-                    <Input id="emailInput" type="Email" placeholder="you@example.com" class="sapUiSmallMarginBottom"/>
-                    <Button text="Send Sign-in Link" type="Emphasized" width="100%" press="onSendMagicLink"/>
+                    <Label text="{i18n>loginEmailLabel}"/>
+                    <Input id="emailInput" type="Email" placeholder="{i18n>loginEmailPlaceholder}" class="sapUiSmallMarginBottom"/>
+                    <Button text="{i18n>loginSendLink}" type="Emphasized" width="100%" press="onSendMagicLink"/>
                     <!-- Demo login -->
-                    <Button text="Demo Login" icon="sap-icon://person-placeholder" width="100%" type="Ghost" class="sapUiSmallMarginTop" press="onDemoLogin"/>
+                    <Button text="{i18n>loginDemoLogin}" icon="sap-icon://person-placeholder" width="100%" type="Ghost" class="sapUiSmallMarginTop" press="onDemoLogin"/>
                 </VBox>
 
                 <!-- Step 2: Link sent confirmation -->
                 <VBox id="stepLinkSent" class="sapUiMediumMargin" visible="false">
                     <VBox alignItems="Center" class="sapUiSmallMarginBottom">
-                        <Title text="Check your inbox" level="H3"/>
+                        <Title text="{i18n>loginCheckInbox}" level="H3"/>
                         <Text id="linkSentHint" text="" class="grayText textCenter sapUiTinyMarginTop sapUiSmallMarginBottom"/>
-                        <Text text="Click the link in the email to sign in — no code needed." class="grayText textCenter"/>
+                        <Text text="{i18n>loginClickLink}" class="grayText textCenter"/>
                     </VBox>
-                    <Button text="Resend link" type="Transparent" width="100%" class="sapUiSmallMarginTop" press="onResendMagicLink"/>
-                    <Button text="← Use a different email" type="Ghost" width="100%" class="sapUiTinyMarginTop" press="onBackToEmail"/>
+                    <Button text="{i18n>loginResendLink}" type="Transparent" width="100%" class="sapUiSmallMarginTop" press="onResendMagicLink"/>
+                    <Button text="{i18n>loginDifferentEmail}" type="Ghost" width="100%" class="sapUiTinyMarginTop" press="onBackToEmail"/>
                 </VBox>
             </VBox>
         </FlexBox>
