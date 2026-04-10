@@ -25,6 +25,7 @@ sap.ui.define([
 
             // Restore session from token if available
             var sToken = sessionStorage.getItem("helpmate_token") || sessionStorage.getItem("helphub_token");
+            var oRouter = this.getRouter();
             if (sToken) {
                 fetch(API_BASE + "/api/auth/me", {
                     headers: { "Authorization": "Bearer " + sToken }
@@ -54,8 +55,14 @@ sap.ui.define([
                     oAppData.setProperty("/user/address/postalCode",  u.pincode       || "");
                     oAppData.setProperty("/user/role",  u.role  || "Customer");
                     oAppData.setProperty("/isLoggedIn", true);
+                    // Navigate to dashboard — token was valid, don't stay on login
+                    oRouter.navTo("dashboard", {}, true);
                 })
-                .catch(function() { /* token invalid, stay on login */ });
+                .catch(function() {
+                    // Token invalid — clear it and stay on login
+                    sessionStorage.removeItem("helpmate_token");
+                    sessionStorage.removeItem("helphub_refresh_token");
+                });
             }
 
             // Geolocation
