@@ -67,18 +67,23 @@ sap.ui.define([
         selectedCategoryName: "",
 
         services: [
-            { id: "1",  name: "Gardening",    icon: "🌱",    color: "#bbf7d0" },
-            { id: "2",  name: "Babysitting",  icon: "👶",    color: "#fecdd3" },
-            { id: "3",  name: "Transport",    icon: "🚗",    color: "#bfdbfe" },
-            { id: "4",  name: "Driver",       icon: "🚕",    color: "#fef08a" },
-            { id: "5",  name: "Groceries",    icon: "🛒",    color: "#ddd6fe" },
-            { id: "6",  name: "Math Tuition", icon: "📐",    color: "#fed7aa" },
-            { id: "7",  name: "Cleaning",     icon: "🧹",    color: "#a7f3d0" },
-            { id: "8",  name: "Pet Care",     icon: "🐕",    color: "#fbcfe8" },
-            { id: "9",  name: "Handyman",     icon: "🔧",    color: "#e2e8f0" },
-            { id: "10", name: "Cooking",      icon: "👨‍🍳",    color: "#fca5a5" },
-            { id: "11", name: "Moving",       icon: "📦",    color: "#99f6e4" },
-            { id: "12", name: "IT Support",   icon: "💻",    color: "#bae6fd" }
+            // Home
+            { id: "1",  name: "Cleaning",       icon: "🧹", color: "#a7f3d0", sector: "Home"      },
+            { id: "2",  name: "Gardening",       icon: "🌱", color: "#bbf7d0", sector: "Home"      },
+            { id: "3",  name: "Handyman",        icon: "🔧", color: "#e2e8f0", sector: "Home"      },
+            // Care
+            { id: "4",  name: "Babysitting",     icon: "👶", color: "#fecdd3", sector: "Care"      },
+            { id: "5",  name: "Elder Care",      icon: "🧓", color: "#fde68a", sector: "Care"      },
+            { id: "6",  name: "Pet Care",        icon: "🐕", color: "#fbcfe8", sector: "Care"      },
+            // Transport
+            { id: "7",  name: "Transport",       icon: "🚗", color: "#bfdbfe", sector: "Transport" },
+            { id: "8",  name: "Groceries",       icon: "🛒", color: "#ddd6fe", sector: "Transport" },
+            // Wellness
+            { id: "9",  name: "Cooking",         icon: "👨‍🍳", color: "#fed7aa", sector: "Wellness"  },
+            { id: "10", name: "Massage",         icon: "💆", color: "#e9d5ff", sector: "Wellness"  },
+            // Skills
+            { id: "11", name: "Math Tuition",    icon: "📐", color: "#fef9c3", sector: "Skills"    },
+            { id: "12", name: "IT Support",      icon: "💻", color: "#e0e7ff", sector: "Skills"    }
         ],
 
         providers: [

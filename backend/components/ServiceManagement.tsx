@@ -192,9 +192,9 @@ const ServiceManagementView: React.FC<ServiceManagementProps> = ({ services, set
                 >
                   <option>Home</option>
                   <option>Care</option>
-                  <option>Auto</option>
-                  <option>Personal</option>
-                  <option>Digital</option>
+                  <option>Transport</option>
+                  <option>Wellness</option>
+                  <option>Skills</option>
                 </select>
               </div>
 

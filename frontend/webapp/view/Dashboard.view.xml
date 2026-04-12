@@ -84,17 +84,17 @@
                                             <Button text="{i18n>all}" type="{= ${appData>/taskCategoryFilter} === '' ? 'Emphasized' : 'Default'}" press="onTaskCategoryFilter" class="sapUiTinyMarginEnd sapUiTinyMarginBottom hhTaskToggle">
                                                 <customData><core:CustomData key="cat" value=""/></customData>
                                             </Button>
-                                            <Button text="🌱 Gardening" type="{= ${appData>/taskCategoryFilter} === 'Gardening' ? 'Emphasized' : 'Default'}" press="onTaskCategoryFilter" class="sapUiTinyMarginEnd sapUiTinyMarginBottom hhTaskToggle">
-                                                <customData><core:CustomData key="cat" value="Gardening"/></customData>
-                                            </Button>
                                             <Button text="🧹 Cleaning" type="{= ${appData>/taskCategoryFilter} === 'Cleaning' ? 'Emphasized' : 'Default'}" press="onTaskCategoryFilter" class="sapUiTinyMarginEnd sapUiTinyMarginBottom hhTaskToggle">
                                                 <customData><core:CustomData key="cat" value="Cleaning"/></customData>
                                             </Button>
-                                            <Button text="🚗 Transport" type="{= ${appData>/taskCategoryFilter} === 'Transport' ? 'Emphasized' : 'Default'}" press="onTaskCategoryFilter" class="sapUiTinyMarginEnd sapUiTinyMarginBottom hhTaskToggle">
-                                                <customData><core:CustomData key="cat" value="Transport"/></customData>
-                                            </Button>
                                             <Button text="🔧 Handyman" type="{= ${appData>/taskCategoryFilter} === 'Handyman' ? 'Emphasized' : 'Default'}" press="onTaskCategoryFilter" class="sapUiTinyMarginEnd sapUiTinyMarginBottom hhTaskToggle">
                                                 <customData><core:CustomData key="cat" value="Handyman"/></customData>
+                                            </Button>
+                                            <Button text="🧓 Elder Care" type="{= ${appData>/taskCategoryFilter} === 'Elder Care' ? 'Emphasized' : 'Default'}" press="onTaskCategoryFilter" class="sapUiTinyMarginEnd sapUiTinyMarginBottom hhTaskToggle">
+                                                <customData><core:CustomData key="cat" value="Elder Care"/></customData>
+                                            </Button>
+                                            <Button text="🚗 Transport" type="{= ${appData>/taskCategoryFilter} === 'Transport' ? 'Emphasized' : 'Default'}" press="onTaskCategoryFilter" class="sapUiTinyMarginEnd sapUiTinyMarginBottom hhTaskToggle">
+                                                <customData><core:CustomData key="cat" value="Transport"/></customData>
                                             </Button>
                                             <Button text="{i18n>more}" type="Transparent" press="onTaskCategoryMore" class="sapUiTinyMarginBottom"/>
                                         </HBox>
