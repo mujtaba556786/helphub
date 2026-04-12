@@ -64,16 +64,22 @@
         <VBox visible="{= ${appData>/onboarding/step} === 3}" class="sapUiMediumMargin hhOnboardStep">
             <Text text="{i18n>onboardSelectInterests}" class="grayText sapUiSmallMarginBottom"/>
             <FlexBox wrap="Wrap" class="sapUiTinyMarginTop">
+                <!-- Home -->
+                <Button text="🧹 Cleaning"     data:interestKey="Cleaning"     press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
                 <Button text="🌱 Gardening"    data:interestKey="Gardening"    press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                <Button text="🔧 Handyman"     data:interestKey="Handyman"     press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                <!-- Care -->
                 <Button text="👶 Babysitting"  data:interestKey="Babysitting"  press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                <Button text="🧓 Elder Care"   data:interestKey="Elder Care"   press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                <Button text="🐕 Pet Care"     data:interestKey="Pet Care"     press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                <!-- Transport -->
                 <Button text="🚗 Transport"    data:interestKey="Transport"    press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
                 <Button text="🛒 Groceries"    data:interestKey="Groceries"    press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
-                <Button text="📐 Math Tuition" data:interestKey="Math Tuition" press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
-                <Button text="🧹 Cleaning"     data:interestKey="Cleaning"     press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
-                <Button text="🐕 Pet Care"     data:interestKey="Pet Care"     press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
-                <Button text="🔧 Handyman"     data:interestKey="Handyman"     press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                <!-- Wellness -->
                 <Button text="👨‍🍳 Cooking"    data:interestKey="Cooking"      press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
-                <Button text="📦 Moving"       data:interestKey="Moving"       press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                <Button text="💆 Massage"      data:interestKey="Massage"      press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                <!-- Skills -->
+                <Button text="📐 Math Tuition" data:interestKey="Math Tuition" press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
                 <Button text="💻 IT Support"   data:interestKey="IT Support"   press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
             </FlexBox>
         </VBox>

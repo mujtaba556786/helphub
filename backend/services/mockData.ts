@@ -53,9 +53,23 @@ export const MOCK_USERS: User[] = [
 ];
 
 export const MOCK_SERVICES: Service[] = [
-  { id: 'S1', name: 'Gardening', category: 'Home', icon: '🌱', providerCount: 12, status: 'Active', description: 'Complete lawn care and maintenance.' },
-  { id: 'S2', name: 'Babysitting', category: 'Care', icon: '👶', providerCount: 8, status: 'Active', description: 'Safe and fun childcare.' },
-  { id: 'S8', name: 'Handyman', category: 'Home', icon: '🔧', providerCount: 5, status: 'Active', description: 'General home repairs.' }
+  // Home
+  { id: 'S1',  name: 'Cleaning',          category: 'Home',      icon: '🧹', color: '#a7f3d0', providerCount: 18, status: 'Active', description: 'Home and office cleaning by vetted professionals.' },
+  { id: 'S2',  name: 'Gardening',         category: 'Home',      icon: '🌱', color: '#bbf7d0', providerCount: 12, status: 'Active', description: 'Lawn care, planting, and garden maintenance.' },
+  { id: 'S3',  name: 'Handyman',          category: 'Home',      icon: '🔧', color: '#e2e8f0', providerCount: 9,  status: 'Active', description: 'General home repairs and installations.' },
+  // Care
+  { id: 'S4',  name: 'Babysitting',       category: 'Care',      icon: '👶', color: '#fecdd3', providerCount: 14, status: 'Active', description: 'Trusted childcare in your own home.' },
+  { id: 'S5',  name: 'Elder Care',        category: 'Care',      icon: '🧓', color: '#fde68a', providerCount: 7,  status: 'Active', description: 'Companionship, light assistance, and care for elderly.' },
+  { id: 'S6',  name: 'Pet Care',          category: 'Care',      icon: '🐕', color: '#fbcfe8', providerCount: 10, status: 'Active', description: 'Dog walking, pet sitting, and grooming.' },
+  // Transport
+  { id: 'S7',  name: 'Transport',         category: 'Transport', icon: '🚗', color: '#bfdbfe', providerCount: 22, status: 'Active', description: 'Reliable rides for errands, events, and daily travel.' },
+  { id: 'S8',  name: 'Groceries',         category: 'Transport', icon: '🛒', color: '#ddd6fe', providerCount: 11, status: 'Active', description: 'Grocery shopping and delivery to your door.' },
+  // Wellness
+  { id: 'S9',  name: 'Cooking',           category: 'Wellness',  icon: '👨‍🍳', color: '#fed7aa', providerCount: 8,  status: 'Active', description: 'Home-cooked meals prepared fresh by local chefs.' },
+  { id: 'S10', name: 'Massage',           category: 'Wellness',  icon: '💆', color: '#e9d5ff', providerCount: 6,  status: 'Active', description: 'Professional home massage for relaxation and recovery.' },
+  // Skills
+  { id: 'S11', name: 'Math Tuition',      category: 'Skills',    icon: '📐', color: '#fef9c3', providerCount: 5,  status: 'Active', description: 'One-on-one math lessons for all ages and levels.' },
+  { id: 'S12', name: 'IT Support',        category: 'Skills',    icon: '💻', color: '#e0e7ff', providerCount: 8,  status: 'Active', description: 'Tech help, device setup, and troubleshooting.' },
 ];
 
 export const MOCK_BOOKINGS: Booking[] = [
@@ -89,9 +103,10 @@ export const MOCK_STATS: DashboardStats = {
     { month: 'Jun', value: 7500 }
   ],
   categoryData: [
-    { name: 'Home', value: 40 },
-    { name: 'Care', value: 25 },
-    { name: 'Auto', value: 15 },
-    { name: 'Personal', value: 20 },
+    { name: 'Home',      value: 35 },
+    { name: 'Care',      value: 25 },
+    { name: 'Transport', value: 18 },
+    { name: 'Wellness',  value: 12 },
+    { name: 'Skills',    value: 10 },
   ]
 };

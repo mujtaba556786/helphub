@@ -189,6 +189,35 @@ async function initDb() {
             )
         `);
 
+        // Seed / refresh default services (REPLACE INTO keeps the catalog in sync on every restart)
+        const defaultServices = [
+            // Home
+            ['S1',  'Cleaning',     'Home',      '🧹', 'Home and office cleaning by vetted professionals.'],
+            ['S2',  'Gardening',    'Home',      '🌱', 'Lawn care, planting, and garden maintenance.'],
+            ['S3',  'Handyman',     'Home',      '🔧', 'General home repairs and installations.'],
+            // Care
+            ['S4',  'Babysitting',  'Care',      '👶', 'Trusted childcare in your own home.'],
+            ['S5',  'Elder Care',   'Care',      '🧓', 'Companionship, light assistance, and care for elderly.'],
+            ['S6',  'Pet Care',     'Care',      '🐕', 'Dog walking, pet sitting, and grooming.'],
+            // Transport
+            ['S7',  'Transport',    'Transport', '🚗', 'Reliable rides for errands, events, and daily travel.'],
+            ['S8',  'Groceries',    'Transport', '🛒', 'Grocery shopping and delivery to your door.'],
+            // Wellness
+            ['S9',  'Cooking',      'Wellness',  '👨‍🍳', 'Home-cooked meals prepared fresh by local chefs.'],
+            ['S10', 'Massage',      'Wellness',  '💆', 'Professional home massage for relaxation and recovery.'],
+            // Skills
+            ['S11', 'Math Tuition', 'Skills',    '📐', 'One-on-one math lessons for all ages and levels.'],
+            ['S12', 'IT Support',   'Skills',    '💻', 'Tech help, device setup, and troubleshooting.'],
+        ];
+        // Delete stale entries not in the current catalog, then upsert
+        await connection.query(`DELETE FROM services WHERE id IN ('S13','S14','S15')`);
+        for (const [id, name, category, icon, description] of defaultServices) {
+            await connection.query(
+                'REPLACE INTO services (id, name, category, icon, description, status) VALUES (?, ?, ?, ?, ?, ?)',
+                [id, name, category, icon, description, 'Active']
+            );
+        }
+
         // Drop old bookings table if it has wrong schema, then recreate
         const [bCols] = await connection.query(`SHOW COLUMNS FROM bookings`).catch(() => [[]]);
         const bColNames = bCols.map(c => c.Field);
@@ -307,7 +336,7 @@ async function initDb() {
             { id: 'p5',  service_categories: 'Moving',       lat: 52.5000, lng: 13.4200 },
             { id: 'p6',  service_categories: 'Cleaning',     lat: 52.5180, lng: 13.4250 },
             { id: 'p7',  service_categories: 'Handyman',     lat: 52.5070, lng: 13.4150 },
-            { id: 'p8',  service_categories: 'Driver',       lat: 52.5220, lng: 13.3950 },
+            { id: 'p8',  service_categories: 'Transport',    lat: 52.5220, lng: 13.3950 },
             { id: 'p9',  service_categories: 'Pet Care',     lat: 52.5130, lng: 13.4300 },
             { id: 'p10', service_categories: 'Math Tuition', lat: 52.5080, lng: 13.3850 },
             { id: 'p11', service_categories: 'Groceries',    lat: 52.5190, lng: 13.4050 }
@@ -657,8 +686,21 @@ Your job is to help users learn about ${p.name}, answer questions about their se
 }));
 
 app.get('/api/services', handleAsync(async (req, res) => {
-    const [rows] = await pool.query('SELECT * FROM services ORDER BY name ASC');
+    const [rows] = await pool.query('SELECT * FROM services ORDER BY category ASC, name ASC');
     res.json(rows);
+}));
+
+app.post('/api/services', handleAsync(async (req, res) => {
+    const { id, name, category, icon, description, status } = req.body;
+    if (!name || !category) {
+        return res.status(400).json({ success: false, error: 'name and category are required' });
+    }
+    const serviceId = id || 'S' + Date.now();
+    await pool.execute(
+        'INSERT INTO services (id, name, category, icon, description, status) VALUES (?, ?, ?, ?, ?, ?)',
+        [serviceId, name, category, icon || '📦', description || '', status || 'Active']
+    );
+    res.json({ success: true, id: serviceId });
 }));
 
 // ── POST /api/bookings ────────────────────────────────────────────────────────
