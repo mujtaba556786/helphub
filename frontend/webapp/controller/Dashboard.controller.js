@@ -58,6 +58,7 @@ sap.ui.define([
                 if (sSid) { this._oModel.setProperty("/user/id", sSid); }
             }
             this._loadProvidersFromApi();
+            this._loadServicesFromApi();
             this._loadSchedule();
             this._loadFavorites();
             this._loadUnreadDmCount();
@@ -252,6 +253,69 @@ sap.ui.define([
                     }
                 })
                 .catch(function() { /* keep mock data on network error */ });
+        },
+
+        /**
+         * Fetch the service catalogue from the backend and update the tile grid.
+         * Falls back to the hardcoded list in models.js if the API is unreachable.
+         * Maps backend fields:  id, name, icon, category, description, status
+         *           → model fields: id, name, icon, sector, color, description
+         */
+        _loadServicesFromApi: function() {
+            var oModel = this.getModel("appData");
+
+            // Colour lookup by sector — keeps the palette consistent even for
+            // services added later via the admin panel.
+            var mSectorColors = {
+                "Home":      "#a7f3d0",
+                "Care":      "#fde68a",
+                "Transport": "#bfdbfe",
+                "Wellness":  "#e9d5ff",
+                "Skills":    "#e0e7ff"
+            };
+
+            // Per-service overrides so existing tiles keep their original shade.
+            var mServiceColors = {
+                "Gardening":    "#bbf7d0",
+                "Cleaning":     "#a7f3d0",
+                "Handyman":     "#e2e8f0",
+                "Babysitting":  "#fecdd3",
+                "Elder Care":   "#fde68a",
+                "Pet Care":     "#fbcfe8",
+                "Transport":    "#bfdbfe",
+                "Groceries":    "#ddd6fe",
+                "Cooking":      "#fed7aa",
+                "Massage":      "#e9d5ff",
+                "Math Tuition": "#fef9c3",
+                "IT Support":   "#e0e7ff"
+            };
+
+            fetch(API_BASE + "/api/services")
+                .then(function(r) { return r.json(); })
+                .then(function(aRows) {
+                    // Backend returns a plain array (not wrapped in {success, ...})
+                    if (!Array.isArray(aRows) || aRows.length === 0) return;
+
+                    var aServices = aRows
+                        .filter(function(row) { return row.status === "Active"; })
+                        .map(function(row) {
+                            return {
+                                id:          String(row.id),
+                                name:        row.name,
+                                icon:        row.icon  || "📦",
+                                sector:      row.category || "Home",
+                                color:       mServiceColors[row.name] ||
+                                             mSectorColors[row.category] ||
+                                             "#e2e8f0",
+                                description: row.description || ""
+                            };
+                        });
+
+                    oModel.setProperty("/services", aServices);
+                    // Re-apply tile colours after the list re-renders
+                    setTimeout(this._applyTileColors.bind(this), 150);
+                }.bind(this))
+                .catch(function() { /* keep hardcoded list on network error */ });
         },
 
         onNavToAdmin: function() {
