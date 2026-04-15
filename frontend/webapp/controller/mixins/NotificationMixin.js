@@ -18,7 +18,7 @@ sap.ui.define([
 
         _loadNotificationCount: function () {
             var oModel = this.getModel("appData");
-            var sUserId = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
+            var sUserId = oModel.getProperty("/user/id") || localStorage.getItem("helpmate_user_id");
             if (!sUserId) return;
             var iPrev = oModel.getProperty("/unreadCount") || 0;
 
@@ -39,7 +39,7 @@ sap.ui.define([
 
         onShowNotifications: function () {
             var oModel = this.getModel("appData");
-            var sUserId = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
+            var sUserId = oModel.getProperty("/user/id") || localStorage.getItem("helpmate_user_id");
             if (!sUserId) { MessageToast.show("Please log in first."); return; }
 
             fetch(API_BASE + "/api/notifications/" + encodeURIComponent(sUserId))
@@ -55,7 +55,7 @@ sap.ui.define([
 
         onMarkAllRead: function () {
             var oModel = this.getModel("appData");
-            var sUserId = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
+            var sUserId = oModel.getProperty("/user/id") || localStorage.getItem("helpmate_user_id");
             if (!sUserId) return;
 
             fetch(API_BASE + "/api/notifications/read-all/" + encodeURIComponent(sUserId), {

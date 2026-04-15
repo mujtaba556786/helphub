@@ -83,7 +83,7 @@ sap.ui.define([
             }
 
             var sProviderId = oModel.getProperty("/selectedProfile/id");
-            var sUserId     = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
+            var sUserId     = oModel.getProperty("/user/id") || localStorage.getItem("helpmate_user_id");
             var sName       = oModel.getProperty("/user/name") || "Anonymous";
             var sComment    = oComment ? oComment.getValue().trim() : "";
 

@@ -1,5 +1,5 @@
 
-require('dotenv').config();
+require('dotenv').config({ path: require('path').resolve(__dirname, '.env') });
 const express = require('express');
 const mysql = require('mysql2/promise');
 const cors = require('cors');
@@ -409,6 +409,8 @@ app.put('/api/users/:id', handleAsync(async (req, res) => {
     if (b.state         !== undefined) add('state',         b.state || null);
     if (b.country       !== undefined) add('country',       b.country || null);
     if (b.pincode       !== undefined) add('pincode',       b.pincode || null);
+    if (b.lat           !== undefined) add('lat',           parseFloat(b.lat) || null);
+    if (b.lng           !== undefined) add('lng',           parseFloat(b.lng) || null);
 
     if (fields.length === 0) return res.status(400).json({ success: false, error: 'No fields to update' });
 
@@ -612,6 +614,95 @@ app.delete('/api/admin/reviews/:id', requireAdmin, handleAsync(async (req, res) 
         [review.provider_id]
     );
     await pool.execute('UPDATE users SET rating = ? WHERE id = ?', [avg || 0, review.provider_id]);
+    res.json({ success: true });
+}));
+
+// ── GET /api/stats ────────────────────────────────────────────────────────────
+app.get('/api/stats', handleAsync(async (req, res) => {
+    const [[{ totalUsers }]]       = await pool.query("SELECT COUNT(*) AS totalUsers FROM users");
+    const [[{ totalBookings }]]    = await pool.query("SELECT COUNT(*) AS totalBookings FROM bookings");
+    const [[{ pendingInquiries }]] = await pool.query("SELECT COUNT(*) AS pendingInquiries FROM bookings WHERE status = 'pending'");
+    const [[{ adClicks }]]         = await pool.query("SELECT COUNT(*) AS adClicks FROM bookings WHERE status = 'completed'");
+    const [[{ avgRating }]]        = await pool.query("SELECT ROUND(AVG(stars), 1) AS avgRating FROM ratings WHERE status = 'approved'");
+
+    // Engagement data: bookings per month for the last 6 months
+    const [engRows] = await pool.query(`
+        SELECT DATE_FORMAT(MIN(created_at), '%b') AS month, COUNT(*) AS value
+        FROM bookings
+        WHERE created_at >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
+        GROUP BY DATE_FORMAT(created_at, '%Y-%m')
+        ORDER BY DATE_FORMAT(created_at, '%Y-%m') ASC
+    `);
+
+    // Category data: providers per service category
+    const [catRows] = await pool.query(`
+        SELECT service_categories AS name, COUNT(*) AS value
+        FROM users
+        WHERE service_categories IS NOT NULL AND service_categories != '' AND service_categories != 'None'
+        GROUP BY service_categories
+        ORDER BY COUNT(*) DESC
+        LIMIT 5
+    `);
+
+    res.json({
+        totalUsers,
+        adImpressions: totalBookings,
+        adClicks,
+        pendingInquiries,
+        averageRating: parseFloat(avgRating) || 5.0,
+        engagementData: engRows.length ? engRows : [
+            { month: 'Jan', value: 0 }, { month: 'Feb', value: 0 }, { month: 'Mar', value: 0 }
+        ],
+        categoryData: catRows.length ? catRows : [{ name: 'General', value: 1 }]
+    });
+}));
+
+// ── GET /api/bookings (admin) ─────────────────────────────────────────────────
+app.get('/api/bookings', requireAdmin, handleAsync(async (req, res) => {
+    const [rows] = await pool.query(
+        `SELECT b.*,
+                c.name AS customer_name, c.avatar AS customer_avatar,
+                p.name AS provider_name, p.avatar AS provider_avatar
+         FROM bookings b
+         LEFT JOIN users c ON c.id = b.customer_id
+         LEFT JOIN users p ON p.id = b.provider_id
+         ORDER BY b.created_at DESC`
+    );
+    res.json(rows);
+}));
+
+// ── PUT /api/users/:id/status ─────────────────────────────────────────────────
+app.put('/api/users/:id/status', handleAsync(async (req, res) => {
+    const { status } = req.body;
+    if (!status) return res.status(400).json({ success: false, error: 'status is required' });
+    await pool.execute('UPDATE users SET status = ? WHERE id = ?', [status, req.params.id]);
+    res.json({ success: true });
+}));
+
+// ── PUT /api/users/:id/approve ────────────────────────────────────────────────
+app.put('/api/users/:id/approve', handleAsync(async (req, res) => {
+    await pool.execute("UPDATE users SET status = 'Active' WHERE id = ?", [req.params.id]);
+    res.json({ success: true });
+}));
+
+// ── PUT /api/users/:id/onboard ────────────────────────────────────────────────
+app.put('/api/users/:id/onboard', handleAsync(async (req, res) => {
+    const { name, role, bio } = req.body;
+    const newStatus = role === 'Provider' ? 'Pending Approval' : 'Active';
+    await pool.execute(
+        'UPDATE users SET name = ?, role = ?, bio = ?, onboarded = 1, status = ? WHERE id = ?',
+        [name || null, role || 'Customer', bio || null, newStatus, req.params.id]
+    );
+    res.json({ success: true, status: newStatus });
+}));
+
+// ── PUT /api/users/:id/profile ────────────────────────────────────────────────
+app.put('/api/users/:id/profile', handleAsync(async (req, res) => {
+    const { name, bio, avatar } = req.body;
+    await pool.execute(
+        'UPDATE users SET name = ?, bio = ?, avatar = ? WHERE id = ?',
+        [name || null, bio || null, avatar || null, req.params.id]
+    );
     res.json({ success: true });
 }));
 
@@ -1116,17 +1207,42 @@ app.delete('/api/tasks/:id', handleAsync(async (req, res) => {
     res.json({ success: true });
 }));
 
+// ─── Email transporter helper ─────────────────────────────────────────────────
+// When USE_ETHEREAL=true, auto-creates a free Ethereal test account.
+// After sending, call nodemailer.getTestMessageUrl(info) for a preview link.
+async function createMailTransporter() {
+    if (process.env.USE_ETHEREAL === 'true') {
+        const testAccount = await nodemailer.createTestAccount();
+        const transporter = nodemailer.createTransport({
+            host: 'smtp.ethereal.email',
+            port: 587,
+            secure: false,
+            auth: { user: testAccount.user, pass: testAccount.pass }
+        });
+        return { transporter, isEthereal: true };
+    }
+    const host = process.env.SMTP_HOST || 'smtp.gmail.com';
+    const transporter = nodemailer.createTransport({
+        host,
+        port:   parseInt(process.env.SMTP_PORT || '587'),
+        secure: process.env.SMTP_SECURE === 'true',
+        auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
+    });
+    return { transporter, isEthereal: host.includes('ethereal.email') };
+}
+
 // ─── Token helpers ────────────────────────────────────────────────────────────
 function issueAccessToken(user) {
     return jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, { expiresIn: '15m' });
 }
 
 async function issueRefreshToken(user) {
-    const token = jwt.sign({ userId: user.id }, REFRESH_SECRET, { expiresIn: '30d' });
-    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+    const token = jwt.sign({ userId: user.id }, REFRESH_SECRET, { expiresIn: '60d' });
+    const tokenHash = require('crypto').createHash('sha256').update(token).digest('hex');
+    const expiresAt = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000);
     await pool.execute(
         'INSERT INTO refresh_tokens (user_id, token_hash, expires_at) VALUES (?, ?, ?)',
-        [user.id, token, expiresAt]
+        [user.id, tokenHash, expiresAt]
     );
     return token;
 }
@@ -1248,35 +1364,31 @@ app.post('/api/auth/send-otp', authLimiter, handleAsync(async (req, res) => {
     const otp = String(Math.floor(100000 + Math.random() * 900000));
     otpStore[email] = { otp, expiresAt: Date.now() + 10 * 60 * 1000 }; // 10 min
 
-    // Send email via nodemailer (configure SMTP via .env)
-    const transporter = nodemailer.createTransport({
-        host:   process.env.SMTP_HOST   || 'smtp.gmail.com',
-        port:   parseInt(process.env.SMTP_PORT || '587'),
-        secure: process.env.SMTP_SECURE === 'true',
-        auth: {
-            user: process.env.SMTP_USER,
-            pass: process.env.SMTP_PASS
-        }
-    });
+    // Send email via nodemailer
+    const { transporter, isEthereal } = await createMailTransporter();
 
     try {
-        await transporter.sendMail({
-            from: process.env.SMTP_FROM || `"HelpMate" <${process.env.SMTP_USER}>`,
+        const info = await transporter.sendMail({
+            from: process.env.SMTP_FROM || `"HelpHub" <noreply@helphub.local>`,
             to: email,
-            subject: 'Your HelpMate verification code',
+            subject: 'Your HelpHub verification code',
             html: `
                 <div style="font-family:sans-serif;max-width:400px;margin:auto">
-                    <h2 style="color:#f97316">HelpMate</h2>
+                    <h2 style="color:#f97316">HelpHub</h2>
                     <p>Your one-time verification code is:</p>
                     <h1 style="letter-spacing:8px;color:#111">${otp}</h1>
                     <p style="color:#666;font-size:13px">This code expires in 10 minutes. If you didn't request this, ignore this email.</p>
                 </div>
             `
         });
+        if (isEthereal) {
+            const previewUrl = nodemailer.getTestMessageUrl(info);
+            console.log(`\n📧 OTP email preview (Ethereal): ${previewUrl}\n`);
+            return res.json({ success: true, message: 'Verification code sent', previewUrl });
+        }
         console.log(`OTP sent to ${email}`);
     } catch (err) {
         console.error('Failed to send OTP email:', err.message);
-        // In dev: log OTP to console so you can still test
         console.log(`[DEV] OTP for ${email}: ${otp}`);
     }
 
@@ -1343,16 +1455,11 @@ app.post('/api/auth/send-magic-link', authLimiter, handleAsync(async (req, res) 
     const backendUrl = process.env.BACKEND_URL || 'http://localhost:3000';
     const magicUrl   = `${backendUrl}/api/auth/magic?token=${rawToken}`;
 
-    const transporter = nodemailer.createTransport({
-        host:   process.env.SMTP_HOST   || 'smtp.gmail.com',
-        port:   parseInt(process.env.SMTP_PORT || '587'),
-        secure: process.env.SMTP_SECURE === 'true',
-        auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
-    });
+    const { transporter, isEthereal } = await createMailTransporter();
 
     try {
-        await transporter.sendMail({
-            from:    process.env.SMTP_FROM || `"HelpHub" <${process.env.SMTP_USER}>`,
+        const info = await transporter.sendMail({
+            from:    process.env.SMTP_FROM || `"HelpHub" <noreply@helphub.local>`,
             to:      email,
             subject: 'Sign in to HelpHub',
             html: `
@@ -1366,10 +1473,14 @@ app.post('/api/auth/send-magic-link', authLimiter, handleAsync(async (req, res) 
                 </div>
             `
         });
+        if (isEthereal) {
+            const previewUrl = nodemailer.getTestMessageUrl(info);
+            console.log(`\n📧 Magic link email preview (Ethereal): ${previewUrl}\n`);
+            return res.json({ success: true, message: 'Sign-in link sent — check your inbox.', previewUrl });
+        }
         console.log(`[AUTH] Magic link sent to ${email}`);
     } catch (err) {
         console.error('[AUTH] Failed to send magic link email:', err.message);
-        // Dev fallback — log to console so you can test without SMTP
         console.log(`[DEV] Magic link for ${email}: ${magicUrl}`);
     }
 
@@ -1377,7 +1488,7 @@ app.post('/api/auth/send-magic-link', authLimiter, handleAsync(async (req, res) 
 }));
 
 // ─── GET /api/auth/magic ──────────────────────────────────────────────────────
-app.get('/api/auth/magic', handleAsync(async (req, res) => {
+app.get('/api/auth/magic', authLimiter, handleAsync(async (req, res) => {
     if (!pool) throw new Error("Database pool not ready");
     const { token } = req.query;
     if (!token) return res.status(400).send('Missing token.');
@@ -1455,7 +1566,7 @@ app.get('/api/auth/me', handleAsync(async (req, res) => {
 
 // ─── POST /api/auth/refresh ───────────────────────────────────────────────────
 // Swap a valid refresh token for a new access token
-app.post('/api/auth/refresh', handleAsync(async (req, res) => {
+app.post('/api/auth/refresh', authLimiter, handleAsync(async (req, res) => {
     const { refreshToken } = req.body;
     if (!refreshToken) return res.status(400).json({ success: false, error: 'refreshToken is required' });
 
@@ -1466,14 +1577,18 @@ app.post('/api/auth/refresh', handleAsync(async (req, res) => {
         return res.status(401).json({ success: false, error: 'Invalid or expired refresh token' });
     }
 
+    const tokenHash = require('crypto').createHash('sha256').update(refreshToken).digest('hex');
     const [rows] = await pool.query(
         'SELECT * FROM refresh_tokens WHERE user_id = ? AND token_hash = ? AND expires_at > NOW()',
-        [payload.userId, refreshToken]
+        [payload.userId, tokenHash]
     );
     if (rows.length === 0) return res.status(401).json({ success: false, error: 'Refresh token revoked or expired' });
 
     const [users] = await pool.query('SELECT * FROM users WHERE id = ?', [payload.userId]);
     if (users.length === 0) return res.status(401).json({ success: false, error: 'User not found' });
+
+    // Block suspended/banned users from refreshing
+    if (users[0].status !== 'Active') return res.status(401).json({ success: false, error: 'Account suspended' });
 
     const accessToken = issueAccessToken(users[0]);
     res.json({ success: true, accessToken });
@@ -1483,7 +1598,8 @@ app.post('/api/auth/refresh', handleAsync(async (req, res) => {
 app.post('/api/auth/logout', handleAsync(async (req, res) => {
     const { refreshToken } = req.body;
     if (refreshToken) {
-        await pool.execute('DELETE FROM refresh_tokens WHERE token_hash = ?', [refreshToken]);
+        const tokenHash = require('crypto').createHash('sha256').update(refreshToken).digest('hex');
+        await pool.execute('DELETE FROM refresh_tokens WHERE token_hash = ?', [tokenHash]);
     }
     res.json({ success: true, message: 'Logged out' });
 }));

@@ -80,7 +80,7 @@ sap.ui.define([
             var iPlaceholder = this._chatMessages.length;
             this._chatMessages.push({ role: "assistant", content: "" });
 
-            var sUserId = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
+            var sUserId = oModel.getProperty("/user/id") || localStorage.getItem("helpmate_user_id");
 
             fetch(API_BASE + "/api/chat", {
                 method: "POST",
