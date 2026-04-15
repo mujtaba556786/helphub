@@ -182,8 +182,22 @@ export const apiService = {
 
     async getBookings(): Promise<Booking[]> {
         try {
-            const res = await fetch(`${BASE_URL}/bookings`);
-            if (res.ok) return await res.json();
+            const res = await fetch(`${BASE_URL}/bookings`, {
+                headers: { 'x-admin-token': ADMIN_TOKEN }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                return Array.isArray(data) ? data.map((b: any) => ({
+                    id: b.id,
+                    customerId: b.customer_id,
+                    customerName: b.customer_name || 'Unknown',
+                    providerId: b.provider_id,
+                    providerName: b.provider_name || 'Unknown',
+                    serviceName: b.service || 'General',
+                    date: b.scheduled_date || b.created_at?.split('T')[0] || '',
+                    status: (b.status?.charAt(0).toUpperCase() + b.status?.slice(1)) as any
+                })) : MOCK_BOOKINGS;
+            }
         } catch { }
         return MOCK_BOOKINGS;
     },

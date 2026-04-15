@@ -52,10 +52,11 @@ sap.ui.define([
 
         _onRouteMatched: function() {
             this._oModel = this.getModel("appData");
-            // Ensure user id is in model (may only be in sessionStorage after page reload)
+            // Ensure user id is in model (may only be in storage after page reload)
             if (!this._oModel.getProperty("/user/id")) {
-                var sSid = sessionStorage.getItem("helpmate_user_id");
-                if (sSid) { this._oModel.setProperty("/user/id", sSid); }
+                window.HelpHubStorage.get("helpmate_user_id", function(sSid) {
+                    if (sSid) { this._oModel.setProperty("/user/id", sSid); }
+                }.bind(this));
             }
             this._loadProvidersFromApi();
             this._loadServicesFromApi();
@@ -346,13 +347,88 @@ sap.ui.define([
         },
 
         onLogout: function() {
-            MessageBox.confirm("Sign out of HelpMate?", {
-                onClose: (oAction) => {
-                    if (oAction === "OK") {
-                        this.navTo("login");
-                    }
+            var that = this;
+            var sEmail = this.getModel("appData").getProperty("/user/email") || "";
+
+            // Revoke refresh token on backend, then show logout dialog
+            window.HelpHubStorage.get("helphub_refresh_token", function(sRefresh) {
+                var fnShowDialog = function() {
+                    window.HelpHubStorage.clear();
+                    that._showLogoutDialog(sEmail);
+                };
+                if (sRefresh) {
+                    window.HelpHubStorage.get("helpmate_token", function(sToken) {
+                        fetch(API_BASE + "/api/auth/logout", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "Authorization": "Bearer " + (sToken || "")
+                            },
+                            body: JSON.stringify({ refreshToken: sRefresh })
+                        })
+                        .catch(function() {}) // silent — still clear locally
+                        .then(fnShowDialog);
+                    });
+                } else {
+                    fnShowDialog();
                 }
             });
+        },
+
+        _showLogoutDialog: function(sEmail) {
+            var that = this;
+            if (!this._pLogoutDialog) {
+                this._pLogoutDialog = Fragment.load({
+                    id: this.getView().getId() + "-logout",
+                    name: "helphub.view.fragments.LogoutDialog",
+                    controller: this
+                }).then(function(oDialog) {
+                    oDialog.setModel(
+                        new sap.ui.model.json.JSONModel({ email: "", linkSent: false }),
+                        "logoutData"
+                    );
+                    that.getView().addDependent(oDialog);
+                    return oDialog;
+                });
+            }
+            this._pLogoutDialog.then(function(oDialog) {
+                oDialog.getModel("logoutData").setProperty("/email", sEmail);
+                oDialog.getModel("logoutData").setProperty("/linkSent", false);
+                oDialog.open();
+            });
+        },
+
+        onLogoutSendLink: function() {
+            if (!this._pLogoutDialog) { return; }
+            this._pLogoutDialog.then(function(oDialog) {
+                var oModel = oDialog.getModel("logoutData");
+                var sEmail = oModel.getProperty("/email");
+                if (!sEmail) { return; }
+
+                fetch(API_BASE + "/api/auth/send-magic-link", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email: sEmail })
+                })
+                .then(function(r) { return r.json(); })
+                .then(function(oData) {
+                    if (oData.success) {
+                        oModel.setProperty("/linkSent", true);
+                    } else {
+                        sap.m.MessageToast.show(oData.error || "Could not send link.");
+                    }
+                })
+                .catch(function() {
+                    sap.m.MessageToast.show("Could not reach the server.");
+                });
+            });
+        },
+
+        onLogoutClose: function() {
+            if (this._pLogoutDialog) {
+                this._pLogoutDialog.then(function(oDialog) { oDialog.close(); });
+            }
+            this.navTo("login", {}, true);
         },
 
         onServicePress: function(oEvent) {
@@ -473,7 +549,7 @@ sap.ui.define([
             };
             oReader.readAsDataURL(oFile);
 
-            var sUserId = that.getModel("appData").getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
+            var sUserId = that.getModel("appData").getProperty("/user/id");
             if (!sUserId) { MessageToast.show("Please log in again to upload a photo."); return; }
 
             var oForm = new FormData();
@@ -531,15 +607,16 @@ sap.ui.define([
                 return;
             }
 
-            var sUserId = oUser.id || sessionStorage.getItem("helpmate_user_id");
-            if (!sUserId) { MessageToast.show("Session expired. Please log in again."); return; }
+            var sUserId = oUser.id;
+            if (!sUserId) {
+                window.HelpHubStorage.get("helpmate_user_id", function(sid) {
+                    if (sid) { oModel.setProperty("/user/id", sid); }
+                });
+                MessageToast.show("Session expired. Please log in again."); return;
+            }
 
-            fetch(API_BASE + "/api/users/" + encodeURIComponent(sUserId), {
+            this.apiFetch(API_BASE + "/api/users/" + encodeURIComponent(sUserId), {
                 method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": "Bearer " + (sessionStorage.getItem("helpmate_token") || "")
-                },
                 body: JSON.stringify({
                     name:              oUser.name,
                     bio:               oUser.bio,
@@ -557,12 +634,11 @@ sap.ui.define([
                     pincode:           oAddr.postalCode
                 })
             })
-            .then(function(r) { return r.json(); })
             .then(function(oData) {
                 if (oData.success) {
                     MessageToast.show("Profile saved successfully.");
 
-                    var sUserId    = oUser.id || sessionStorage.getItem("helpmate_user_id");
+                    var sUserId    = oUser.id;
                     var aProviders = (oModel.getProperty("/providers") || []).slice();
                     var iIdx = -1;
                     for (var i = 0; i < aProviders.length; i++) {

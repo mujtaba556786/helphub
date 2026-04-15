@@ -9,7 +9,7 @@ sap.ui.define([
 
         _loadConversations: function () {
             var oModel = this.getModel("appData");
-            var sUserId = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
+            var sUserId = oModel.getProperty("/user/id") || localStorage.getItem("helpmate_user_id");
             if (!sUserId) return;
 
             fetch(API_BASE + "/api/conversations/" + encodeURIComponent(sUserId))
@@ -25,7 +25,7 @@ sap.ui.define([
 
         _loadUnreadDmCount: function () {
             var oModel = this.getModel("appData");
-            var sUserId = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
+            var sUserId = oModel.getProperty("/user/id") || localStorage.getItem("helpmate_user_id");
             if (!sUserId) return;
 
             fetch(API_BASE + "/api/messages/unread-count/" + encodeURIComponent(sUserId))
@@ -40,7 +40,7 @@ sap.ui.define([
 
         onStartDm: function () {
             var oModel = this.getModel("appData");
-            var sUserId = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
+            var sUserId = oModel.getProperty("/user/id") || localStorage.getItem("helpmate_user_id");
             var sProviderId = oModel.getProperty("/selectedProfile/id");
             var sProviderName = oModel.getProperty("/selectedProfile/name") || "Helper";
 
@@ -79,7 +79,7 @@ sap.ui.define([
         _openDmChatForConversation: function (sConvoId, sOtherName) {
             var that = this;
             var oModel = this.getModel("appData");
-            var sUserId = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
+            var sUserId = oModel.getProperty("/user/id") || localStorage.getItem("helpmate_user_id");
 
             this._getDmChatDialog().then(function (oDialog) {
                 oDialog.setTitle("Chat with " + sOtherName);
@@ -109,7 +109,7 @@ sap.ui.define([
             if (!oHtml) return;
 
             var oModel = this.getModel("appData");
-            var sUserId = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
+            var sUserId = oModel.getProperty("/user/id") || localStorage.getItem("helpmate_user_id");
             var aMessages = this._dmMessages || [];
 
             var sHtml = aMessages.map(function (m) {
@@ -143,7 +143,7 @@ sap.ui.define([
             if (!sText) return;
 
             var oModel = this.getModel("appData");
-            var sUserId = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
+            var sUserId = oModel.getProperty("/user/id") || localStorage.getItem("helpmate_user_id");
             var sConvoId = this._currentConvoId;
             if (!sConvoId || !sUserId) return;
 

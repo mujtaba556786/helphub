@@ -30,7 +30,7 @@ sap.ui.define([
             var sMessage    = oModel.getProperty("/bookingForm/message");
             var sProviderId = oModel.getProperty("/selectedProfile/id");
             var sService    = oModel.getProperty("/selectedProfile/serviceType");
-            var sCustomerId = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
+            var sCustomerId = oModel.getProperty("/user/id") || localStorage.getItem("helpmate_user_id");
 
             if (!sDate) { MessageToast.show("Please select a date."); return; }
             if (!sCustomerId) { MessageToast.show("Please log in to book a helper."); return; }
@@ -95,7 +95,7 @@ sap.ui.define([
 
         _loadSchedule: function() {
             var oModel   = this.getModel("appData");
-            var sUserId  = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
+            var sUserId  = oModel.getProperty("/user/id") || localStorage.getItem("helpmate_user_id");
             if (!sUserId) return;
 
             fetch(API_BASE + "/api/bookings/user/" + encodeURIComponent(sUserId))
@@ -111,7 +111,7 @@ sap.ui.define([
 
         _markBookingsSeen: function() {
             var oModel  = this.getModel("appData");
-            var sUserId = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
+            var sUserId = oModel.getProperty("/user/id") || localStorage.getItem("helpmate_user_id");
             if (!sUserId) return;
             fetch(API_BASE + "/api/bookings/user/" + encodeURIComponent(sUserId) + "/mark-seen", { method: "PUT" })
                 .then(function() {

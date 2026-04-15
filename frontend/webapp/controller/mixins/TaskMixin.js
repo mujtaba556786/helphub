@@ -32,7 +32,7 @@ sap.ui.define([
 
         _loadMyTasks: function() {
             var oModel  = this.getModel("appData");
-            var sUserId = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
+            var sUserId = oModel.getProperty("/user/id") || localStorage.getItem("helpmate_user_id");
             if (!sUserId) return;
 
             fetch(API_BASE + "/api/tasks?poster_id=" + encodeURIComponent(sUserId))
@@ -100,7 +100,7 @@ sap.ui.define([
         onConfirmPostTask: function() {
             var oModel  = this.getModel("appData");
             var oForm   = oModel.getProperty("/taskForm");
-            var sUserId = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
+            var sUserId = oModel.getProperty("/user/id") || localStorage.getItem("helpmate_user_id");
 
             if (!oForm.title || !oForm.title.trim()) { MessageToast.show("Please enter a title."); return; }
             if (!oForm.category) { MessageToast.show("Please select a category."); return; }
@@ -165,7 +165,7 @@ sap.ui.define([
         onApplyToTask: function() {
             var oModel  = this.getModel("appData");
             var sTaskId = oModel.getProperty("/selectedTask/id");
-            var sUserId = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
+            var sUserId = oModel.getProperty("/user/id") || localStorage.getItem("helpmate_user_id");
 
             if (!sUserId) { MessageToast.show("Please log in first."); return; }
 
@@ -238,7 +238,7 @@ sap.ui.define([
         onDeleteTask: function() {
             var oModel  = this.getModel("appData");
             var sTaskId = oModel.getProperty("/selectedTask/id");
-            var sUserId = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
+            var sUserId = oModel.getProperty("/user/id") || localStorage.getItem("helpmate_user_id");
             var sTitle  = oModel.getProperty("/selectedTask/title") || "this task";
 
             if (!sUserId) { MessageToast.show("Please log in first."); return; }
@@ -275,7 +275,7 @@ sap.ui.define([
 
         onMessageTaskPoster: function() {
             var oModel      = this.getModel("appData");
-            var sUserId     = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
+            var sUserId     = oModel.getProperty("/user/id") || localStorage.getItem("helpmate_user_id");
             var sPosterId   = oModel.getProperty("/selectedTask/poster_id");
             var sPosterName = oModel.getProperty("/selectedTask/poster_name") || "Task Poster";
 
@@ -306,7 +306,7 @@ sap.ui.define([
             if (!oCtx) return;
             var oApplicant    = oCtx.getObject();
             var oModel        = this.getModel("appData");
-            var sUserId       = oModel.getProperty("/user/id") || sessionStorage.getItem("helpmate_user_id");
+            var sUserId       = oModel.getProperty("/user/id") || localStorage.getItem("helpmate_user_id");
             var sProviderId   = oApplicant.provider_id;
             var sProviderName = oApplicant.provider_name || "Applicant";
 

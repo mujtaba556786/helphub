@@ -52,6 +52,66 @@ sap.ui.define([
             } else {
                 this.getRouter().navTo("login", {}, true);
             }
+        },
+
+        /**
+         * Authenticated fetch with automatic silent token refresh on 401.
+         * On refresh failure, clears storage and redirects to login.
+         *
+         * @param {string} sUrl - Full URL to fetch
+         * @param {object} [oOptions] - Standard fetch options (method, body, headers, etc.)
+         * @returns {Promise<object>} Parsed JSON response
+         */
+        apiFetch: function (sUrl, oOptions) {
+            var oRouter = this.getRouter();
+            oOptions = oOptions || {};
+
+            function doFetch(sToken) {
+                var oHeaders = Object.assign({ "Content-Type": "application/json" }, oOptions.headers || {});
+                if (sToken) oHeaders["Authorization"] = "Bearer " + sToken;
+                return fetch(sUrl, Object.assign({}, oOptions, { headers: oHeaders }));
+            }
+
+            return new Promise(function (resolve, reject) {
+                window.HelpHubStorage.get("helpmate_token", function (sToken) {
+                    doFetch(sToken)
+                        .then(function (r) {
+                            if (r.status !== 401) return resolve(r.json());
+
+                            // Silent refresh
+                            window.HelpHubStorage.get("helphub_refresh_token", function (sRefresh) {
+                                if (!sRefresh) {
+                                    window.HelpHubStorage.clear();
+                                    sap.m.MessageToast.show("Session expired — please sign in");
+                                    oRouter.navTo("login", {}, true);
+                                    return reject(new Error("Session expired"));
+                                }
+                                fetch(sUrl.replace(/\/api\/.*/, "") + "/api/auth/refresh", {
+                                    method: "POST",
+                                    headers: { "Content-Type": "application/json" },
+                                    body: JSON.stringify({ refreshToken: sRefresh })
+                                })
+                                .then(function (rr) { return rr.json(); })
+                                .then(function (d) {
+                                    if (d.success && d.accessToken) {
+                                        window.HelpHubStorage.set("helpmate_token", d.accessToken);
+                                        return doFetch(d.accessToken).then(function (r2) { resolve(r2.json()); });
+                                    }
+                                    window.HelpHubStorage.clear();
+                                    sap.m.MessageToast.show("Session expired — please sign in");
+                                    oRouter.navTo("login", {}, true);
+                                    reject(new Error("Refresh failed"));
+                                })
+                                .catch(function (e) {
+                                    window.HelpHubStorage.clear();
+                                    oRouter.navTo("login", {}, true);
+                                    reject(e);
+                                });
+                            });
+                        })
+                        .catch(reject);
+                });
+            });
         }
     });
 });
