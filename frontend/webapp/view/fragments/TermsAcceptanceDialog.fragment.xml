@@ -1,0 +1,63 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:l="sap.ui.layout">
+
+    <Dialog id="termsAcceptanceDialog"
+            title="Community Safety Agreement"
+            contentWidth="520px"
+            verticalScrolling="true"
+            escapeHandler=".onTermsEscapeHandler">
+
+        <VBox class="sapUiMediumMargin">
+
+            <Title text="Welcome to HelpHub" level="H2" class="sapUiSmallMarginBottom"/>
+            <Text text="Before you continue, please read and accept our community terms:" class="sapUiTinyMarginBottom"/>
+
+            <VBox class="sapUiSmallMarginTop sapUiSmallMarginBottom">
+
+                <HBox alignItems="Start" class="sapUiTinyMarginBottom">
+                    <core:Icon src="sap-icon://connected" color="#f97316" class="sapUiTinyMarginEnd sapUiTinyMarginTop"/>
+                    <VBox>
+                        <Text text="Peer-to-peer platform" class="fontBold smallText"/>
+                        <Text text="HelpHub connects neighbors directly. The platform is a neutral intermediary — it does not provide, guarantee, or control any services." class="smallText grayText" wrapping="true"/>
+                    </VBox>
+                </HBox>
+
+                <HBox alignItems="Start" class="sapUiTinyMarginBottom">
+                    <core:Icon src="sap-icon://person-placeholder" color="#f97316" class="sapUiTinyMarginEnd sapUiTinyMarginTop"/>
+                    <VBox>
+                        <Text text="Your responsibility" class="fontBold smallText"/>
+                        <Text text="You interact with other users at your own risk. You are solely responsible for your own decisions, agreements, and behavior on the platform." class="smallText grayText" wrapping="true"/>
+                    </VBox>
+                </HBox>
+
+                <HBox alignItems="Start" class="sapUiTinyMarginBottom">
+                    <core:Icon src="sap-icon://shield" color="#f97316" class="sapUiTinyMarginEnd sapUiTinyMarginTop"/>
+                    <VBox>
+                        <Text text="Safety tools provided" class="fontBold smallText"/>
+                        <Text text="We provide blocking, reporting, and moderation tools to help keep the community safe. However, HelpHub is not liable for outcomes of peer interactions or user agreements." class="smallText grayText" wrapping="true"/>
+                    </VBox>
+                </HBox>
+
+                <HBox alignItems="Start" class="sapUiTinyMarginBottom">
+                    <core:Icon src="sap-icon://flag" color="#f97316" class="sapUiTinyMarginEnd sapUiTinyMarginTop"/>
+                    <VBox>
+                        <Text text="Community guidelines" class="fontBold smallText"/>
+                        <Text text="You agree to treat all members with respect. Harassment, fraud, spam, or abuse will result in account suspension or permanent ban." class="smallText grayText" wrapping="true"/>
+                    </VBox>
+                </HBox>
+
+            </VBox>
+
+            <Text text="By clicking 'I Agree', you confirm you have read and accept these terms." class="smallText sapUiSmallMarginTop" wrapping="true"/>
+
+        </VBox>
+
+        <beginButton>
+            <Button text="I Agree — Continue" type="Emphasized" press="onAcceptTerms"/>
+        </beginButton>
+
+    </Dialog>
+
+</core:FragmentDefinition>
