@@ -1118,9 +1118,9 @@ app.post('/api/messages', msgThrottle, handleAsync(async (req, res) => {
     );
 
     // Find recipient and create notification
-    const [[conv]] = await pool.query('SELECT * FROM conversations WHERE id = ?', [conversation_id]);
-    if (conv) {
-        const recipientId = conv.participant_1 === sender_id ? conv.participant_2 : conv.participant_1;
+    const [[convFull]] = await pool.query('SELECT * FROM conversations WHERE id = ?', [conversation_id]);
+    if (convFull) {
+        const recipientId = convFull.participant_1 === sender_id ? convFull.participant_2 : convFull.participant_1;
         const [[sender]] = await pool.query('SELECT name FROM users WHERE id = ?', [sender_id]);
         const senderName = sender ? sender.name : 'Someone';
         await pool.execute(
@@ -1247,8 +1247,8 @@ app.post('/api/tasks/:id/apply', handleAsync(async (req, res) => {
     if (!provider_id) return res.status(400).json({ success: false, error: 'provider_id required' });
 
     // Block check between applicant and task poster
-    const [[task]] = await pool.query('SELECT poster_id FROM tasks WHERE id = ?', [req.params.id]);
-    if (task && await isBlocked(provider_id, task.poster_id)) {
+    const [[taskCheck]] = await pool.query('SELECT poster_id FROM tasks WHERE id = ?', [req.params.id]);
+    if (taskCheck && await isBlocked(provider_id, taskCheck.poster_id)) {
         return res.status(403).json({ success: false, error: 'Cannot apply to this task' });
     }
 
