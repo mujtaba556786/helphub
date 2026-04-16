@@ -2,7 +2,21 @@
     xmlns="sap.m"
     xmlns:core="sap.ui.core">
 
-    <Dialog id="dmChatDialog" title="{i18n>messages}" contentHeight="65vh" contentWidth="92%" verticalScrolling="false" stretch="{device>/system/phone}">
+    <Dialog id="dmChatDialog" title="{appData>/currentDmOtherName}" contentHeight="65vh" contentWidth="92%" verticalScrolling="false" stretch="{device>/system/phone}">
+        <customHeader>
+            <Bar>
+                <contentLeft>
+                    <Button icon="sap-icon://nav-back" type="Transparent" press="onCloseDmChat"/>
+                </contentLeft>
+                <contentMiddle>
+                    <Title text="{appData>/currentDmOtherName}"/>
+                </contentMiddle>
+                <contentRight>
+                    <Button icon="sap-icon://flag" tooltip="Report" type="Transparent" press="onReportCurrentDm"/>
+                    <Button icon="sap-icon://decline" tooltip="Block User" type="Transparent" press="onBlockCurrentDm"/>
+                </contentRight>
+            </Bar>
+        </customHeader>
         <VBox height="100%" class="hhChatLayout">
             <ScrollContainer id="dmScrollContainer" vertical="true" horizontal="false" class="hhChatMessages">
                 <core:HTML id="dmBubblesHtml" content="&lt;div&gt;&lt;/div&gt;"/>
@@ -19,9 +33,6 @@
                 <Button id="dmSendBtn" icon="sap-icon://paper-plane" type="Emphasized" press="onDmSend" class="sapUiTinyMarginBegin"/>
             </HBox>
         </VBox>
-        <endButton>
-            <Button text="{i18n>close}" press="onCloseDmChat"/>
-        </endButton>
     </Dialog>
 
 </core:FragmentDefinition>

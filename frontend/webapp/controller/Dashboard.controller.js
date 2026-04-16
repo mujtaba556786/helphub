@@ -12,11 +12,12 @@ sap.ui.define([
     "helphub/controller/mixins/DmMixin",
     "helphub/controller/mixins/OnboardingFavoritesMixin",
     "helphub/controller/mixins/ProfileMixin",
-    "helphub/controller/mixins/TaskMixin"
+    "helphub/controller/mixins/TaskMixin",
+    "helphub/controller/mixins/TrustSafetyMixin"
 ], function(
     BaseController, MessageToast, MessageBox, Fragment, CountryStates,
     NotificationMixin, MapMixin, FilterMixin, BookingMixin, AiChatMixin,
-    DmMixin, OnboardingFavoritesMixin, ProfileMixin, TaskMixin
+    DmMixin, OnboardingFavoritesMixin, ProfileMixin, TaskMixin, TrustSafetyMixin
 ) {
     "use strict";
 
@@ -77,6 +78,7 @@ sap.ui.define([
             this._getNotificationsDialog();
             this._getOnboardingDialog();
             setTimeout(this._checkOnboarding.bind(this), 350);
+            setTimeout(this._checkTermsAccepted.bind(this), 500);
         },
 
         // ── FRAGMENT DIALOG FACTORIES ────────────────────────────────────────────
@@ -680,7 +682,8 @@ sap.ui.define([
         DmMixin,
         OnboardingFavoritesMixin,
         ProfileMixin,
-        TaskMixin
+        TaskMixin,
+        TrustSafetyMixin
     );
 
     return DashboardController;

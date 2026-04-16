@@ -17,6 +17,10 @@ const nodemailer = require('nodemailer');
 // { email: { otp, expiresAt } }
 const otpStore = {};
 
+// ─── Safety rate-limit stores (in-memory) ─────────────────────────────────────
+const msgRateStore  = {};  // { userId: [timestamps] }  — max 10 msgs/min
+const taskRateStore = {};  // { userId: [timestamps] }  — max 3 tasks/hr
+
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 // ── Uploads directory ─────────────────────────────────────────────────────────
@@ -124,7 +128,11 @@ async function initDb() {
             { name: 'country',            type: 'VARCHAR(100)' },
             { name: 'pincode',            type: 'VARCHAR(20)' },
             { name: 'lat',                type: 'FLOAT' },
-            { name: 'lng',                type: 'FLOAT' }
+            { name: 'lng',                type: 'FLOAT' },
+            { name: 'terms_accepted_at',  type: 'DATETIME NULL' },
+            { name: 'trust_level',        type: "ENUM('new_user','verified_user','trusted_user') DEFAULT 'new_user'" },
+            { name: 'trust_score',        type: 'DECIMAL(5,2) DEFAULT 0' },
+            { name: 'risk_score',         type: 'DECIMAL(5,2) DEFAULT 0' }
         ];
 
         for (const col of requiredCols) {
@@ -324,6 +332,35 @@ async function initDb() {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 INDEX idx_task (task_id),
                 INDEX idx_provider (provider_id)
+            )
+        `);
+
+        // ── Trust & Safety tables ───────────────────────────────────────────
+        await connection.query(`
+            CREATE TABLE IF NOT EXISTS user_blocks (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                blocker_id VARCHAR(50) NOT NULL,
+                blocked_id VARCHAR(50) NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE KEY uq_block (blocker_id, blocked_id),
+                INDEX idx_blocker (blocker_id),
+                INDEX idx_blocked (blocked_id)
+            )
+        `);
+
+        await connection.query(`
+            CREATE TABLE IF NOT EXISTS reports (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                reporter_id VARCHAR(50) NOT NULL,
+                reported_type ENUM('user','post','message') NOT NULL,
+                reported_id VARCHAR(50) NOT NULL,
+                category ENUM('spam','harassment','scam_fraud','inappropriate_content','fake_profile','other') NOT NULL,
+                description TEXT,
+                status ENUM('pending','reviewed','actioned') DEFAULT 'pending',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_reporter (reporter_id),
+                INDEX idx_reported (reported_id),
+                INDEX idx_status (status)
             )
         `);
 
@@ -545,6 +582,52 @@ async function requireAdmin(req, res, next) {
     if (!userId) return res.status(401).json({ success: false, error: 'Not authenticated' });
     const [[user]] = await pool.query('SELECT role FROM users WHERE id = ?', [userId]);
     if (!user || user.role !== 'admin') return res.status(403).json({ success: false, error: 'Admin only' });
+    next();
+}
+
+// ── requireAuth middleware ─────────────────────────────────────────────────────
+function requireAuth(req, res, next) {
+    const auth = req.headers.authorization || '';
+    const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
+    if (!token) return res.status(401).json({ success: false, error: 'Not authenticated' });
+    try {
+        const payload = jwt.verify(token, JWT_SECRET);
+        req.userId = payload.userId;
+        next();
+    } catch {
+        res.status(401).json({ success: false, error: 'Invalid or expired token' });
+    }
+}
+
+// ── requireTerms middleware ────────────────────────────────────────────────────
+async function requireTerms(req, res, next) {
+    const [[user]] = await pool.query('SELECT terms_accepted_at FROM users WHERE id = ?', [req.userId]);
+    if (!user || !user.terms_accepted_at) {
+        return res.status(403).json({ success: false, error: 'terms_required' });
+    }
+    next();
+}
+
+// ── isBlocked helper ──────────────────────────────────────────────────────────
+async function isBlocked(userA, userB) {
+    const [[row]] = await pool.query(
+        'SELECT id FROM user_blocks WHERE (blocker_id = ? AND blocked_id = ?) OR (blocker_id = ? AND blocked_id = ?)',
+        [userA, userB, userB, userA]
+    );
+    return !!row;
+}
+
+// ── msgThrottle middleware ─────────────────────────────────────────────────────
+function msgThrottle(req, res, next) {
+    const uid = req.body.sender_id;
+    if (!uid) return next();
+    const now = Date.now();
+    const window = 60 * 1000;
+    msgRateStore[uid] = (msgRateStore[uid] || []).filter(t => now - t < window);
+    if (msgRateStore[uid].length >= 10) {
+        return res.status(429).json({ success: false, error: 'Message rate limit: max 10 messages per minute' });
+    }
+    msgRateStore[uid].push(now);
     next();
 }
 
@@ -885,6 +968,12 @@ app.put('/api/bookings/:id/status', handleAsync(async (req, res) => {
             'INSERT INTO notifications (user_id, type, title, message, booking_id) VALUES (?, ?, ?, ?, ?)',
             [booking.customer_id, 'booking_' + status, title, msg, req.params.id]
         );
+
+        // Recalculate trust score for both parties on completion
+        if (status === 'completed') {
+            calculateTrustScore(booking.customer_id).catch(() => {});
+            calculateTrustScore(booking.provider_id).catch(() => {});
+        }
     }
 
     res.json({ success: true });
@@ -962,6 +1051,10 @@ app.post('/api/conversations', handleAsync(async (req, res) => {
     const { user1_id, user2_id } = req.body;
     if (!user1_id || !user2_id) return res.status(400).json({ success: false, error: 'user1_id and user2_id required' });
 
+    if (await isBlocked(user1_id, user2_id)) {
+        return res.status(403).json({ success: false, error: 'Cannot start a conversation with this user' });
+    }
+
     // Check if conversation already exists
     const [existing] = await pool.query(
         `SELECT * FROM conversations
@@ -997,10 +1090,19 @@ app.get('/api/messages/:conversationId', handleAsync(async (req, res) => {
 }));
 
 // POST /api/messages — send a direct message
-app.post('/api/messages', handleAsync(async (req, res) => {
+app.post('/api/messages', msgThrottle, handleAsync(async (req, res) => {
     const { conversation_id, sender_id, content } = req.body;
     if (!conversation_id || !sender_id || !content) {
         return res.status(400).json({ success: false, error: 'conversation_id, sender_id, and content required' });
+    }
+
+    // Verify neither participant has blocked the other
+    const [[conv]] = await pool.query('SELECT participant_1, participant_2 FROM conversations WHERE id = ?', [conversation_id]);
+    if (conv) {
+        const otherId = conv.participant_1 === sender_id ? conv.participant_2 : conv.participant_1;
+        if (await isBlocked(sender_id, otherId)) {
+            return res.status(403).json({ success: false, error: 'Cannot send messages to this user' });
+        }
     }
 
     const id = 'DM' + Date.now() + Math.random().toString(36).slice(2, 6);
@@ -1016,9 +1118,9 @@ app.post('/api/messages', handleAsync(async (req, res) => {
     );
 
     // Find recipient and create notification
-    const [[conv]] = await pool.query('SELECT * FROM conversations WHERE id = ?', [conversation_id]);
-    if (conv) {
-        const recipientId = conv.participant_1 === sender_id ? conv.participant_2 : conv.participant_1;
+    const [[convFull]] = await pool.query('SELECT * FROM conversations WHERE id = ?', [conversation_id]);
+    if (convFull) {
+        const recipientId = convFull.participant_1 === sender_id ? convFull.participant_2 : convFull.participant_1;
         const [[sender]] = await pool.query('SELECT name FROM users WHERE id = ?', [sender_id]);
         const senderName = sender ? sender.name : 'Someone';
         await pool.execute(
@@ -1062,6 +1164,24 @@ app.post('/api/tasks', handleAsync(async (req, res) => {
     if (!poster_id || !title || !category) {
         return res.status(400).json({ success: false, error: 'poster_id, title, and category are required' });
     }
+
+    // Rate limit: max 3 tasks per hour per user
+    const now = Date.now();
+    taskRateStore[poster_id] = (taskRateStore[poster_id] || []).filter(t => now - t < 3600000);
+    if (taskRateStore[poster_id].length >= 3) {
+        return res.status(429).json({ success: false, error: 'You can only post 3 tasks per hour. Please try again later.' });
+    }
+
+    // Duplicate detection: same title by same user within last hour
+    const [[dup]] = await pool.query(
+        'SELECT id FROM tasks WHERE poster_id = ? AND title = ? AND created_at > DATE_SUB(NOW(), INTERVAL 1 HOUR)',
+        [poster_id, title]
+    );
+    if (dup) {
+        return res.status(400).json({ success: false, error: 'A task with this title was already posted recently.' });
+    }
+
+    taskRateStore[poster_id].push(now);
 
     const id = 'T' + Date.now();
     await pool.execute(
@@ -1125,6 +1245,12 @@ app.get('/api/tasks/:id', handleAsync(async (req, res) => {
 app.post('/api/tasks/:id/apply', handleAsync(async (req, res) => {
     const { provider_id, message } = req.body;
     if (!provider_id) return res.status(400).json({ success: false, error: 'provider_id required' });
+
+    // Block check between applicant and task poster
+    const [[taskCheck]] = await pool.query('SELECT poster_id FROM tasks WHERE id = ?', [req.params.id]);
+    if (taskCheck && await isBlocked(provider_id, taskCheck.poster_id)) {
+        return res.status(403).json({ success: false, error: 'Cannot apply to this task' });
+    }
 
     // Check for duplicate application
     const [dup] = await pool.query(
@@ -1229,6 +1355,76 @@ async function createMailTransporter() {
         auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
     });
     return { transporter, isEthereal: host.includes('ethereal.email') };
+}
+
+// ─── Trust & Safety helpers ───────────────────────────────────────────────────
+
+async function calculateTrustScore(userId) {
+    const [[user]] = await pool.query(
+        'SELECT provider, created_at, rating FROM users WHERE id = ?', [userId]
+    );
+    if (!user) return;
+
+    let score = 0;
+
+    // +20 if authenticated via OAuth (Google/Facebook = verified identity)
+    if (user.provider && user.provider !== 'Email') score += 20;
+
+    // Account age bonus
+    const ageDays = (Date.now() - new Date(user.created_at)) / 86400000;
+    if (ageDays > 90)      score += 25;
+    else if (ageDays > 30) score += 15;
+
+    // Completed bookings (5 pts each, capped at 25)
+    const [[{ completed }]] = await pool.query(
+        "SELECT COUNT(*) AS completed FROM bookings WHERE (customer_id = ? OR provider_id = ?) AND status = 'completed'",
+        [userId, userId]
+    );
+    score += Math.min(completed * 5, 25);
+
+    // Rating bonus
+    if (user.rating && user.rating >= 4.0) score += 15;
+
+    // Report history (fewer reports = more trust)
+    const [[{ reportCount }]] = await pool.query(
+        "SELECT COUNT(*) AS reportCount FROM reports WHERE reported_id = ? AND reported_type = 'user'",
+        [userId]
+    );
+    if (reportCount === 0)      score += 15;
+    else if (reportCount <= 2)  score += 5;
+
+    // Active days (days sent at least one message in last 30d, capped at 10)
+    const [[{ activeDays }]] = await pool.query(
+        `SELECT COUNT(DISTINCT DATE(created_at)) AS activeDays
+         FROM direct_messages WHERE sender_id = ?
+         AND created_at > DATE_SUB(NOW(), INTERVAL 30 DAY)`,
+        [userId]
+    );
+    score += Math.min(activeDays, 10);
+
+    const level = score >= 70 ? 'trusted_user' : score >= 40 ? 'verified_user' : 'new_user';
+    await pool.execute(
+        'UPDATE users SET trust_score = ?, trust_level = ? WHERE id = ?',
+        [score, level, userId]
+    );
+}
+
+async function recalculateRiskScore(userId) {
+    const [[{ cnt }]] = await pool.query(
+        "SELECT COUNT(*) AS cnt FROM reports WHERE reported_id = ? AND reported_type = 'user'",
+        [userId]
+    );
+    const newScore = Math.min(cnt * 20, 100);
+    await pool.execute('UPDATE users SET risk_score = ? WHERE id = ?', [newScore, userId]);
+
+    // Auto-suspend when risk threshold reached
+    if (newScore >= 50) {
+        await pool.execute(
+            "UPDATE users SET status = 'Suspended' WHERE id = ? AND status = 'Active'",
+            [userId]
+        );
+    }
+    await calculateTrustScore(userId);
 }
 
 // ─── Token helpers ────────────────────────────────────────────────────────────
@@ -1430,8 +1626,11 @@ app.post('/api/auth/verify-otp', authLimiter, handleAsync(async (req, res) => {
         user = newUser[0];
     }
 
+    calculateTrustScore(user.id).catch(() => {});
     const { accessToken, refreshToken } = await issueTokens(user);
-    return res.json({ success: true, user, accessToken, refreshToken });
+    // Re-fetch user to include updated trust fields
+    const [[freshUser]] = await pool.query('SELECT * FROM users WHERE id = ?', [user.id]);
+    return res.json({ success: true, user: freshUser || user, accessToken, refreshToken });
 }));
 
 // ─── POST /api/auth/send-magic-link ──────────────────────────────────────────
@@ -1541,6 +1740,7 @@ app.get('/api/auth/magic', authLimiter, handleAsync(async (req, res) => {
         user = newUser[0];
     }
 
+    calculateTrustScore(user.id).catch(() => {});
     const { accessToken, refreshToken } = await issueTokens(user);
 
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:8080';
@@ -1602,6 +1802,140 @@ app.post('/api/auth/logout', handleAsync(async (req, res) => {
         await pool.execute('DELETE FROM refresh_tokens WHERE token_hash = ?', [tokenHash]);
     }
     res.json({ success: true, message: 'Logged out' });
+}));
+
+// ─── POST /api/auth/accept-terms ─────────────────────────────────────────────
+app.post('/api/auth/accept-terms', requireAuth, handleAsync(async (req, res) => {
+    await pool.execute('UPDATE users SET terms_accepted_at = NOW() WHERE id = ?', [req.userId]);
+    res.json({ success: true });
+}));
+
+// ─── BLOCKING ENDPOINTS ───────────────────────────────────────────────────────
+
+// Block a user
+app.post('/api/users/:id/block', requireAuth, handleAsync(async (req, res) => {
+    if (req.params.id === req.userId) {
+        return res.status(400).json({ success: false, error: 'Cannot block yourself' });
+    }
+    await pool.execute(
+        'INSERT IGNORE INTO user_blocks (blocker_id, blocked_id) VALUES (?, ?)',
+        [req.userId, req.params.id]
+    );
+    res.json({ success: true });
+}));
+
+// Unblock a user
+app.delete('/api/users/:id/block', requireAuth, handleAsync(async (req, res) => {
+    await pool.execute(
+        'DELETE FROM user_blocks WHERE blocker_id = ? AND blocked_id = ?',
+        [req.userId, req.params.id]
+    );
+    res.json({ success: true });
+}));
+
+// Get my blocked users list
+app.get('/api/users/me/blocks', requireAuth, handleAsync(async (req, res) => {
+    const [rows] = await pool.query(
+        `SELECT b.blocked_id, u.name, u.avatar
+         FROM user_blocks b JOIN users u ON u.id = b.blocked_id
+         WHERE b.blocker_id = ?`,
+        [req.userId]
+    );
+    res.json({ success: true, blocked: rows });
+}));
+
+// ─── REPORTING ENDPOINTS ──────────────────────────────────────────────────────
+
+// Submit a report
+app.post('/api/reports', requireAuth, handleAsync(async (req, res) => {
+    const { reported_type, reported_id, category, description } = req.body;
+    if (!reported_type || !reported_id || !category) {
+        return res.status(400).json({ success: false, error: 'reported_type, reported_id, and category are required' });
+    }
+    await pool.execute(
+        'INSERT INTO reports (reporter_id, reported_type, reported_id, category, description) VALUES (?, ?, ?, ?, ?)',
+        [req.userId, reported_type, reported_id, category, description || null]
+    );
+    if (reported_type === 'user') {
+        await recalculateRiskScore(reported_id);
+    }
+    res.json({ success: true });
+}));
+
+// ─── ADMIN MODERATION ENDPOINTS ───────────────────────────────────────────────
+
+// List reports (paginated)
+app.get('/api/admin/reports', requireAdmin, handleAsync(async (req, res) => {
+    const page   = Math.max(1, parseInt(req.query.page)  || 1);
+    const limit  = Math.min(50, parseInt(req.query.limit) || 20);
+    const offset = (page - 1) * limit;
+    const status = req.query.status;
+
+    let sql = `
+        SELECT r.*,
+               reporter.name AS reporter_name,
+               reporter.email AS reporter_email,
+               reported_user.name AS reported_name
+        FROM reports r
+        LEFT JOIN users reporter    ON reporter.id    = r.reporter_id
+        LEFT JOIN users reported_user ON reported_user.id = r.reported_id AND r.reported_type = 'user'
+        WHERE 1=1`;
+    const params = [];
+    if (status) { sql += ' AND r.status = ?'; params.push(status); }
+    sql += ' ORDER BY r.created_at DESC LIMIT ? OFFSET ?';
+    params.push(limit, offset);
+
+    const [rows] = await pool.query(sql, params);
+    const [[{ total }]] = await pool.query(
+        'SELECT COUNT(*) AS total FROM reports' + (status ? ' WHERE status = ?' : ''),
+        status ? [status] : []
+    );
+    res.json({ success: true, reports: rows, total, page, limit });
+}));
+
+// Update report status
+app.put('/api/admin/reports/:id/action', requireAdmin, handleAsync(async (req, res) => {
+    const { status } = req.body;
+    if (!['reviewed', 'actioned'].includes(status)) {
+        return res.status(400).json({ success: false, error: 'status must be reviewed or actioned' });
+    }
+    await pool.execute('UPDATE reports SET status = ? WHERE id = ?', [status, req.params.id]);
+    res.json({ success: true });
+}));
+
+// List flagged users (risk_score > 40)
+app.get('/api/admin/flagged-users', requireAdmin, handleAsync(async (req, res) => {
+    const [rows] = await pool.query(
+        `SELECT id, name, email, status, risk_score, trust_score, trust_level, created_at
+         FROM users WHERE risk_score > 40 ORDER BY risk_score DESC`
+    );
+    res.json({ success: true, users: rows });
+}));
+
+// Admin action on a user: warn | restrict | ban | clear
+app.put('/api/admin/users/:id/action', requireAdmin, handleAsync(async (req, res) => {
+    const { action } = req.body;
+    const userId = req.params.id;
+
+    if (!['warn', 'restrict', 'ban', 'clear'].includes(action)) {
+        return res.status(400).json({ success: false, error: 'action must be warn | restrict | ban | clear' });
+    }
+
+    if (action === 'warn') {
+        await pool.execute(
+            "INSERT INTO notifications (user_id, type, title, message) VALUES (?, 'admin_warning', 'Account Warning', 'Your account has received a warning due to reported behavior. Please review our community guidelines.')",
+            [userId]
+        );
+    } else if (action === 'restrict') {
+        await pool.execute("UPDATE users SET status = 'Suspended' WHERE id = ?", [userId]);
+    } else if (action === 'ban') {
+        await pool.execute("UPDATE users SET status = 'Blocked' WHERE id = ?", [userId]);
+    } else if (action === 'clear') {
+        await pool.execute("UPDATE users SET status = 'Active', risk_score = 0 WHERE id = ?", [userId]);
+        await calculateTrustScore(userId);
+    }
+
+    res.json({ success: true });
 }));
 
 // Global Catch-all for /api

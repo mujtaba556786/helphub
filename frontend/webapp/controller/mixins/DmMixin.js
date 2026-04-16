@@ -81,8 +81,9 @@ sap.ui.define([
             var oModel = this.getModel("appData");
             var sUserId = oModel.getProperty("/user/id") || localStorage.getItem("helpmate_user_id");
 
+            oModel.setProperty("/currentDmOtherName", sOtherName || "");
+
             this._getDmChatDialog().then(function (oDialog) {
-                oDialog.setTitle("Chat with " + sOtherName);
                 oDialog.open();
             }.bind(this));
 

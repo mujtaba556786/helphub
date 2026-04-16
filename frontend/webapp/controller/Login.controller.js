@@ -57,6 +57,9 @@ sap.ui.define([
             oModel.setProperty("/user/address/state",       oUser.state         || "");
             oModel.setProperty("/user/address/country",     oUser.country       || "");
             oModel.setProperty("/user/address/postalCode",  oUser.pincode       || "");
+            oModel.setProperty("/user/terms_accepted_at",  oUser.terms_accepted_at || null);
+            oModel.setProperty("/user/trust_level",        oUser.trust_level   || "new_user");
+            oModel.setProperty("/user/trust_score",        oUser.trust_score   || 0);
 
             oModel.setProperty("/isLoggedIn", true);
 

@@ -10,6 +10,10 @@
                     <Title text="{appData>/selectedProfile/name}" level="H2"/>
                     <Text text="{appData>/selectedProfile/address}" class="grayText smallText"/>
                     <Text text="{appData>/selectedProfile/serviceType}" class="smallText"/>
+                    <ObjectStatus
+                        text="{= ${appData>/selectedProfile/trust_level} === 'trusted_user' ? 'Trusted User' : ${appData>/selectedProfile/trust_level} === 'verified_user' ? 'Verified User' : 'New User' }"
+                        state="{= ${appData>/selectedProfile/trust_level} === 'trusted_user' ? 'Success' : ${appData>/selectedProfile/trust_level} === 'verified_user' ? 'Information' : 'None' }"
+                        visible="{= !!${appData>/selectedProfile/trust_level} }"/>
                 </VBox>
             </HBox>
 
@@ -63,6 +67,10 @@
                 <Button text="{i18n>bookHelper}" type="Emphasized" press="onOpenBooking" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"
                     visible="{= ${appData>/selectedProfile/id} !== ${appData>/user/id}}"/>
                 <Button text="{i18n>messageHelper}" type="Accept" press="onStartDm" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"
+                    visible="{= ${appData>/selectedProfile/id} !== ${appData>/user/id}}"/>
+                <Button text="Block" type="Reject" press="onBlockUser" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"
+                    visible="{= ${appData>/selectedProfile/id} !== ${appData>/user/id}}"/>
+                <Button text="Report" type="Ghost" press="onReportUser" class="sapUiTinyMarginBottom"
                     visible="{= ${appData>/selectedProfile/id} !== ${appData>/user/id}}"/>
             </HBox>
         </VBox>
