@@ -62,17 +62,23 @@
                 </VBox>
             </Panel>
 
-            <!-- Actions -->
-            <HBox justifyContent="Center" wrap="Wrap" class="sapUiMediumMarginTop sapUiMediumMarginBottom">
-                <Button text="{i18n>bookHelper}" type="Emphasized" press="onOpenBooking" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"
-                    visible="{= ${appData>/selectedProfile/id} !== ${appData>/user/id}}"/>
-                <Button text="{i18n>messageHelper}" type="Accept" press="onStartDm" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"
-                    visible="{= ${appData>/selectedProfile/id} !== ${appData>/user/id}}"/>
-                <Button text="Block" type="Reject" press="onBlockUser" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"
-                    visible="{= ${appData>/selectedProfile/id} !== ${appData>/user/id}}"/>
-                <Button text="Report" type="Ghost" press="onReportUser" class="sapUiTinyMarginBottom"
-                    visible="{= ${appData>/selectedProfile/id} !== ${appData>/user/id}}"/>
+            <!-- Primary actions -->
+            <HBox justifyContent="Center" wrap="Wrap" class="sapUiMediumMarginTop sapUiSmallMarginBottom"
+                visible="{= String(${appData>/selectedProfile/id}) !== String(${appData>/user/id})}">
+                <Button text="{i18n>bookHelper}" type="Emphasized" press="onOpenBooking" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                <Button text="{i18n>messageHelper}" type="Accept" press="onStartDm" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                <Button text="{i18n>askAiAbout}" type="Default" press="onOpenChat" icon="sap-icon://da" class="sapUiTinyMarginBottom"/>
             </HBox>
+
+            <!-- Safety actions — collapsed by default, clearly separated -->
+            <Panel expandable="true" expanded="false" headerText="⚠️ Report or Block"
+                class="sapUiSmallMarginBottom"
+                visible="{= String(${appData>/selectedProfile/id}) !== String(${appData>/user/id})}">
+                <HBox justifyContent="Center" wrap="Wrap" class="sapUiSmallMargin">
+                    <Button text="🚫 Block this user" type="Reject" press="onBlockUser" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                    <Button text="⚑ Report" type="Ghost" press="onReportUser" class="sapUiTinyMarginBottom"/>
+                </HBox>
+            </Panel>
         </VBox>
         <endButton>
             <Button text="{i18n>close}" press="onCloseProfile"/>

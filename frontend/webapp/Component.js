@@ -75,7 +75,7 @@ sap.ui.define([
             function applyUser(u) {
                 var sAvatar = u.avatar || "";
                 if (sAvatar && sAvatar.startsWith("/uploads/")) sAvatar = API_BASE + sAvatar;
-                oAppData.setProperty("/user/id",       u.id    || "");
+                oAppData.setProperty("/user/id",       u.id ? parseInt(u.id, 10) : "");
                 oAppData.setProperty("/user/name",     u.name  || "");
                 oAppData.setProperty("/user/email",    u.email || "");
                 oAppData.setProperty("/user/photo",    sAvatar);
@@ -92,7 +92,9 @@ sap.ui.define([
                 oAppData.setProperty("/user/address/state",       u.state         || "");
                 oAppData.setProperty("/user/address/country",     u.country       || "");
                 oAppData.setProperty("/user/address/postalCode",  u.pincode       || "");
-                oAppData.setProperty("/user/role",     u.role  || "Customer");
+                oAppData.setProperty("/user/role",           u.role          || "Customer");
+                oAppData.setProperty("/user/terms_accepted_at", u.terms_accepted_at || "");
+                oAppData.setProperty("/user/terms_version",     u.terms_version     || "");
                 oAppData.setProperty("/isLoggedIn",    true);
                 oRouter.navTo("dashboard", {}, true);
             }

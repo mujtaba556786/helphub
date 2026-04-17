@@ -6,14 +6,25 @@ sap.ui.define([
 
     var API_BASE = "http://localhost:3000";
 
+    // Must match CURRENT_TERMS_VERSION in backend/server.js.
+    // Bump both when T&C or Privacy Policy change — existing users will be re-prompted.
+    var CURRENT_TERMS_VERSION = "1.0";
+
     return {
 
         // ── Terms Acceptance ─────────────────────────────────────────────────
 
         _checkTermsAccepted: function() {
-            var oModel = this.getModel("appData");
-            var sTermsAt = oModel.getProperty("/user/terms_accepted_at");
-            if (!sTermsAt) {
+            var oModel       = this.getModel("appData");
+            var sTermsAt     = oModel.getProperty("/user/terms_accepted_at");
+            var sUserVersion = oModel.getProperty("/user/terms_version");
+            var bNeedsAccept = !sTermsAt || sUserVersion !== CURRENT_TERMS_VERSION;
+
+            if (bNeedsAccept) {
+                var bIsUpdate = !!sTermsAt && sUserVersion !== CURRENT_TERMS_VERSION;
+                oModel.setProperty("/user/termsUpdateRequired", bIsUpdate);
+                oModel.setProperty("/termsCheckbox", false); // always reset on open
+
                 this._getTermsDialog().then(function(oDialog) {
                     oDialog.open();
                 }.bind(this));
@@ -24,7 +35,10 @@ sap.ui.define([
             this.apiFetch(API_BASE + "/api/auth/accept-terms", { method: "POST" })
                 .then(function(oData) {
                     if (oData.success) {
-                        this.getModel("appData").setProperty("/user/terms_accepted_at", new Date().toISOString());
+                        var oModel = this.getModel("appData");
+                        oModel.setProperty("/user/terms_accepted_at", new Date().toISOString());
+                        oModel.setProperty("/user/terms_version", CURRENT_TERMS_VERSION);
+                        oModel.setProperty("/user/termsUpdateRequired", false);
                         this._getTermsDialog().then(function(oDialog) { oDialog.close(); });
                     }
                 }.bind(this))
@@ -33,9 +47,37 @@ sap.ui.define([
                 });
         },
 
+        onViewTerms: function() {
+            // Opens terms dialog in review mode (from profile/settings Legal section)
+            var oModel = this.getModel("appData");
+            oModel.setProperty("/user/termsUpdateRequired", false);
+            oModel.setProperty("/termsCheckbox", false);
+            this._getTermsDialog().then(function(oDialog) { oDialog.open(); });
+        },
+
+        onViewPrivacy: function() {
+            sap.m.MessageToast.show("Privacy Policy — coming soon.");
+        },
+
+        // Called from links INSIDE the terms dialog itself (can't re-open the same dialog)
+        onViewTermsInline: function() {
+            sap.m.MessageToast.show("Full Terms & Conditions available in Profile → Legal.");
+        },
+
+        onViewPrivacyInline: function() {
+            sap.m.MessageToast.show("Privacy Policy — coming soon in Profile → Legal.");
+        },
+
         onTermsEscapeHandler: function(oPromise) {
             // Prevent dismissal — user must accept before using the app
             oPromise.reject();
+        },
+
+        onDeclineTerms: function() {
+            // User declined — clear session and return to login
+            window.HelpHubStorage.clear();
+            this._getTermsDialog().then(function(oDialog) { oDialog.close(); });
+            this.getRouter().navTo("login", {}, true);
         },
 
         // ── Blocking ─────────────────────────────────────────────────────────
@@ -46,16 +88,28 @@ sap.ui.define([
             var sName   = oModel.getProperty("/selectedProfile/name") || "this user";
             if (!sId) return;
 
-            this.apiFetch(API_BASE + "/api/users/" + sId + "/block", { method: "POST" })
-                .then(function(oData) {
-                    if (oData.success) {
-                        MessageToast.show(sName + " has been blocked.");
-                        this._getProfileDialog().then(function(oDialog) { oDialog.close(); });
+            var that = this;
+            sap.m.MessageBox.confirm(
+                "Block " + sName + "? They will no longer be able to message or book with you.",
+                {
+                    title: "Block User",
+                    actions: [sap.m.MessageBox.Action.OK, sap.m.MessageBox.Action.CANCEL],
+                    emphasizedAction: sap.m.MessageBox.Action.CANCEL,
+                    onClose: function(sAction) {
+                        if (sAction !== sap.m.MessageBox.Action.OK) return;
+                        that.apiFetch(API_BASE + "/api/users/" + sId + "/block", { method: "POST" })
+                            .then(function(oData) {
+                                if (oData.success) {
+                                    MessageToast.show(sName + " has been blocked.");
+                                    that._getProfileDialog().then(function(oDialog) { oDialog.close(); });
+                                }
+                            })
+                            .catch(function() {
+                                MessageToast.show("Could not block user. Please try again.");
+                            });
                     }
-                }.bind(this))
-                .catch(function() {
-                    MessageToast.show("Could not block user. Please try again.");
-                });
+                }
+            );
         },
 
         onBlockCurrentDm: function() {

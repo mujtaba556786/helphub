@@ -50,13 +50,17 @@ sap.ui.define([
             .then(function(r) { return r.json(); })
             .then(function(oData) {
                 if (oData.success) {
+                    var sProviderName = oModel.getProperty("/selectedProfile/name") || "the helper";
                     this._getBookingDialog().then(function(d) { d.close(); }.bind(this));
-                    MessageBox.success("Booking request sent! The helper will confirm shortly.", {
-                        title: "Request Sent",
-                        onClose: function() {
-                            this._loadSchedule();
-                        }.bind(this)
-                    });
+                    MessageBox.success(
+                        "Your request has been sent to " + sProviderName + ".\nYou'll be notified once they confirm.",
+                        {
+                            title: "Booking Request Sent!",
+                            onClose: function() {
+                                this._loadSchedule();
+                            }.bind(this)
+                        }
+                    );
                 } else {
                     MessageToast.show("Booking failed: " + (oData.error || "Unknown error"));
                 }
@@ -72,8 +76,44 @@ sap.ui.define([
             this._updateBookingStatus(oEvent, "declined");
         },
 
+        onCancelBooking: function(oEvent) {
+            // getBindingContext walks the parent tree automatically — no fragile getParent() chain
+            var oCtx = oEvent.getSource().getBindingContext("appData");
+            if (!oCtx) return;
+            var oBooking = oCtx.getObject();
+            var sBookingId = oBooking && oBooking.id;
+            if (!sBookingId) return;
+            var sUserId = this.getModel("appData").getProperty("/user/id");
+            var that = this;
+
+            // Use explicit actions so sAction reliably equals MessageBox.Action.OK on confirm
+            MessageBox.confirm("Are you sure you want to cancel this booking?", {
+                title: "Cancel Booking",
+                actions: [MessageBox.Action.OK, MessageBox.Action.CANCEL],
+                emphasizedAction: MessageBox.Action.CANCEL,
+                onClose: function(sAction) {
+                    if (sAction !== MessageBox.Action.OK) return;
+                    fetch(API_BASE + "/api/bookings/" + encodeURIComponent(sBookingId) + "/status", {
+                        method: "PUT",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ status: "cancelled", user_id: sUserId })
+                    })
+                    .then(function(r) { return r.json(); })
+                    .then(function(oData) {
+                        if (oData.success) {
+                            MessageToast.show("Booking cancelled.");
+                            that._loadSchedule();
+                        } else {
+                            MessageToast.show(oData.error || "Could not cancel booking.");
+                        }
+                    })
+                    .catch(function() { MessageToast.show("Could not reach the server."); });
+                }
+            });
+        },
+
         _updateBookingStatus: function(oEvent, sStatus) {
-            var oCtx = oEvent.getSource().getParent().getParent().getBindingContext("appData");
+            var oCtx = oEvent.getSource().getBindingContext("appData");
             if (!oCtx) return;
             var sBookingId = oCtx.getObject().id;
             var sUserId    = this.getModel("appData").getProperty("/user/id");
@@ -93,6 +133,27 @@ sap.ui.define([
             .catch(function() { MessageToast.show("Could not update booking."); });
         },
 
+        onBookingFilter: function(oEvent) {
+            var sStatus = oEvent.getSource().data("status");
+            var oModel = this.getModel("appData");
+            oModel.setProperty("/bookingStatusFilter", sStatus);
+            this._applyBookingFilter();
+        },
+
+        _applyBookingFilter: function() {
+            var oModel = this.getModel("appData");
+            var sFilter = oModel.getProperty("/bookingStatusFilter") || "all";
+            var aAll = oModel.getProperty("/upcomingBookings") || [];
+            var aFiltered;
+            if (sFilter === "all") {
+                // Hide cancelled bookings from the default view — they are terminal
+                aFiltered = aAll.filter(function(b) { return b.status !== "cancelled"; });
+            } else {
+                aFiltered = aAll.filter(function(b) { return b.status === sFilter; });
+            }
+            oModel.setProperty("/filteredBookings", aFiltered);
+        },
+
         _loadSchedule: function() {
             var oModel   = this.getModel("appData");
             var sUserId  = oModel.getProperty("/user/id") || localStorage.getItem("helpmate_user_id");
@@ -104,8 +165,9 @@ sap.ui.define([
                     if (oData.success) {
                         oModel.setProperty("/upcomingBookings", oData.bookings);
                         oModel.setProperty("/bookingCount", oData.newCount || 0);
+                        this._applyBookingFilter();
                     }
-                })
+                }.bind(this))
                 .catch(function() { /* keep empty */ });
         },
 
@@ -133,6 +195,7 @@ sap.ui.define([
             switch (sStatus) {
                 case "confirmed":  return "Success";
                 case "declined":   return "Error";
+                case "cancelled":  return "Error";
                 case "completed":  return "None";
                 default:           return "Warning"; // pending
             }

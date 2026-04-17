@@ -65,6 +65,13 @@
                         <IconTabFilter key="tasks" text="{i18n>tasks}" icon="sap-icon://task" count="{appData>/openTaskCount}">
                             <ScrollContainer vertical="true" horizontal="false" height="100%">
                                 <VBox class="sapUiSmallMargin mainContent">
+                                    <!-- Task vs Booking hint -->
+                                    <MessageStrip
+                                        text="{i18n>taskVsBookingHint}"
+                                        type="Information"
+                                        showIcon="true"
+                                        showCloseButton="true"
+                                        class="sapUiTinyMarginBottom"/>
                                     <HBox justifyContent="SpaceBetween" alignItems="Center" class="sapUiSmallMarginBottom">
                                         <HBox>
                                             <Button text="{i18n>browse}" type="{= ${appData>/taskViewMode} === 'browse' ? 'Emphasized' : 'Default'}" press="onToggleTaskView" class="sapUiTinyMarginEnd hhTaskToggle">
@@ -171,25 +178,126 @@
                         <!-- TAB 3: Messages -->
                         <IconTabFilter key="messages" text="{i18n>messages}" icon="sap-icon://discussion" count="{appData>/unreadDmCount}">
                             <ScrollContainer vertical="true" horizontal="false" height="100%">
-                                <VBox class="sapUiSmallMargin mainContent">
-                                    <Title text="{i18n>messages}" level="H4" class="sapUiSmallMarginBottom"/>
-                                    <List id="conversationsList" items="{appData>/conversations}" noDataText="{i18n>noMessagesYet}">
-                                        <CustomListItem type="Active" press="onOpenDmChat">
-                                            <HBox class="sapUiSmallMargin" alignItems="Center">
-                                                <Avatar displaySize="S" src="{appData>other_avatar}" initials="P" backgroundColor="Accent1" class="sapUiTinyMarginEnd"/>
-                                                <VBox class="hhConvoContent">
-                                                    <HBox justifyContent="SpaceBetween" alignItems="Center" width="100%">
-                                                        <Title text="{appData>other_name}" level="H5" class="{= ${appData>unread_count} > 0 ? 'hhConvoUnread' : '' }"/>
-                                                        <Text text="{path:'appData>last_message_at', formatter:'.formatConvoTime'}" class="hhConvoTime"/>
-                                                    </HBox>
-                                                    <HBox alignItems="Center">
-                                                        <Text text="{appData>last_message}" class="smallText grayText hhConvoPreview"/>
-                                                        <core:HTML content="{= ${appData>unread_count} > 0 ? '&lt;span class=&quot;hhUnreadDot&quot;&gt;&lt;/span&gt;' : '' }" visible="{= ${appData>unread_count} > 0 }"/>
-                                                    </HBox>
-                                                </VBox>
-                                            </HBox>
-                                        </CustomListItem>
-                                    </List>
+                                <VBox class="hhMsgTab">
+
+                                    <!-- ── Search bar ── -->
+                                    <VBox class="hhMsgSearchWrap">
+                                        <SearchField placeholder="{i18n>searchMessages}"
+                                                     value="{appData>/msgSearch}"
+                                                     liveChange="onMsgSearch"
+                                                     search="onMsgSearch"
+                                                     showRefreshButton="false"
+                                                     class="hhMsgSearchField"/>
+                                    </VBox>
+
+                                    <!-- ── Pinned section ── -->
+                                    <VBox visible="{appData>/msgPinnedVisible}">
+                                        <HBox class="hhMsgSectionHdr" alignItems="Center">
+                                            <core:HTML content="&lt;span class='hhMsgPinIcon'&gt;📌&lt;/span&gt;"/>
+                                            <Text text="{i18n>msgPinned}" class="hhMsgSectionLabel"/>
+                                        </HBox>
+                                        <List items="{appData>/msgPinned}" showSeparators="None" class="hhMsgList">
+                                            <CustomListItem type="Active" press="onOpenDmChat" longPress="onMsgLongPress"
+                                                class="{= ${appData>unread_count} > 0 ? 'hhMsgItem hhMsgItemUnread' : 'hhMsgItem'}">
+                                                <HBox alignItems="Center" class="hhMsgItemInner">
+                                                    <Avatar displaySize="M" src="{appData>other_avatar}" initials="{appData>_initials}" backgroundColor="Accent1" class="hhMsgAvatar"/>
+                                                    <VBox class="hhMsgContent">
+                                                        <HBox justifyContent="SpaceBetween" alignItems="Center" width="100%">
+                                                            <Text text="{appData>other_name}" wrapping="false" class="{= ${appData>unread_count} > 0 ? 'hhMsgName hhMsgNameBold' : 'hhMsgName'}"/>
+                                                            <Text text="{path:'appData>last_message_at', formatter:'.formatConvoTime'}" wrapping="false" class="{= ${appData>unread_count} > 0 ? 'hhMsgTime hhMsgTimeAccent' : 'hhMsgTime'}"/>
+                                                        </HBox>
+                                                        <HBox justifyContent="SpaceBetween" alignItems="Center" width="100%">
+                                                            <Text text="{appData>last_message}" wrapping="false" class="{= ${appData>unread_count} > 0 ? 'hhMsgPreview hhMsgPreviewBold' : 'hhMsgPreview'}"/>
+                                                            <Text text="{appData>unread_count}" visible="{= ${appData>unread_count} > 0}" class="hhUnreadBadge"/>
+                                                        </HBox>
+                                                    </VBox>
+                                                </HBox>
+                                            </CustomListItem>
+                                        </List>
+                                    </VBox>
+
+                                    <!-- ── Today section ── -->
+                                    <VBox visible="{appData>/msgTodayVisible}">
+                                        <Text text="{i18n>msgToday}" class="hhMsgSectionLabel hhMsgSectionLabelSpaced"/>
+                                        <List items="{appData>/msgToday}" showSeparators="None" class="hhMsgList">
+                                            <CustomListItem type="Active" press="onOpenDmChat" longPress="onMsgLongPress"
+                                                class="{= ${appData>unread_count} > 0 ? 'hhMsgItem hhMsgItemUnread' : 'hhMsgItem'}">
+                                                <HBox alignItems="Center" class="hhMsgItemInner">
+                                                    <Avatar displaySize="M" src="{appData>other_avatar}" initials="{appData>_initials}" backgroundColor="Accent1" class="hhMsgAvatar"/>
+                                                    <VBox class="hhMsgContent">
+                                                        <HBox justifyContent="SpaceBetween" alignItems="Center" width="100%">
+                                                            <Text text="{appData>other_name}" wrapping="false" class="{= ${appData>unread_count} > 0 ? 'hhMsgName hhMsgNameBold' : 'hhMsgName'}"/>
+                                                            <Text text="{path:'appData>last_message_at', formatter:'.formatConvoTime'}" wrapping="false" class="{= ${appData>unread_count} > 0 ? 'hhMsgTime hhMsgTimeAccent' : 'hhMsgTime'}"/>
+                                                        </HBox>
+                                                        <HBox justifyContent="SpaceBetween" alignItems="Center" width="100%">
+                                                            <Text text="{appData>last_message}" wrapping="false" class="{= ${appData>unread_count} > 0 ? 'hhMsgPreview hhMsgPreviewBold' : 'hhMsgPreview'}"/>
+                                                            <Text text="{appData>unread_count}" visible="{= ${appData>unread_count} > 0}" class="hhUnreadBadge"/>
+                                                        </HBox>
+                                                    </VBox>
+                                                </HBox>
+                                            </CustomListItem>
+                                        </List>
+                                    </VBox>
+
+                                    <!-- ── Yesterday section ── -->
+                                    <VBox visible="{appData>/msgYesterdayVisible}">
+                                        <Text text="{i18n>msgYesterday}" class="hhMsgSectionLabel hhMsgSectionLabelSpaced"/>
+                                        <List items="{appData>/msgYesterday}" showSeparators="None" class="hhMsgList">
+                                            <CustomListItem type="Active" press="onOpenDmChat" longPress="onMsgLongPress"
+                                                class="{= ${appData>unread_count} > 0 ? 'hhMsgItem hhMsgItemUnread' : 'hhMsgItem'}">
+                                                <HBox alignItems="Center" class="hhMsgItemInner">
+                                                    <Avatar displaySize="M" src="{appData>other_avatar}" initials="{appData>_initials}" backgroundColor="Accent1" class="hhMsgAvatar"/>
+                                                    <VBox class="hhMsgContent">
+                                                        <HBox justifyContent="SpaceBetween" alignItems="Center" width="100%">
+                                                            <Text text="{appData>other_name}" wrapping="false" class="{= ${appData>unread_count} > 0 ? 'hhMsgName hhMsgNameBold' : 'hhMsgName'}"/>
+                                                            <Text text="{path:'appData>last_message_at', formatter:'.formatConvoTime'}" wrapping="false" class="{= ${appData>unread_count} > 0 ? 'hhMsgTime hhMsgTimeAccent' : 'hhMsgTime'}"/>
+                                                        </HBox>
+                                                        <HBox justifyContent="SpaceBetween" alignItems="Center" width="100%">
+                                                            <Text text="{appData>last_message}" wrapping="false" class="{= ${appData>unread_count} > 0 ? 'hhMsgPreview hhMsgPreviewBold' : 'hhMsgPreview'}"/>
+                                                            <Text text="{appData>unread_count}" visible="{= ${appData>unread_count} > 0}" class="hhUnreadBadge"/>
+                                                        </HBox>
+                                                    </VBox>
+                                                </HBox>
+                                            </CustomListItem>
+                                        </List>
+                                    </VBox>
+
+                                    <!-- ── Earlier section ── -->
+                                    <VBox visible="{appData>/msgEarlierVisible}">
+                                        <Text text="{i18n>msgEarlier}" class="hhMsgSectionLabel hhMsgSectionLabelSpaced"/>
+                                        <List items="{appData>/msgEarlier}" showSeparators="None" class="hhMsgList">
+                                            <CustomListItem type="Active" press="onOpenDmChat" longPress="onMsgLongPress"
+                                                class="{= ${appData>unread_count} > 0 ? 'hhMsgItem hhMsgItemUnread' : 'hhMsgItem'}">
+                                                <HBox alignItems="Center" class="hhMsgItemInner">
+                                                    <Avatar displaySize="M" src="{appData>other_avatar}" initials="{appData>_initials}" backgroundColor="Accent1" class="hhMsgAvatar"/>
+                                                    <VBox class="hhMsgContent">
+                                                        <HBox justifyContent="SpaceBetween" alignItems="Center" width="100%">
+                                                            <Text text="{appData>other_name}" wrapping="false" class="{= ${appData>unread_count} > 0 ? 'hhMsgName hhMsgNameBold' : 'hhMsgName'}"/>
+                                                            <Text text="{path:'appData>last_message_at', formatter:'.formatConvoTime'}" wrapping="false" class="{= ${appData>unread_count} > 0 ? 'hhMsgTime hhMsgTimeAccent' : 'hhMsgTime'}"/>
+                                                        </HBox>
+                                                        <HBox justifyContent="SpaceBetween" alignItems="Center" width="100%">
+                                                            <Text text="{appData>last_message}" wrapping="false" class="{= ${appData>unread_count} > 0 ? 'hhMsgPreview hhMsgPreviewBold' : 'hhMsgPreview'}"/>
+                                                            <Text text="{appData>unread_count}" visible="{= ${appData>unread_count} > 0}" class="hhUnreadBadge"/>
+                                                        </HBox>
+                                                    </VBox>
+                                                </HBox>
+                                            </CustomListItem>
+                                        </List>
+                                    </VBox>
+
+                                    <!-- ── Empty state: no conversations ── -->
+                                    <VBox visible="{appData>/msgEmptyNoConvos}" class="hhMsgEmpty" alignItems="Center">
+                                        <core:HTML content="&lt;div class='hhMsgEmptyIcon'&gt;💬&lt;/div&gt;"/>
+                                        <Title text="{i18n>noMessagesYet}" level="H5" class="textCenter sapUiSmallMarginTop"/>
+                                        <Text text="{i18n>msgEmptyHint}" class="grayText smallText textCenter sapUiTinyMarginTop" wrapping="true"/>
+                                    </VBox>
+
+                                    <!-- ── Empty state: no search results ── -->
+                                    <VBox visible="{appData>/msgEmptySearch}" class="hhMsgEmpty" alignItems="Center">
+                                        <core:HTML content="&lt;div class='hhMsgEmptyIcon'&gt;🔍&lt;/div&gt;"/>
+                                        <Title text="{i18n>msgNoResults}" level="H5" class="textCenter sapUiSmallMarginTop"/>
+                                    </VBox>
+
                                 </VBox>
                             </ScrollContainer>
                         </IconTabFilter>
@@ -198,8 +306,29 @@
                         <IconTabFilter key="mySchedule" text="{i18n>mySchedule}" icon="sap-icon://calendar" count="{appData>/bookingCount}">
                             <ScrollContainer vertical="true" horizontal="false" height="100%">
                                 <VBox class="sapUiSmallMargin">
-                                    <Title text="{i18n>yourBookings}" level="H4" class="sapUiSmallMarginBottom"/>
-                                    <List id="bookingsList" items="{appData>/upcomingBookings}" noDataText="{i18n>noBookingsYet}">
+                                    <Title text="{i18n>yourBookings}" level="H4" class="sapUiTinyMarginBottom"/>
+                                    <!-- Status filters -->
+                                    <HBox wrap="Wrap" alignItems="Center" class="sapUiSmallMarginBottom">
+                                        <Button text="{i18n>filterAll}" type="{= (${appData>/bookingStatusFilter} || 'all') === 'all' ? 'Emphasized' : 'Default'}" press="onBookingFilter" class="sapUiTinyMarginEnd sapUiTinyMarginBottom hhFilterPill">
+                                            <customData><core:CustomData key="status" value="all"/></customData>
+                                        </Button>
+                                        <Button text="{i18n>filterPending}" type="{= ${appData>/bookingStatusFilter} === 'pending' ? 'Emphasized' : 'Default'}" press="onBookingFilter" class="sapUiTinyMarginEnd sapUiTinyMarginBottom hhFilterPill">
+                                            <customData><core:CustomData key="status" value="pending"/></customData>
+                                        </Button>
+                                        <Button text="{i18n>filterConfirmed}" type="{= ${appData>/bookingStatusFilter} === 'confirmed' ? 'Emphasized' : 'Default'}" press="onBookingFilter" class="sapUiTinyMarginEnd sapUiTinyMarginBottom hhFilterPill">
+                                            <customData><core:CustomData key="status" value="confirmed"/></customData>
+                                        </Button>
+                                        <Button text="{i18n>filterCompleted}" type="{= ${appData>/bookingStatusFilter} === 'completed' ? 'Emphasized' : 'Default'}" press="onBookingFilter" class="sapUiTinyMarginEnd sapUiTinyMarginBottom hhFilterPill">
+                                            <customData><core:CustomData key="status" value="completed"/></customData>
+                                        </Button>
+                                        <Button text="{i18n>filterDeclined}" type="{= ${appData>/bookingStatusFilter} === 'declined' ? 'Emphasized' : 'Default'}" press="onBookingFilter" class="sapUiTinyMarginEnd sapUiTinyMarginBottom hhFilterPill">
+                                            <customData><core:CustomData key="status" value="declined"/></customData>
+                                        </Button>
+                                        <Button text="{i18n>filterCancelled}" type="{= ${appData>/bookingStatusFilter} === 'cancelled' ? 'Emphasized' : 'Default'}" press="onBookingFilter" class="sapUiTinyMarginBottom hhFilterPill">
+                                            <customData><core:CustomData key="status" value="cancelled"/></customData>
+                                        </Button>
+                                    </HBox>
+                                    <List id="bookingsList" items="{appData>/filteredBookings}" noDataText="{i18n>noBookingsYet}">
                                         <CustomListItem>
                                             <VBox class="sapUiSmallMargin">
                                                 <HBox justifyContent="SpaceBetween" alignItems="Start">
@@ -210,9 +339,14 @@
                                                     </VBox>
                                                     <ObjectStatus text="{appData>status}" state="{path:'appData>status', formatter:'.formatBookingState'}"/>
                                                 </HBox>
-                                                <HBox class="sapUiTinyMarginTop" wrap="Wrap" visible="{= ${appData>status} === 'pending' &amp;&amp; ${appData>/user/id} === ${appData>provider_id}}">
+                                                <!-- Provider actions: accept / decline -->
+                                                <HBox class="sapUiTinyMarginTop" wrap="Wrap" visible="{= ${appData>status} === 'pending' &amp;&amp; String(${appData>/user/id}) === String(${appData>provider_id})}">
                                                     <Button text="{i18n>accept}" type="Accept" press="onAcceptBooking" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
                                                     <Button text="{i18n>decline}" type="Reject" press="onDeclineBooking" class="sapUiTinyMarginBottom"/>
+                                                </HBox>
+                                                <!-- Customer action: cancel -->
+                                                <HBox class="sapUiTinyMarginTop" wrap="Wrap" visible="{= ${appData>status} === 'pending' &amp;&amp; String(${appData>/user/id}) === String(${appData>customer_id})}">
+                                                    <Button text="{i18n>cancelBooking}" type="Reject" press="onCancelBooking" class="sapUiTinyMarginBottom"/>
                                                 </HBox>
                                                 <Text text="{appData>message}" class="smallText grayText sapUiTinyMarginTop" visible="{= !!${appData>message}}"/>
                                             </VBox>
@@ -324,7 +458,14 @@
                         <!-- Ad slot: banner between filters and helper list (non-intrusive) -->
                         <core:HTML content='&lt;div id="ad-slot-top" style="text-align:center;margin:4px 0;min-height:50px;background:#f5f5f5;border:1px dashed #ccc;display:flex;align-items:center;justify-content:center;"&gt;&lt;ins class="adsbygoogle" style="display:inline-block;width:100%;height:50px;" data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="1111111111"&gt;&lt;/ins&gt;&lt;span style="color:#aaa;font-size:11px;font-family:sans-serif;position:absolute;"&gt;Advertisement&lt;/span&gt;&lt;/div&gt;'/>
 
-                        <List items="{appData>/filteredProviders}" noDataText="{i18n>noHelpersNearby}">
+                        <!-- Empty state: no providers found -->
+                        <VBox visible="{= !${appData>/filteredProviders} || ${appData>/filteredProviders}.length === 0 }" alignItems="Center" class="sapUiMediumMarginTop sapUiMediumMarginBottom">
+                            <core:Icon src="sap-icon://search" size="3rem" class="sapUiSmallMarginBottom"/>
+                            <Title text="{i18n>noHelpersFoundTitle}" level="H4" class="sapUiTinyMarginBottom" textAlign="Center"/>
+                            <Text text="{i18n>noHelpersFoundHint}" class="grayText smallText sapUiTinyMarginBottom" textAlign="Center"/>
+                            <Button text="{i18n>postTaskInstead}" type="Emphasized" press="onTabToTasks" class="sapUiTinyMarginTop"/>
+                        </VBox>
+                        <List items="{appData>/filteredProviders}" noDataText="">
                             <CustomListItem>
                                 <VBox class="sapUiSmallMargin">
                                     <HBox justifyContent="SpaceBetween" alignItems="Start">
@@ -340,9 +481,14 @@
                                             <Title text="{path:'appData>', formatter:'.formatPriceDisplay'}" level="H4" class="sapUiTinyMarginTop"/>
                                         </VBox>
                                     </HBox>
-                                    <HBox class="sapUiTinyMarginTop" alignItems="Center">
+                                    <HBox class="sapUiTinyMarginTop" alignItems="Center" wrap="Wrap">
                                         <RatingIndicator value="{appData>rating}" displayOnly="true" iconSize="14px" class="sapUiTinyMarginEnd"/>
-                                        <Text text="{path:'appData>', formatter:'.formatDistance'}" class="blueText fontBold smallText"/>
+                                        <Text text="{path:'appData>', formatter:'.formatDistance'}" class="blueText fontBold smallText sapUiTinyMarginEnd"/>
+                                        <ObjectStatus
+                                            text="{= ${appData>trust_level} === 'trusted_user' ? '✓ Trusted' : ${appData>trust_level} === 'verified_user' ? '✓ Verified' : '' }"
+                                            state="{= ${appData>trust_level} === 'trusted_user' ? 'Success' : 'Information' }"
+                                            visible="{= ${appData>trust_level} === 'trusted_user' || ${appData>trust_level} === 'verified_user' }"
+                                            class="smallText"/>
                                     </HBox>
                                     <HBox class="sapUiTinyMarginTop" wrap="Wrap">
                                         <ObjectStatus text="{appData>years} yrs experience" state="Information" class="smallText sapUiTinyMarginEnd"/>
@@ -354,7 +500,9 @@
                                         <Button text="{i18n>profile}" type="Transparent" press="onViewProfile" class="sapUiTinyMarginEnd"/>
                                         <Button text="{i18n>book}" type="Emphasized" press="onQuickBook" class="sapUiTinyMarginEnd"
                                             visible="{= ${appData>id} !== ${appData>/user/id}}"/>
-                                        <Button text="{i18n>messageHelper}" type="Accept" press="onQuickMessage"
+                                        <Button text="{i18n>messageHelper}" type="Accept" press="onQuickMessage" class="sapUiTinyMarginEnd"
+                                            visible="{= ${appData>id} !== ${appData>/user/id}}"/>
+                                        <Button text="{i18n>askAi}" type="Transparent" press="onQuickChat" icon="sap-icon://da"
                                             visible="{= ${appData>id} !== ${appData>/user/id}}"/>
                                     </HBox>
                                 </VBox>
@@ -483,7 +631,17 @@
 
                     </f:SimpleForm>
 
-                    <Button text="{i18n>saveProfile}" type="Emphasized" press="onSaveProfile" class="sapUiMediumMarginTop sapUiLargeMarginBottom" width="100%"/>
+                    <Button text="{i18n>saveProfile}" type="Emphasized" press="onSaveProfile" class="sapUiMediumMarginTop" width="100%"/>
+
+                    <!-- Legal section -->
+                    <VBox class="sapUiMediumMarginTop sapUiLargeMarginBottom">
+                        <Title text="{i18n>legalSection}" level="H5" class="sapUiTinyMarginBottom"/>
+                        <HBox wrap="Wrap" class="sapUiTinyMarginTop">
+                            <Button text="{i18n>viewTerms}" type="Ghost" press="onViewTerms" icon="sap-icon://document-text" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                            <Button text="{i18n>viewPrivacy}" type="Ghost" press="onViewPrivacy" icon="sap-icon://shield" class="sapUiTinyMarginBottom"/>
+                        </HBox>
+                        <Text text="{i18n>termsVersionHint}" class="smallText grayText sapUiTinyMarginTop" wrapping="true"/>
+                    </VBox>
 
                 </VBox>
 

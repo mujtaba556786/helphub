@@ -29,6 +29,32 @@
             height: 100%;
         }
     </style>
+    <!-- App stylesheet — bump ?v= whenever style.css changes to bust browser cache -->
+    <link rel="stylesheet" href="css/style.css?v=1.2">
+
+    <!-- Cache-bust helphub app JS modules — SAP UI5 loads controller/mixin files via
+         <script> tags, so we intercept the HTMLScriptElement src setter before UI5
+         boots. Bump _HH_BUILD whenever JS files change to force a fresh fetch. -->
+    <script>
+        (function () {
+            var _HH_BUILD = '1.2';
+            var _desc = Object.getOwnPropertyDescriptor(HTMLScriptElement.prototype, 'src');
+            Object.defineProperty(HTMLScriptElement.prototype, 'src', {
+                get: _desc.get,
+                set: function (val) {
+                    if (typeof val === 'string' && val.indexOf('?') === -1 &&
+                        (val.indexOf('/controller/') !== -1 ||
+                         val.indexOf('/model/')      !== -1 ||
+                         val.indexOf('Component.js') !== -1)) {
+                        val = val + '?v=' + _HH_BUILD;
+                    }
+                    _desc.set.call(this, val);
+                },
+                configurable: true
+            });
+        })();
+    </script>
+
     <!-- Apply saved language before UI5 boots (also activates RTL for Arabic) -->
     <script>
         window['sap-ui-config'] = {

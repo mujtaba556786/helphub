@@ -13,7 +13,7 @@ sap.ui.define([
             this._notifInterval = setInterval(function () {
                 that._loadNotificationCount();
                 that._loadUnreadDmCount();
-            }, 60000); // poll every 60s
+            }, 30000); // poll every 30s
         },
 
         _loadNotificationCount: function () {
