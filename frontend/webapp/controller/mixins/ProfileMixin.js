@@ -63,9 +63,7 @@ sap.ui.define([
                 .then(function(r) { return r.json(); })
                 .then(function(oData) {
                     if (oData.success) {
-                        var oProfile = oModel.getProperty("/selectedProfile");
-                        oProfile.reviews = this._formatReviews(oData.ratings);
-                        oModel.setProperty("/selectedProfile", oProfile);
+                        oModel.setProperty("/selectedProfile/reviews", this._formatReviews(oData.ratings));
                     }
                 }.bind(this))
                 .catch(function() { /* keep empty */ });
@@ -110,7 +108,7 @@ sap.ui.define([
                         .then(function(r) { return r.json(); })
                         .then(function(d) {
                             if (d.success) oModel.setProperty("/selectedProfile/reviews", this._formatReviews(d.ratings));
-                        });
+                        }.bind(this));
                 } else {
                     MessageToast.show(oData.error || "Could not submit rating.");
                 }

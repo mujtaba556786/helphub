@@ -61,6 +61,11 @@ const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
 
 const app = express();
 
+// ── Terms versioning ──────────────────────────────────────────────────────────
+// Bump this string whenever Terms & Conditions or Privacy Policy change.
+// Any user whose stored terms_version differs will be prompted to re-accept.
+const CURRENT_TERMS_VERSION = "1.0";
+
 // 1. Standard, wide-open CORS for local development
 // This "turns off" CORS by allowing all origins, methods, and headers.
 app.use(cors());
@@ -130,6 +135,7 @@ async function initDb() {
             { name: 'lat',                type: 'FLOAT' },
             { name: 'lng',                type: 'FLOAT' },
             { name: 'terms_accepted_at',  type: 'DATETIME NULL' },
+            { name: 'terms_version',      type: 'VARCHAR(10) NULL' },
             { name: 'trust_level',        type: "ENUM('new_user','verified_user','trusted_user') DEFAULT 'new_user'" },
             { name: 'trust_score',        type: 'DECIMAL(5,2) DEFAULT 0' },
             { name: 'risk_score',         type: 'DECIMAL(5,2) DEFAULT 0' }
@@ -765,6 +771,48 @@ app.put('/api/users/:id/status', handleAsync(async (req, res) => {
 // ── PUT /api/users/:id/approve ────────────────────────────────────────────────
 app.put('/api/users/:id/approve', handleAsync(async (req, res) => {
     await pool.execute("UPDATE users SET status = 'Active' WHERE id = ?", [req.params.id]);
+
+    // Notify the provider by email and in-app notification
+    try {
+        const [[user]] = await pool.query('SELECT name, email FROM users WHERE id = ?', [req.params.id]);
+        if (user) {
+            // In-app notification
+            await pool.execute(
+                'INSERT INTO notifications (user_id, type, title, message) VALUES (?, ?, ?, ?)',
+                [req.params.id, 'admin_warning', '🎉 Account Approved!',
+                 'Your provider account has been approved. You can now receive bookings and apply to tasks.']
+            );
+
+            // Email notification
+            if (user.email) {
+                const { transporter, isEthereal } = await createMailTransporter();
+                const info = await transporter.sendMail({
+                    from: `"HelpHub" <${process.env.SMTP_USER || 'noreply@helphub.app'}>`,
+                    to: user.email,
+                    subject: '🎉 Your HelpHub provider account is approved!',
+                    html: `
+                        <div style="font-family:sans-serif;max-width:520px;margin:auto">
+                            <h2>Welcome to HelpHub, ${user.name || 'there'}!</h2>
+                            <p>Great news — your provider account has been <strong>approved</strong>.</p>
+                            <p>You can now:</p>
+                            <ul>
+                                <li>Receive booking requests from customers</li>
+                                <li>Browse and apply to posted tasks</li>
+                                <li>Build your reputation with reviews</li>
+                            </ul>
+                            <p>Log in to get started.</p>
+                            <p style="color:#888;font-size:12px">HelpHub — Neighborhood Help Network</p>
+                        </div>`
+                });
+                if (isEthereal) {
+                    console.log('Provider approval email preview:', nodemailer.getTestMessageUrl(info));
+                }
+            }
+        }
+    } catch (e) {
+        console.error('Provider approval notification error:', e.message);
+    }
+
     res.json({ success: true });
 }));
 
@@ -940,33 +988,42 @@ app.put('/api/bookings/user/:id/mark-seen', handleAsync(async (req, res) => {
 
 // ── PUT /api/bookings/:id/status ──────────────────────────────────────────────
 app.put('/api/bookings/:id/status', handleAsync(async (req, res) => {
-    const { status, user_id } = req.body; // user_id = provider making the decision
-    if (!['confirmed', 'declined', 'completed'].includes(status)) {
+    const { status, user_id } = req.body; // user_id = the acting party (provider or customer)
+    if (!['confirmed', 'declined', 'completed', 'cancelled'].includes(status)) {
         return res.status(400).json({ success: false, error: 'Invalid status' });
     }
 
     await pool.execute('UPDATE bookings SET status = ? WHERE id = ?', [status, req.params.id]);
 
-    // Fetch booking details to notify customer
+    // Fetch booking details to send notification to the other party
     const [[booking]] = await pool.query(
-        'SELECT b.*, p.name AS provider_name FROM bookings b LEFT JOIN users p ON p.id = b.provider_id WHERE b.id = ?',
+        'SELECT b.*, p.name AS provider_name, c.name AS customer_name FROM bookings b LEFT JOIN users p ON p.id = b.provider_id LEFT JOIN users c ON c.id = b.customer_id WHERE b.id = ?',
         [req.params.id]
     );
     if (booking) {
-        const title = status === 'confirmed'
-            ? `${booking.provider_name} confirmed your booking!`
-            : status === 'declined'
-            ? `${booking.provider_name} declined your booking`
-            : `Booking completed`;
-        const msg = status === 'confirmed'
-            ? `Your booking for ${booking.service || 'a service'} has been confirmed.`
-            : status === 'declined'
-            ? `Your booking for ${booking.service || 'a service'} was declined. Try another helper.`
-            : `Your booking with ${booking.provider_name} is marked as completed.`;
+        let notifyUserId, title, msg;
+        if (status === 'cancelled') {
+            // Customer cancelled — notify provider
+            notifyUserId = booking.provider_id;
+            title = `Booking cancelled by ${booking.customer_name || 'customer'}`;
+            msg = `The booking for ${booking.service || 'a service'} has been cancelled.`;
+        } else if (status === 'confirmed') {
+            notifyUserId = booking.customer_id;
+            title = `${booking.provider_name} confirmed your booking!`;
+            msg = `Your booking for ${booking.service || 'a service'} has been confirmed.`;
+        } else if (status === 'declined') {
+            notifyUserId = booking.customer_id;
+            title = `${booking.provider_name} declined your booking`;
+            msg = `Your booking for ${booking.service || 'a service'} was declined. Try another helper.`;
+        } else {
+            notifyUserId = booking.customer_id;
+            title = `Booking completed`;
+            msg = `Your booking with ${booking.provider_name} is marked as completed.`;
+        }
 
         await pool.execute(
             'INSERT INTO notifications (user_id, type, title, message, booking_id) VALUES (?, ?, ?, ?, ?)',
-            [booking.customer_id, 'booking_' + status, title, msg, req.params.id]
+            [notifyUserId, 'booking_' + status, title, msg, req.params.id]
         );
 
         // Recalculate trust score for both parties on completion
@@ -1806,9 +1863,18 @@ app.post('/api/auth/logout', handleAsync(async (req, res) => {
 
 // ─── POST /api/auth/accept-terms ─────────────────────────────────────────────
 app.post('/api/auth/accept-terms', requireAuth, handleAsync(async (req, res) => {
-    await pool.execute('UPDATE users SET terms_accepted_at = NOW() WHERE id = ?', [req.userId]);
-    res.json({ success: true });
+    await pool.execute(
+        'UPDATE users SET terms_accepted_at = NOW(), terms_version = ? WHERE id = ?',
+        [CURRENT_TERMS_VERSION, req.userId]
+    );
+    res.json({ success: true, terms_version: CURRENT_TERMS_VERSION });
 }));
+
+// ─── GET /api/auth/terms-version ─────────────────────────────────────────────
+// Lets the frontend know what the current required version is
+app.get('/api/auth/terms-version', (req, res) => {
+    res.json({ version: CURRENT_TERMS_VERSION });
+});
 
 // ─── BLOCKING ENDPOINTS ───────────────────────────────────────────────────────
 

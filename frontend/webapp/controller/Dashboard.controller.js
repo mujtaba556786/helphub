@@ -573,6 +573,14 @@ sap.ui.define([
             .catch(function() { MessageToast.show("Could not reach the server."); });
         },
 
+        onTabToTasks: function() {
+            // Navigate back to dashboard and switch to Tasks tab
+            var oNav = this.byId("navContainer");
+            if (oNav) { oNav.back(); }
+            var oTabBar = this.byId("dashboardPage").getContent()[0];
+            if (oTabBar && oTabBar.setSelectedKey) { oTabBar.setSelectedKey("tasks"); }
+        },
+
         onNavBack: function() {
             var oNavContainer  = this.byId("navContainer");
             var sCurrentPageId = oNavContainer.getCurrentPage().getId();

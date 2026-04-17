@@ -7,29 +7,39 @@
         <customHeader>
             <Bar>
                 <contentLeft>
-                    <Title text="{= ${appData>/onboarding/step} === 1 ? '👋 Welcome to HelpHub' : ${appData>/onboarding/step} === 2 ? '⚙️ How it works' : '🎯 Pick your interests'}" level="H4"/>
+                    <Title text="{= ${appData>/onboarding/step} === 1 ? ${i18n>onboardHeaderWelcome} : ${appData>/onboarding/step} === 2 ? ${i18n>onboardHeaderHowItWorks} : ${i18n>onboardHeaderInterests}}" level="H4"/>
                 </contentLeft>
                 <contentRight>
                     <Text text="{= ${appData>/onboarding/step} + ' / 3'}" class="grayText smallText sapUiTinyMarginEnd"/>
                 </contentRight>
             </Bar>
         </customHeader>
+
         <!-- Step 1: Welcome -->
         <VBox visible="{= ${appData>/onboarding/step} === 1}" class="sapUiMediumMargin hhOnboardStep">
             <core:HTML content="&lt;div style='text-align:center;font-size:64px;margin-bottom:12px'&gt;🏠&lt;/div&gt;"/>
             <Title text="{i18n>onboardTitle1}" level="H2" class="sapUiSmallMarginBottom textCenter"/>
-            <Text text="{i18n>onboardDesc1}" class="grayText sapUiSmallMarginBottom textCenter"/>
+            <Text text="{i18n>onboardDesc1}" class="grayText sapUiSmallMarginBottom textCenter" wrapping="true"/>
             <VBox class="sapUiSmallMarginTop">
                 <HBox alignItems="Center" class="sapUiTinyMarginBottom">
                     <core:HTML content="&lt;span style='font-size:20px;margin-right:8px'&gt;📍&lt;/span&gt;"/>
-                    <Text text="{i18n>onboardFeature1}"/>
+                    <Text text="{i18n>onboardFeature1}" wrapping="true"/>
                 </HBox>
                 <HBox alignItems="Center" class="sapUiTinyMarginBottom">
                     <core:HTML content="&lt;span style='font-size:20px;margin-right:8px'&gt;💬&lt;/span&gt;"/>
-                    <Text text="{i18n>onboardFeature2}"/>
+                    <Text text="{i18n>onboardFeature2}" wrapping="true"/>
+                </HBox>
+                <HBox alignItems="Center" class="sapUiTinyMarginBottom">
+                    <core:HTML content="&lt;span style='font-size:20px;margin-right:8px'&gt;📋&lt;/span&gt;"/>
+                    <Text text="{i18n>onboardFeature3}" wrapping="true"/>
+                </HBox>
+                <HBox alignItems="Center" class="sapUiTinyMarginBottom">
+                    <core:HTML content="&lt;span style='font-size:20px;margin-right:8px'&gt;🛋️&lt;/span&gt;"/>
+                    <Text text="{i18n>onboardFeature4}" wrapping="true"/>
                 </HBox>
             </VBox>
         </VBox>
+
         <!-- Step 2: How it works -->
         <VBox visible="{= ${appData>/onboarding/step} === 2}" class="sapUiMediumMargin hhOnboardStep">
             <VBox class="hhOnboardCard sapUiSmallMarginBottom">
@@ -37,7 +47,7 @@
                     <core:HTML content="&lt;div class='hhOnboardNum'&gt;1&lt;/div&gt;"/>
                     <VBox class="sapUiTinyMarginBegin">
                         <Title text="{i18n>onboardStep1Title}" level="H5"/>
-                        <Text text="{i18n>onboardStep1Desc}" class="grayText smallText"/>
+                        <Text text="{i18n>onboardStep1Desc}" class="grayText smallText" wrapping="true"/>
                     </VBox>
                 </HBox>
             </VBox>
@@ -46,7 +56,7 @@
                     <core:HTML content="&lt;div class='hhOnboardNum'&gt;2&lt;/div&gt;"/>
                     <VBox class="sapUiTinyMarginBegin">
                         <Title text="{i18n>onboardStep2Title}" level="H5"/>
-                        <Text text="{i18n>onboardStep2Desc}" class="grayText smallText"/>
+                        <Text text="{i18n>onboardStep2Desc}" class="grayText smallText" wrapping="true"/>
                     </VBox>
                 </HBox>
             </VBox>
@@ -55,39 +65,45 @@
                     <core:HTML content="&lt;div class='hhOnboardNum'&gt;3&lt;/div&gt;"/>
                     <VBox class="sapUiTinyMarginBegin">
                         <Title text="{i18n>onboardStep3Title}" level="H5"/>
-                        <Text text="{i18n>onboardStep3Desc}" class="grayText smallText"/>
+                        <Text text="{i18n>onboardStep3Desc}" class="grayText smallText" wrapping="true"/>
+                    </VBox>
+                </HBox>
+            </VBox>
+            <VBox class="hhOnboardCard sapUiSmallMarginBottom">
+                <HBox alignItems="Center">
+                    <core:HTML content="&lt;div class='hhOnboardNum'&gt;4&lt;/div&gt;"/>
+                    <VBox class="sapUiTinyMarginBegin">
+                        <Title text="{i18n>onboardStep4Title}" level="H5"/>
+                        <Text text="{i18n>onboardStep4Desc}" class="grayText smallText" wrapping="true"/>
                     </VBox>
                 </HBox>
             </VBox>
         </VBox>
+
         <!-- Step 3: Pick interests -->
         <VBox visible="{= ${appData>/onboarding/step} === 3}" class="sapUiMediumMargin hhOnboardStep">
             <Text text="{i18n>onboardSelectInterests}" class="grayText sapUiSmallMarginBottom"/>
             <FlexBox wrap="Wrap" class="sapUiTinyMarginTop">
-                <!-- Home -->
                 <Button text="🧹 Cleaning"     data:interestKey="Cleaning"     press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
                 <Button text="🌱 Gardening"    data:interestKey="Gardening"    press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
                 <Button text="🔧 Handyman"     data:interestKey="Handyman"     press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
-                <!-- Care -->
                 <Button text="👶 Babysitting"  data:interestKey="Babysitting"  press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
                 <Button text="🧓 Elder Care"   data:interestKey="Elder Care"   press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
                 <Button text="🐕 Pet Care"     data:interestKey="Pet Care"     press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
-                <!-- Transport -->
                 <Button text="🚗 Transport"    data:interestKey="Transport"    press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
                 <Button text="🛒 Groceries"    data:interestKey="Groceries"    press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
-                <!-- Wellness -->
                 <Button text="👨‍🍳 Cooking"    data:interestKey="Cooking"      press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
                 <Button text="💆 Massage"      data:interestKey="Massage"      press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
-                <!-- Skills -->
                 <Button text="📐 Math Tuition" data:interestKey="Math Tuition" press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
                 <Button text="💻 IT Support"   data:interestKey="IT Support"   press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
             </FlexBox>
         </VBox>
+
         <beginButton>
             <Button text="{i18n>skip}" type="Transparent" press="onOnboardingSkip" visible="{= ${appData>/onboarding/step} === 1}"/>
         </beginButton>
         <endButton>
-            <Button text="{= ${appData>/onboarding/step} === 3 ? 'Get Started 🚀' : 'Next →'}" type="Emphasized" press="onOnboardingNext"/>
+            <Button text="{= ${appData>/onboarding/step} === 3 ? ${i18n>onboardGetStarted} : ${i18n>onboardNext}}" type="Emphasized" press="onOnboardingNext"/>
         </endButton>
     </Dialog>
 
