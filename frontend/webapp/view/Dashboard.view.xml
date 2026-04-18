@@ -81,10 +81,7 @@
                                             <customData><core:CustomData key="mode" value="mine"/></customData>
                                         </Button>
                                     </HBox>
-                                    <HBox alignItems="Center" class="hhTasksTopRight">
-                                        <Button icon="sap-icon://filter" type="Transparent" press="onTaskFilterMenu" class="hhTaskFilterIcon" tooltip="Filter &amp; Sort"/>
-                                        <Button text="+ Post Task" type="Emphasized" press="onOpenPostTask" class="hhPostTaskBtn"/>
-                                    </HBox>
+                                    <Button text="+ Post Task" type="Emphasized" press="onOpenPostTask" class="hhPostTaskBtn"/>
                                 </HBox>
 
                                 <!-- ══ BROWSE VIEW ══════════════════════════════════ -->

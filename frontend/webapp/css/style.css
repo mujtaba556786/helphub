@@ -778,28 +778,6 @@ section {
     border-bottom: 2.5px solid var(--hh-primary) !important;
 }
 
-/* Top-right controls */
-.hhTasksTopRight {
-    gap: 4px;
-    padding-bottom: 4px;
-}
-
-/* Filter icon button */
-.hhTaskFilterIcon.sapMBtn {
-    width: 36px !important;
-    height: 36px !important;
-    border-radius: 10px !important;
-    border: 1.5px solid var(--hh-border) !important;
-    background: var(--hh-card-bg) !important;
-    color: var(--hh-text) !important;
-    padding: 0 !important;
-}
-
-.hhTaskFilterIcon.sapMBtn:hover {
-    border-color: var(--hh-primary) !important;
-    color: var(--hh-primary) !important;
-}
-
 /* Post Task button */
 .hhPostTaskBtn.sapMBtn {
     border-radius: 10px !important;
