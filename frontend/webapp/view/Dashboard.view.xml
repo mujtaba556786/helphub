@@ -63,36 +63,37 @@
 
                         <!-- TAB 2: Tasks -->
                         <IconTabFilter key="tasks" text="{i18n>tasks}" icon="sap-icon://task" count="{appData>/openTaskCount}">
-                            <ScrollContainer vertical="true" horizontal="false" height="100%">
-                                <VBox class="hhTasksTab">
+                            <VBox class="hhTasksTab">
 
-                                    <!-- ── Top bar: Browse/My + Post Task ── -->
-                                    <HBox justifyContent="SpaceBetween" alignItems="Center" class="hhTasksTopBar">
-                                        <HBox class="hhTaskToggleGroup">
-                                            <Button text="{i18n>browse}" type="{= ${appData>/taskViewMode} === 'browse' ? 'Emphasized' : 'Default'}" press="onToggleTaskView" class="hhTaskToggleBtn">
-                                                <customData><core:CustomData key="mode" value="browse"/></customData>
-                                            </Button>
-                                            <Button text="{i18n>myTasks}" type="{= ${appData>/taskViewMode} === 'mine' ? 'Emphasized' : 'Default'}" press="onToggleTaskView" class="hhTaskToggleBtn">
-                                                <customData><core:CustomData key="mode" value="mine"/></customData>
-                                            </Button>
-                                        </HBox>
-                                        <Button text="+ Post Task" type="Emphasized" press="onOpenPostTask" class="hhPostTaskBtn"/>
+                                <!-- ── Top bar: pill toggle + Post Task ── -->
+                                <HBox justifyContent="SpaceBetween" alignItems="Center" class="hhTasksTopBar">
+                                    <HBox class="hhTaskTogglePill" alignItems="Center">
+                                        <Button text="Browse" type="{= ${appData>/taskViewMode} === 'browse' ? 'Emphasized' : 'Default'}" press="onToggleTaskView" class="hhTogglePillBtn hhTogglePillLeft">
+                                            <customData><core:CustomData key="mode" value="browse"/></customData>
+                                        </Button>
+                                        <Button text="My Tasks" type="{= ${appData>/taskViewMode} === 'mine' ? 'Emphasized' : 'Default'}" press="onToggleTaskView" class="hhTogglePillBtn hhTogglePillRight">
+                                            <customData><core:CustomData key="mode" value="mine"/></customData>
+                                        </Button>
                                     </HBox>
+                                    <Button text="+ Post Task" type="Emphasized" press="onOpenPostTask" class="hhPostTaskBtn"/>
+                                </HBox>
 
-                                    <!-- ── Search (Browse only) ── -->
-                                    <VBox visible="{= ${appData>/taskViewMode} === 'browse'}" class="hhTasksSearchWrap">
+                                <!-- ══ BROWSE VIEW ══════════════════════════════════ -->
+                                <VBox visible="{= ${appData>/taskViewMode} === 'browse'}">
+
+                                    <!-- Search -->
+                                    <VBox class="hhTasksSearchWrap">
                                         <SearchField id="taskSearch"
-                                            placeholder="Search tasks by title or location"
+                                            placeholder="Search tasks..."
                                             search="onTaskSearch"
                                             liveChange="onTaskSearch"
                                             width="100%"
                                             class="hhTasksSearchField"/>
                                     </VBox>
 
-                                    <!-- ── Filters (Browse only) ── -->
-                                    <VBox visible="{= ${appData>/taskViewMode} === 'browse'}" class="hhTasksFiltersWrap">
-                                        <!-- Category chips -->
-                                        <HBox wrap="Wrap" alignItems="Center" class="hhCategoryChips">
+                                    <!-- Category chips — single scrollable row -->
+                                    <ScrollContainer horizontal="true" vertical="false" class="hhChipScrollWrap">
+                                        <HBox alignItems="Center" class="hhChipRow">
                                             <Button text="All" type="{= ${appData>/taskCategoryFilter} === '' ? 'Emphasized' : 'Default'}" press="onTaskCategoryFilter" class="hhChip">
                                                 <customData><core:CustomData key="cat" value=""/></customData>
                                             </Button>
@@ -108,120 +109,104 @@
                                             <Button text="🧓 Elder Care" type="{= ${appData>/taskCategoryFilter} === 'Elder Care' ? 'Emphasized' : 'Default'}" press="onTaskCategoryFilter" class="hhChip">
                                                 <customData><core:CustomData key="cat" value="Elder Care"/></customData>
                                             </Button>
-                                            <Button text="More ▾" type="Transparent" press="onTaskCategoryMore" class="hhChipMore"/>
+                                            <Button text="🐾 Pet Care" type="{= ${appData>/taskCategoryFilter} === 'Pet Care' ? 'Emphasized' : 'Default'}" press="onTaskCategoryFilter" class="hhChip">
+                                                <customData><core:CustomData key="cat" value="Pet Care"/></customData>
+                                            </Button>
+                                            <Button text=">" type="Transparent" press="onTaskCategoryMore" class="hhChipMoreArrow"/>
                                         </HBox>
-                                        <!-- Advanced filter chips -->
-                                        <HBox wrap="Wrap" alignItems="Center" class="hhAdvFilters">
-                                            <Button
-                                                text="{= !${appData>/taskBudgetFilter} ? '💰 Budget' : '💰 ' + ${appData>/taskBudgetFilter}}"
-                                                type="{= ${appData>/taskBudgetFilter} ? 'Emphasized' : 'Default'}"
-                                                press="onTaskBudgetMenu"
-                                                class="hhAdvChip"/>
-                                            <Button
-                                                text="{= ${appData>/taskSort} === 'budget_high' ? '💎 Highest pay' : ${appData>/taskSort} === 'budget_low' ? '💸 Lowest pay' : '🕒 Newest first'}"
-                                                type="Default"
-                                                press="onTaskSortMenu"
-                                                class="hhAdvChip"/>
-                                        </HBox>
-                                    </VBox>
+                                    </ScrollContainer>
 
-                                    <!-- ── Browse Task Cards ── -->
-                                    <VBox visible="{= ${appData>/taskViewMode} === 'browse'}" class="hhTaskListWrap">
+                                    <!-- Browse Task Cards -->
+                                    <ScrollContainer vertical="true" horizontal="false" class="hhTaskListScroll">
                                         <List id="taskFeedList" items="{appData>/tasksFeed}" noDataText="{i18n>noTasksFound}" showSeparators="None" class="hhTaskList">
                                             <CustomListItem type="Active" press="onTaskPress" class="hhTaskCardItem">
                                                 <VBox class="hhTaskCard">
-                                                    <!-- Title + Status -->
+                                                    <!-- Title + Status badge -->
                                                     <HBox justifyContent="SpaceBetween" alignItems="Start" class="hhTaskCardTop">
                                                         <Title text="{appData>title}" level="H4" class="hhTaskTitle"/>
                                                         <ObjectStatus
-                                                            text="{= ${appData>status} === 'open' ? 'Open' : ${appData>status} === 'assigned' ? 'Assigned' : 'Closed'}"
+                                                            text="{= ${appData>status} === 'open' ? 'OPEN' : ${appData>status} === 'assigned' ? 'ASSIGNED' : 'CLOSED'}"
                                                             state="{path:'appData>status', formatter:'.formatTaskState'}"
                                                             class="hhTaskStatusBadge"/>
                                                     </HBox>
-                                                    <!-- Meta row: location, budget, time, due -->
-                                                    <HBox wrap="Wrap" alignItems="Center" class="hhTaskMeta">
-                                                        <HBox alignItems="Center" class="hhTaskMetaItem" visible="{= !!${appData>location}}">
-                                                            <core:Icon src="sap-icon://map" class="hhMetaIcon"/>
-                                                            <Text text="{appData>location}" class="hhMetaText"/>
-                                                        </HBox>
-                                                        <HBox alignItems="Center" class="hhTaskMetaItem hhBudgetItem">
-                                                            <core:Icon src="sap-icon://money-bills" class="hhMetaIcon hhBudgetIcon"/>
-                                                            <Text text="{= ${appData>budget} ? '€' + ${appData>budget} : 'Open budget'}" class="hhMetaText hhBudgetText"/>
-                                                        </HBox>
-                                                        <HBox alignItems="Center" class="hhTaskMetaItem" visible="{= !!${appData>created_at}}">
-                                                            <core:Icon src="sap-icon://history" class="hhMetaIcon"/>
-                                                            <Text text="{path:'appData>created_at', formatter:'.formatPostedTime'}" class="hhMetaText"/>
-                                                        </HBox>
-                                                        <HBox alignItems="Center" class="hhTaskMetaItem" visible="{= !!${appData>task_date}}">
-                                                            <core:Icon src="sap-icon://calendar" class="hhMetaIcon"/>
-                                                            <Text text="{path:'appData>task_date', formatter:'.formatTaskDue'}" class="hhMetaText hhDueText"/>
-                                                        </HBox>
+                                                    <!-- Budget + time row -->
+                                                    <HBox alignItems="Center" class="hhTaskBudgetRow">
+                                                        <core:Icon src="sap-icon://money-bills" class="hhBudgetIcon"/>
+                                                        <Text text="{= ${appData>budget} ? '€' + ${appData>budget} : 'Open budget'}" class="hhBudgetText"/>
+                                                        <Text text=" · " class="hhMetaDot"/>
+                                                        <core:Icon src="sap-icon://history" class="hhTimeIcon"/>
+                                                        <Text text="{path:'appData>created_at', formatter:'.formatPostedTime'}" class="hhTimeText"/>
+                                                        <Text text="{= ${appData>task_date} ? ' · ' : ''}" class="hhMetaDot"/>
+                                                        <Text text="{path:'appData>task_date', formatter:'.formatTaskDue'}" class="hhDueText" visible="{= !!${appData>task_date}}"/>
                                                     </HBox>
-                                                    <!-- Category tag -->
-                                                    <ObjectStatus text="{appData>category}" state="Information" class="hhTaskCatTag"/>
+                                                    <!-- Location row -->
+                                                    <HBox alignItems="Center" class="hhTaskLocRow" visible="{= !!${appData>location}}">
+                                                        <core:Icon src="sap-icon://map" class="hhLocIcon"/>
+                                                        <Text text="{appData>location}" class="hhLocText"/>
+                                                    </HBox>
                                                     <!-- Divider -->
                                                     <core:HTML content="&lt;div class='hhTaskDivider'&gt;&lt;/div&gt;"/>
-                                                    <!-- Footer: poster + applicants -->
+                                                    <!-- Footer: avatar + name + applicants pill -->
                                                     <HBox justifyContent="SpaceBetween" alignItems="Center" class="hhTaskFooter">
                                                         <HBox alignItems="Center">
                                                             <Avatar displaySize="XS" src="{appData>poster_avatar}" initials="P" backgroundColor="Accent3" class="hhTaskAvatar"/>
                                                             <Text text="{appData>poster_name}" class="hhTaskPosterName"/>
                                                         </HBox>
-                                                        <HBox alignItems="Center" class="hhApplicantBadge">
+                                                        <HBox alignItems="Center" class="hhApplicantPill">
                                                             <core:Icon src="sap-icon://group" class="hhApplicantIcon"/>
-                                                            <Text text="{= ${appData>application_count} + ' applied'}" class="hhApplicantText"/>
+                                                            <Text text="{= ${appData>application_count} + ' applicant' + (${appData>application_count} === 1 ? '' : 's')}" class="hhApplicantText"/>
                                                         </HBox>
                                                     </HBox>
                                                 </VBox>
                                             </CustomListItem>
                                         </List>
-                                    </VBox>
+                                    </ScrollContainer>
+                                </VBox>
 
-                                    <!-- ── My Task Cards ── -->
-                                    <VBox visible="{= ${appData>/taskViewMode} === 'mine'}" class="hhTaskListWrap">
+                                <!-- ══ MY TASKS VIEW ═══════════════════════════════ -->
+                                <VBox visible="{= ${appData>/taskViewMode} === 'mine'}">
+                                    <ScrollContainer vertical="true" horizontal="false" class="hhTaskListScroll">
                                         <List id="myTasksList" items="{appData>/myTasks}" noDataText="{i18n>noMyTasksYet}" showSeparators="None" class="hhTaskList">
                                             <CustomListItem type="Active" press="onTaskPress" class="hhTaskCardItem">
                                                 <VBox class="hhTaskCard">
                                                     <HBox justifyContent="SpaceBetween" alignItems="Start" class="hhTaskCardTop">
                                                         <Title text="{appData>title}" level="H4" class="hhTaskTitle"/>
                                                         <ObjectStatus
-                                                            text="{= ${appData>status} === 'open' ? 'Open' : ${appData>status} === 'assigned' ? 'Assigned' : 'Closed'}"
+                                                            text="{= ${appData>status} === 'open' ? 'OPEN' : ${appData>status} === 'assigned' ? 'ASSIGNED' : 'CLOSED'}"
                                                             state="{path:'appData>status', formatter:'.formatTaskState'}"
                                                             class="hhTaskStatusBadge"/>
                                                     </HBox>
-                                                    <HBox wrap="Wrap" alignItems="Center" class="hhTaskMeta">
-                                                        <HBox alignItems="Center" class="hhTaskMetaItem" visible="{= !!${appData>location}}">
-                                                            <core:Icon src="sap-icon://map" class="hhMetaIcon"/>
-                                                            <Text text="{appData>location}" class="hhMetaText"/>
-                                                        </HBox>
-                                                        <HBox alignItems="Center" class="hhTaskMetaItem hhBudgetItem">
-                                                            <core:Icon src="sap-icon://money-bills" class="hhMetaIcon hhBudgetIcon"/>
-                                                            <Text text="{= ${appData>budget} ? '€' + ${appData>budget} : 'Open budget'}" class="hhMetaText hhBudgetText"/>
-                                                        </HBox>
-                                                        <HBox alignItems="Center" class="hhTaskMetaItem" visible="{= !!${appData>task_date}}">
-                                                            <core:Icon src="sap-icon://calendar" class="hhMetaIcon"/>
-                                                            <Text text="{path:'appData>task_date', formatter:'.formatTaskDue'}" class="hhMetaText hhDueText"/>
-                                                        </HBox>
+                                                    <HBox alignItems="Center" class="hhTaskBudgetRow">
+                                                        <core:Icon src="sap-icon://money-bills" class="hhBudgetIcon"/>
+                                                        <Text text="{= ${appData>budget} ? '€' + ${appData>budget} : 'Open budget'}" class="hhBudgetText"/>
+                                                        <Text text=" · " class="hhMetaDot"/>
+                                                        <core:Icon src="sap-icon://history" class="hhTimeIcon"/>
+                                                        <Text text="{path:'appData>created_at', formatter:'.formatPostedTime'}" class="hhTimeText"/>
+                                                        <Text text="{= ${appData>task_date} ? ' · ' : ''}" class="hhMetaDot"/>
+                                                        <Text text="{path:'appData>task_date', formatter:'.formatTaskDue'}" class="hhDueText" visible="{= !!${appData>task_date}}"/>
                                                     </HBox>
-                                                    <ObjectStatus text="{appData>category}" state="Information" class="hhTaskCatTag"/>
+                                                    <HBox alignItems="Center" class="hhTaskLocRow" visible="{= !!${appData>location}}">
+                                                        <core:Icon src="sap-icon://map" class="hhLocIcon"/>
+                                                        <Text text="{appData>location}" class="hhLocText"/>
+                                                    </HBox>
                                                     <core:HTML content="&lt;div class='hhTaskDivider'&gt;&lt;/div&gt;"/>
                                                     <HBox justifyContent="SpaceBetween" alignItems="Center" class="hhTaskFooter">
                                                         <HBox alignItems="Center">
                                                             <Avatar displaySize="XS" src="{appData>poster_avatar}" initials="P" backgroundColor="Accent3" class="hhTaskAvatar"/>
                                                             <Text text="{appData>poster_name}" class="hhTaskPosterName"/>
                                                         </HBox>
-                                                        <HBox alignItems="Center" class="hhApplicantBadge">
+                                                        <HBox alignItems="Center" class="hhApplicantPill">
                                                             <core:Icon src="sap-icon://group" class="hhApplicantIcon"/>
-                                                            <Text text="{= ${appData>application_count} + ' applied'}" class="hhApplicantText"/>
+                                                            <Text text="{= ${appData>application_count} + ' applicant' + (${appData>application_count} === 1 ? '' : 's')}" class="hhApplicantText"/>
                                                         </HBox>
                                                     </HBox>
                                                 </VBox>
                                             </CustomListItem>
                                         </List>
-                                    </VBox>
-
+                                    </ScrollContainer>
                                 </VBox>
-                            </ScrollContainer>
+
+                            </VBox>
                         </IconTabFilter>
 
                         <!-- TAB 3: Messages -->
