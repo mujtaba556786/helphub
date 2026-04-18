@@ -22,6 +22,7 @@
                     <contentRight>
                         <HBox alignItems="Center" class="sapUiTinyMarginEnd">
                             <Button id="notifBtn" icon="sap-icon://bell" type="Transparent" press="onShowNotifications" tooltip="{i18n>notifications}"/>
+                            <core:HTML id="notifBadge" content="{= ${appData>/unreadCount} > 0 ? '&lt;span class=&quot;hhNotifBadge&quot;&gt;' + (${appData>/unreadCount} > 9 ? &apos;9+&apos; : ${appData>/unreadCount}) + '&lt;/span&gt;' : ''}"/>
                             <Button icon="sap-icon://world" type="Transparent" press="onLanguageMenu" tooltip="{i18n>changeLanguage}"/>
                             <Button icon="sap-icon://it-system" type="Transparent" press="onNavToAdmin" tooltip="{i18n>adminPanel}"
                                 visible="{= ${appData>/user/role} === 'admin'}"/>
