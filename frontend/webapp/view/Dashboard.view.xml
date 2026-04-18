@@ -64,107 +64,156 @@
                         <!-- TAB 2: Tasks -->
                         <IconTabFilter key="tasks" text="{i18n>tasks}" icon="sap-icon://task" count="{appData>/openTaskCount}">
                             <ScrollContainer vertical="true" horizontal="false" height="100%">
-                                <VBox class="sapUiSmallMargin mainContent">
-                                    <!-- Task vs Booking hint -->
-                                    <MessageStrip
-                                        text="{i18n>taskVsBookingHint}"
-                                        type="Information"
-                                        showIcon="true"
-                                        showCloseButton="true"
-                                        class="sapUiTinyMarginBottom"/>
-                                    <HBox justifyContent="SpaceBetween" alignItems="Center" class="sapUiSmallMarginBottom">
-                                        <HBox>
-                                            <Button text="{i18n>browse}" type="{= ${appData>/taskViewMode} === 'browse' ? 'Emphasized' : 'Default'}" press="onToggleTaskView" class="sapUiTinyMarginEnd hhTaskToggle">
+                                <VBox class="hhTasksTab">
+
+                                    <!-- ── Top bar: Browse/My + Post Task ── -->
+                                    <HBox justifyContent="SpaceBetween" alignItems="Center" class="hhTasksTopBar">
+                                        <HBox class="hhTaskToggleGroup">
+                                            <Button text="{i18n>browse}" type="{= ${appData>/taskViewMode} === 'browse' ? 'Emphasized' : 'Default'}" press="onToggleTaskView" class="hhTaskToggleBtn">
                                                 <customData><core:CustomData key="mode" value="browse"/></customData>
                                             </Button>
-                                            <Button text="{i18n>myTasks}" type="{= ${appData>/taskViewMode} === 'mine' ? 'Emphasized' : 'Default'}" press="onToggleTaskView" class="hhTaskToggle">
+                                            <Button text="{i18n>myTasks}" type="{= ${appData>/taskViewMode} === 'mine' ? 'Emphasized' : 'Default'}" press="onToggleTaskView" class="hhTaskToggleBtn">
                                                 <customData><core:CustomData key="mode" value="mine"/></customData>
                                             </Button>
                                         </HBox>
-                                        <Button text="{i18n>postTask}" type="Emphasized" press="onOpenPostTask"/>
+                                        <Button text="+ Post Task" type="Emphasized" press="onOpenPostTask" class="hhPostTaskBtn"/>
                                     </HBox>
 
-                                    <!-- Search & Filter (Browse mode) -->
-                                    <VBox visible="{= ${appData>/taskViewMode} === 'browse'}" class="sapUiTinyMarginBottom">
-                                        <SearchField id="taskSearch" placeholder="{i18n>searchTasksPlaceholder}" search="onTaskSearch" liveChange="onTaskSearch" width="100%" class="sapUiTinyMarginBottom"/>
-                                        <HBox wrap="Wrap" alignItems="Center">
-                                            <Button text="{i18n>all}" type="{= ${appData>/taskCategoryFilter} === '' ? 'Emphasized' : 'Default'}" press="onTaskCategoryFilter" class="sapUiTinyMarginEnd sapUiTinyMarginBottom hhTaskToggle">
+                                    <!-- ── Search (Browse only) ── -->
+                                    <VBox visible="{= ${appData>/taskViewMode} === 'browse'}" class="hhTasksSearchWrap">
+                                        <SearchField id="taskSearch"
+                                            placeholder="Search tasks by title or location"
+                                            search="onTaskSearch"
+                                            liveChange="onTaskSearch"
+                                            width="100%"
+                                            class="hhTasksSearchField"/>
+                                    </VBox>
+
+                                    <!-- ── Filters (Browse only) ── -->
+                                    <VBox visible="{= ${appData>/taskViewMode} === 'browse'}" class="hhTasksFiltersWrap">
+                                        <!-- Category chips -->
+                                        <HBox wrap="Wrap" alignItems="Center" class="hhCategoryChips">
+                                            <Button text="All" type="{= ${appData>/taskCategoryFilter} === '' ? 'Emphasized' : 'Default'}" press="onTaskCategoryFilter" class="hhChip">
                                                 <customData><core:CustomData key="cat" value=""/></customData>
                                             </Button>
-                                            <Button text="🧹 Cleaning" type="{= ${appData>/taskCategoryFilter} === 'Cleaning' ? 'Emphasized' : 'Default'}" press="onTaskCategoryFilter" class="sapUiTinyMarginEnd sapUiTinyMarginBottom hhTaskToggle">
+                                            <Button text="🧹 Cleaning" type="{= ${appData>/taskCategoryFilter} === 'Cleaning' ? 'Emphasized' : 'Default'}" press="onTaskCategoryFilter" class="hhChip">
                                                 <customData><core:CustomData key="cat" value="Cleaning"/></customData>
                                             </Button>
-                                            <Button text="🔧 Handyman" type="{= ${appData>/taskCategoryFilter} === 'Handyman' ? 'Emphasized' : 'Default'}" press="onTaskCategoryFilter" class="sapUiTinyMarginEnd sapUiTinyMarginBottom hhTaskToggle">
+                                            <Button text="🔧 Handyman" type="{= ${appData>/taskCategoryFilter} === 'Handyman' ? 'Emphasized' : 'Default'}" press="onTaskCategoryFilter" class="hhChip">
                                                 <customData><core:CustomData key="cat" value="Handyman"/></customData>
                                             </Button>
-                                            <Button text="🧓 Elder Care" type="{= ${appData>/taskCategoryFilter} === 'Elder Care' ? 'Emphasized' : 'Default'}" press="onTaskCategoryFilter" class="sapUiTinyMarginEnd sapUiTinyMarginBottom hhTaskToggle">
-                                                <customData><core:CustomData key="cat" value="Elder Care"/></customData>
-                                            </Button>
-                                            <Button text="🚗 Transport" type="{= ${appData>/taskCategoryFilter} === 'Transport' ? 'Emphasized' : 'Default'}" press="onTaskCategoryFilter" class="sapUiTinyMarginEnd sapUiTinyMarginBottom hhTaskToggle">
+                                            <Button text="🚗 Transport" type="{= ${appData>/taskCategoryFilter} === 'Transport' ? 'Emphasized' : 'Default'}" press="onTaskCategoryFilter" class="hhChip">
                                                 <customData><core:CustomData key="cat" value="Transport"/></customData>
                                             </Button>
-                                            <Button text="{i18n>more}" type="Transparent" press="onTaskCategoryMore" class="sapUiTinyMarginBottom"/>
+                                            <Button text="🧓 Elder Care" type="{= ${appData>/taskCategoryFilter} === 'Elder Care' ? 'Emphasized' : 'Default'}" press="onTaskCategoryFilter" class="hhChip">
+                                                <customData><core:CustomData key="cat" value="Elder Care"/></customData>
+                                            </Button>
+                                            <Button text="More ▾" type="Transparent" press="onTaskCategoryMore" class="hhChipMore"/>
+                                        </HBox>
+                                        <!-- Advanced filter chips -->
+                                        <HBox wrap="Wrap" alignItems="Center" class="hhAdvFilters">
+                                            <Button
+                                                text="{= !${appData>/taskBudgetFilter} ? '💰 Budget' : '💰 ' + ${appData>/taskBudgetFilter}}"
+                                                type="{= ${appData>/taskBudgetFilter} ? 'Emphasized' : 'Default'}"
+                                                press="onTaskBudgetMenu"
+                                                class="hhAdvChip"/>
+                                            <Button
+                                                text="{= ${appData>/taskSort} === 'budget_high' ? '💎 Highest pay' : ${appData>/taskSort} === 'budget_low' ? '💸 Lowest pay' : '🕒 Newest first'}"
+                                                type="Default"
+                                                press="onTaskSortMenu"
+                                                class="hhAdvChip"/>
                                         </HBox>
                                     </VBox>
 
-                                    <!-- Task map (Browse mode) -->
-                                    <VBox id="taskMapContainer" visible="{= ${appData>/taskViewMode} === 'browse'}" height="20vh" width="100%" class="mapPlaceholder sapUiTinyMarginBottom">
-                                        <core:HTML content='&lt;div id="taskMap" class="mapDiv"&gt;Map View Centered on You&lt;/div&gt;'/>
-                                    </VBox>
-
-                                    <!-- Browse Tasks -->
-                                    <VBox visible="{= ${appData>/taskViewMode} === 'browse'}">
-                                        <List id="taskFeedList" items="{appData>/tasksFeed}" noDataText="{i18n>noTasksFound}">
-                                            <CustomListItem type="Active" press="onTaskPress">
-                                                <VBox class="sapUiSmallMargin">
-                                                    <HBox justifyContent="SpaceBetween" alignItems="Start">
-                                                        <VBox class="bookingInfoBox">
-                                                            <Title text="{appData>title}" level="H5"/>
-                                                            <HBox alignItems="Center" class="sapUiTinyMarginTop" wrap="Wrap">
-                                                                <ObjectStatus text="{appData>category}" state="Information" class="smallText sapUiTinyMarginEnd"/>
-                                                                <Text text="{= ${appData>budget} ? '€' + ${appData>budget} : 'Open budget'}" class="smallText blueText fontBold sapUiTinyMarginEnd"/>
-                                                                <Text text="{appData>task_date}" class="smallText grayText"/>
-                                                            </HBox>
-                                                            <HBox alignItems="Center" class="sapUiTinyMarginTop" visible="{= !!${appData>location}}">
-                                                                <core:Icon src="sap-icon://map" size="0.75rem" class="sapUiTinyMarginEnd"/>
-                                                                <Text text="{appData>location}" class="smallText grayText"/>
-                                                            </HBox>
-                                                            <HBox alignItems="Center" class="sapUiTinyMarginTop">
-                                                                <Avatar displaySize="XS" src="{appData>poster_avatar}" initials="P" backgroundColor="Accent3" class="sapUiTinyMarginEnd"/>
-                                                                <Text text="{appData>poster_name}" class="smallText grayText"/>
-                                                            </HBox>
-                                                        </VBox>
-                                                        <VBox alignItems="End">
-                                                            <ObjectStatus text="{appData>status}" state="{path:'appData>status', formatter:'.formatTaskState'}"/>
-                                                            <Text text="{= ${appData>application_count} + ' applied'}" class="smallText grayText sapUiTinyMarginTop"/>
-                                                        </VBox>
+                                    <!-- ── Browse Task Cards ── -->
+                                    <VBox visible="{= ${appData>/taskViewMode} === 'browse'}" class="hhTaskListWrap">
+                                        <List id="taskFeedList" items="{appData>/tasksFeed}" noDataText="{i18n>noTasksFound}" showSeparators="None" class="hhTaskList">
+                                            <CustomListItem type="Active" press="onTaskPress" class="hhTaskCardItem">
+                                                <VBox class="hhTaskCard">
+                                                    <!-- Title + Status -->
+                                                    <HBox justifyContent="SpaceBetween" alignItems="Start" class="hhTaskCardTop">
+                                                        <Title text="{appData>title}" level="H4" class="hhTaskTitle"/>
+                                                        <ObjectStatus
+                                                            text="{= ${appData>status} === 'open' ? 'Open' : ${appData>status} === 'assigned' ? 'Assigned' : 'Closed'}"
+                                                            state="{path:'appData>status', formatter:'.formatTaskState'}"
+                                                            class="hhTaskStatusBadge"/>
+                                                    </HBox>
+                                                    <!-- Meta row: location, budget, time, due -->
+                                                    <HBox wrap="Wrap" alignItems="Center" class="hhTaskMeta">
+                                                        <HBox alignItems="Center" class="hhTaskMetaItem" visible="{= !!${appData>location}}">
+                                                            <core:Icon src="sap-icon://map" class="hhMetaIcon"/>
+                                                            <Text text="{appData>location}" class="hhMetaText"/>
+                                                        </HBox>
+                                                        <HBox alignItems="Center" class="hhTaskMetaItem hhBudgetItem">
+                                                            <core:Icon src="sap-icon://money-bills" class="hhMetaIcon hhBudgetIcon"/>
+                                                            <Text text="{= ${appData>budget} ? '€' + ${appData>budget} : 'Open budget'}" class="hhMetaText hhBudgetText"/>
+                                                        </HBox>
+                                                        <HBox alignItems="Center" class="hhTaskMetaItem" visible="{= !!${appData>created_at}}">
+                                                            <core:Icon src="sap-icon://history" class="hhMetaIcon"/>
+                                                            <Text text="{path:'appData>created_at', formatter:'.formatPostedTime'}" class="hhMetaText"/>
+                                                        </HBox>
+                                                        <HBox alignItems="Center" class="hhTaskMetaItem" visible="{= !!${appData>task_date}}">
+                                                            <core:Icon src="sap-icon://calendar" class="hhMetaIcon"/>
+                                                            <Text text="{path:'appData>task_date', formatter:'.formatTaskDue'}" class="hhMetaText hhDueText"/>
+                                                        </HBox>
+                                                    </HBox>
+                                                    <!-- Category tag -->
+                                                    <ObjectStatus text="{appData>category}" state="Information" class="hhTaskCatTag"/>
+                                                    <!-- Divider -->
+                                                    <core:HTML content="&lt;div class='hhTaskDivider'&gt;&lt;/div&gt;"/>
+                                                    <!-- Footer: poster + applicants -->
+                                                    <HBox justifyContent="SpaceBetween" alignItems="Center" class="hhTaskFooter">
+                                                        <HBox alignItems="Center">
+                                                            <Avatar displaySize="XS" src="{appData>poster_avatar}" initials="P" backgroundColor="Accent3" class="hhTaskAvatar"/>
+                                                            <Text text="{appData>poster_name}" class="hhTaskPosterName"/>
+                                                        </HBox>
+                                                        <HBox alignItems="Center" class="hhApplicantBadge">
+                                                            <core:Icon src="sap-icon://group" class="hhApplicantIcon"/>
+                                                            <Text text="{= ${appData>application_count} + ' applied'}" class="hhApplicantText"/>
+                                                        </HBox>
                                                     </HBox>
                                                 </VBox>
                                             </CustomListItem>
                                         </List>
                                     </VBox>
 
-                                    <!-- My Tasks -->
-                                    <VBox visible="{= ${appData>/taskViewMode} === 'mine'}">
-                                        <List id="myTasksList" items="{appData>/myTasks}" noDataText="{i18n>noMyTasksYet}">
-                                            <CustomListItem type="Active" press="onTaskPress">
-                                                <VBox class="sapUiSmallMargin">
-                                                    <HBox justifyContent="SpaceBetween" alignItems="Start">
-                                                        <VBox class="bookingInfoBox">
-                                                            <Title text="{appData>title}" level="H5"/>
-                                                            <HBox alignItems="Center" class="sapUiTinyMarginTop" wrap="Wrap">
-                                                                <ObjectStatus text="{appData>category}" state="Information" class="smallText sapUiTinyMarginEnd"/>
-                                                                <Text text="{= ${appData>budget} ? '€' + ${appData>budget} : 'Open budget'}" class="smallText blueText fontBold"/>
-                                                            </HBox>
-                                                            <HBox alignItems="Center" class="sapUiTinyMarginTop" visible="{= !!${appData>location}}">
-                                                                <core:Icon src="sap-icon://map" size="0.75rem" class="sapUiTinyMarginEnd"/>
-                                                                <Text text="{appData>location}" class="smallText grayText"/>
-                                                            </HBox>
-                                                        </VBox>
-                                                        <VBox alignItems="End">
-                                                            <ObjectStatus text="{appData>status}" state="{path:'appData>status', formatter:'.formatTaskState'}"/>
-                                                            <Text text="{= ${appData>application_count} + ' applied'}" class="smallText grayText sapUiTinyMarginTop"/>
-                                                        </VBox>
+                                    <!-- ── My Task Cards ── -->
+                                    <VBox visible="{= ${appData>/taskViewMode} === 'mine'}" class="hhTaskListWrap">
+                                        <List id="myTasksList" items="{appData>/myTasks}" noDataText="{i18n>noMyTasksYet}" showSeparators="None" class="hhTaskList">
+                                            <CustomListItem type="Active" press="onTaskPress" class="hhTaskCardItem">
+                                                <VBox class="hhTaskCard">
+                                                    <HBox justifyContent="SpaceBetween" alignItems="Start" class="hhTaskCardTop">
+                                                        <Title text="{appData>title}" level="H4" class="hhTaskTitle"/>
+                                                        <ObjectStatus
+                                                            text="{= ${appData>status} === 'open' ? 'Open' : ${appData>status} === 'assigned' ? 'Assigned' : 'Closed'}"
+                                                            state="{path:'appData>status', formatter:'.formatTaskState'}"
+                                                            class="hhTaskStatusBadge"/>
+                                                    </HBox>
+                                                    <HBox wrap="Wrap" alignItems="Center" class="hhTaskMeta">
+                                                        <HBox alignItems="Center" class="hhTaskMetaItem" visible="{= !!${appData>location}}">
+                                                            <core:Icon src="sap-icon://map" class="hhMetaIcon"/>
+                                                            <Text text="{appData>location}" class="hhMetaText"/>
+                                                        </HBox>
+                                                        <HBox alignItems="Center" class="hhTaskMetaItem hhBudgetItem">
+                                                            <core:Icon src="sap-icon://money-bills" class="hhMetaIcon hhBudgetIcon"/>
+                                                            <Text text="{= ${appData>budget} ? '€' + ${appData>budget} : 'Open budget'}" class="hhMetaText hhBudgetText"/>
+                                                        </HBox>
+                                                        <HBox alignItems="Center" class="hhTaskMetaItem" visible="{= !!${appData>task_date}}">
+                                                            <core:Icon src="sap-icon://calendar" class="hhMetaIcon"/>
+                                                            <Text text="{path:'appData>task_date', formatter:'.formatTaskDue'}" class="hhMetaText hhDueText"/>
+                                                        </HBox>
+                                                    </HBox>
+                                                    <ObjectStatus text="{appData>category}" state="Information" class="hhTaskCatTag"/>
+                                                    <core:HTML content="&lt;div class='hhTaskDivider'&gt;&lt;/div&gt;"/>
+                                                    <HBox justifyContent="SpaceBetween" alignItems="Center" class="hhTaskFooter">
+                                                        <HBox alignItems="Center">
+                                                            <Avatar displaySize="XS" src="{appData>poster_avatar}" initials="P" backgroundColor="Accent3" class="hhTaskAvatar"/>
+                                                            <Text text="{appData>poster_name}" class="hhTaskPosterName"/>
+                                                        </HBox>
+                                                        <HBox alignItems="Center" class="hhApplicantBadge">
+                                                            <core:Icon src="sap-icon://group" class="hhApplicantIcon"/>
+                                                            <Text text="{= ${appData>application_count} + ' applied'}" class="hhApplicantText"/>
+                                                        </HBox>
                                                     </HBox>
                                                 </VBox>
                                             </CustomListItem>
