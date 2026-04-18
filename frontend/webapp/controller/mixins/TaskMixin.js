@@ -71,23 +71,42 @@ sap.ui.define([
             this._loadTasksFeed();
         },
 
-        onTaskCategoryMore: function() {
-            var oModel    = this.getModel("appData");
-            var aServices = oModel.getProperty("/services") || [];
-            var aNames    = aServices.map(function(s) { return s.name; });
+        onTaskCategoryMenu: function(oEvent) {
+            var oModel = this.getModel("appData");
+            var that   = this;
+            var sCurrent = oModel.getProperty("/taskCategoryFilter") || "";
 
-            var oActionSheet = new ActionSheet({ placement: "Bottom" });
-            var that = this;
-            aNames.forEach(function(name) {
-                oActionSheet.addButton(new Button({
-                    text: name,
-                    press: function() {
-                        oModel.setProperty("/taskCategoryFilter", name);
-                        that._loadTasksFeed();
-                    }
-                }));
+            var aCategories = [
+                { text: "All Categories", value: "", icon: "🏷" },
+                { text: "Cleaning",        value: "Cleaning",  icon: "🧹" },
+                { text: "Handyman",        value: "Handyman",  icon: "🔧" },
+                { text: "Transport",       value: "Transport", icon: "🚗" },
+                { text: "Elder Care",      value: "Elder Care",icon: "🧓" },
+                { text: "Pet Care",        value: "Pet Care",  icon: "🐾" },
+                { text: "Gardening",       value: "Gardening", icon: "🌿" },
+                { text: "Moving",          value: "Moving",    icon: "📦" },
+                { text: "Tutoring",        value: "Tutoring",  icon: "📚" },
+                { text: "Cooking",         value: "Cooking",   icon: "🍳" }
+            ];
+
+            sap.ui.require(["sap/m/ActionSheet", "sap/m/Button"], function(ActionSheet, Button) {
+                var oSheet = new ActionSheet({
+                    title: "Filter by Category",
+                    showCancelButton: true,
+                    buttons: aCategories.map(function(cat) {
+                        var bActive = cat.value === sCurrent;
+                        return new Button({
+                            text: (bActive ? "✓  " : "     ") + cat.icon + " " + cat.text,
+                            press: function() {
+                                oModel.setProperty("/taskCategoryFilter", cat.value);
+                                that._loadTasksFeed();
+                                oSheet.close();
+                            }
+                        });
+                    })
+                });
+                oSheet.openBy(oEvent.getSource());
             });
-            oActionSheet.openBy(this.byId("taskSearch") || this.getView());
         },
 
         onOpenPostTask: function() {
