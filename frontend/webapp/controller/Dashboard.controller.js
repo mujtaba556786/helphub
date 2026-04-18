@@ -170,7 +170,7 @@ sap.ui.define([
             if (!this._pNotificationsDialog) {
                 this._pNotificationsDialog = Fragment.load({
                     id: this.getView().getId(),
-                    name: "helphub.view.fragments.NotificationsDialog",
+                    name: "helphub.view.fragments.NotificationsDialogV2",
                     controller: this
                 }).then(function(oDialog) {
                     this.getView().addDependent(oDialog);
