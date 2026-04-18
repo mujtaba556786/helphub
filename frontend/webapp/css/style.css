@@ -746,67 +746,76 @@ section {
 
 /* ── Top bar ────────────────────────────────────────────── */
 .hhTasksTopBar {
-    padding: 12px 16px 10px;
+    padding: 10px 16px 0;
     flex-shrink: 0;
+    border-bottom: 1.5px solid var(--hh-border);
 }
 
-/* Pill toggle — Browse / My Tasks */
-.hhTaskTogglePill {
-    background: #f1f5f9;
-    border-radius: 22px;
-    padding: 3px;
-    gap: 2px;
+/* Underline tabs — Browse / My Tasks */
+.hhUnderlineTabs {
+    gap: 0;
 }
 
-@media (prefers-color-scheme: dark) {
-    .hhTaskTogglePill { background: #1e293b; }
-}
-
-.hhTogglePillBtn.sapMBtn {
-    height: 32px !important;
-    min-width: 82px !important;
-    font-size: 0.84rem !important;
+.hhUTab.sapMBtn {
+    height: 40px !important;
+    min-width: 0 !important;
+    padding: 0 16px !important;
+    font-size: 0.9rem !important;
     font-weight: 600 !important;
     border: none !important;
+    border-radius: 0 !important;
     box-shadow: none !important;
     background: transparent !important;
     color: var(--hh-text-gray) !important;
+    position: relative;
 }
 
-.hhTogglePillLeft.sapMBtn  { border-radius: 20px 0 0 20px !important; }
-.hhTogglePillRight.sapMBtn { border-radius: 0 20px 20px 0 !important; }
-
-.hhTogglePillBtn.sapMBtn.sapMBtnEmphasized {
-    background: #ffffff !important;
+/* Active underline tab */
+.hhUTab.sapMBtn.sapMBtnEmphasized {
+    background: transparent !important;
     color: var(--hh-primary) !important;
-    border-radius: 20px !important;
-    box-shadow: 0 1px 5px rgba(0,0,0,0.12) !important;
+    box-shadow: none !important;
+    border-bottom: 2.5px solid var(--hh-primary) !important;
 }
 
-@media (prefers-color-scheme: dark) {
-    .hhTogglePillBtn.sapMBtn.sapMBtnEmphasized {
-        background: #334155 !important;
-        color: var(--hh-primary) !important;
-    }
+/* Top-right controls */
+.hhTasksTopRight {
+    gap: 4px;
+    padding-bottom: 4px;
+}
+
+/* Filter icon button */
+.hhTaskFilterIcon.sapMBtn {
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 10px !important;
+    border: 1.5px solid var(--hh-border) !important;
+    background: var(--hh-card-bg) !important;
+    color: var(--hh-text) !important;
+    padding: 0 !important;
+}
+
+.hhTaskFilterIcon.sapMBtn:hover {
+    border-color: var(--hh-primary) !important;
+    color: var(--hh-primary) !important;
 }
 
 /* Post Task button */
 .hhPostTaskBtn.sapMBtn {
-    border-radius: 22px !important;
+    border-radius: 10px !important;
     background: var(--hh-primary) !important;
     border-color: var(--hh-primary) !important;
     color: #fff !important;
     font-weight: 700 !important;
-    font-size: 0.875rem !important;
+    font-size: 0.85rem !important;
     height: 36px !important;
-    padding: 0 18px !important;
-    box-shadow: 0 2px 8px rgba(249,115,22,0.30) !important;
+    padding: 0 14px !important;
+    box-shadow: 0 2px 8px rgba(249,115,22,0.25) !important;
 }
 
 .hhPostTaskBtn.sapMBtn:hover {
     background: var(--hh-primary-dark) !important;
-    box-shadow: 0 4px 14px rgba(249,115,22,0.40) !important;
-    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(249,115,22,0.35) !important;
 }
 
 /* ── Search ──────────────────────────────────────────────── */
@@ -1031,8 +1040,15 @@ section {
     align-items: center;
 }
 
-.hhTaskAvatar {
-    margin-right: 7px !important;
+/* Poster row — icon + name, no avatar circle */
+.hhTaskPosterRow {
+    gap: 5px;
+    align-items: center;
+}
+
+.hhPosterIcon.sapUiIcon {
+    font-size: 0.85rem !important;
+    color: var(--hh-text-gray) !important;
     flex-shrink: 0;
 }
 

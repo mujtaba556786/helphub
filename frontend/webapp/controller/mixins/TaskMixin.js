@@ -366,6 +366,52 @@ sap.ui.define([
             return "📅 " + oDue.toLocaleDateString([], { month: "short", day: "numeric" });
         },
 
+        onTaskFilterMenu: function(oEvent) {
+            var oModel = this.getModel("appData");
+            var that   = this;
+            sap.ui.require(["sap/m/ActionSheet", "sap/m/Button"], function(ActionSheet, Button) {
+                var sBudget = oModel.getProperty("/taskBudgetFilter") || "";
+                var sSort   = oModel.getProperty("/taskSort") || "newest";
+                var oSheet  = new ActionSheet({
+                    title: "Filter & Sort",
+                    showCancelButton: true,
+                    buttons: [
+                        // ── Budget ──
+                        new Button({
+                            text: (sBudget === ""       ? "✓ " : "  ") + "Any budget",
+                            press: function() { oModel.setProperty("/taskBudgetFilter", "");       that._applyTaskFilters(); oSheet.close(); }
+                        }),
+                        new Button({
+                            text: (sBudget === "<€50"   ? "✓ " : "  ") + "Under €50",
+                            press: function() { oModel.setProperty("/taskBudgetFilter", "<€50");   that._applyTaskFilters(); oSheet.close(); }
+                        }),
+                        new Button({
+                            text: (sBudget === "€50–100"? "✓ " : "  ") + "€50 – €100",
+                            press: function() { oModel.setProperty("/taskBudgetFilter", "€50–100"); that._applyTaskFilters(); oSheet.close(); }
+                        }),
+                        new Button({
+                            text: (sBudget === ">€100"  ? "✓ " : "  ") + "Over €100",
+                            press: function() { oModel.setProperty("/taskBudgetFilter", ">€100");   that._applyTaskFilters(); oSheet.close(); }
+                        }),
+                        // ── Sort ──
+                        new Button({
+                            text: (sSort === "newest"      ? "✓ " : "  ") + "🕒 Newest first",
+                            press: function() { oModel.setProperty("/taskSort", "newest");      that._applyTaskFilters(); oSheet.close(); }
+                        }),
+                        new Button({
+                            text: (sSort === "budget_high" ? "✓ " : "  ") + "💎 Highest pay",
+                            press: function() { oModel.setProperty("/taskSort", "budget_high"); that._applyTaskFilters(); oSheet.close(); }
+                        }),
+                        new Button({
+                            text: (sSort === "budget_low"  ? "✓ " : "  ") + "💸 Lowest pay",
+                            press: function() { oModel.setProperty("/taskSort", "budget_low");  that._applyTaskFilters(); oSheet.close(); }
+                        })
+                    ]
+                });
+                oSheet.openBy(oEvent.getSource());
+            });
+        },
+
         onTaskBudgetMenu: function(oEvent) {
             var oModel = this.getModel("appData");
             var that   = this;

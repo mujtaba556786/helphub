@@ -65,17 +65,26 @@
                         <IconTabFilter key="tasks" text="{i18n>tasks}" icon="sap-icon://task" count="{appData>/openTaskCount}">
                             <VBox class="hhTasksTab">
 
-                                <!-- ── Top bar: pill toggle + Post Task ── -->
+                                <!-- ── Top bar: underline tabs + Filter icon + Post Task ── -->
                                 <HBox justifyContent="SpaceBetween" alignItems="Center" class="hhTasksTopBar">
-                                    <HBox class="hhTaskTogglePill" alignItems="Center">
-                                        <Button text="Browse" type="{= ${appData>/taskViewMode} === 'browse' ? 'Emphasized' : 'Default'}" press="onToggleTaskView" class="hhTogglePillBtn hhTogglePillLeft">
+                                    <HBox alignItems="Center" class="hhUnderlineTabs">
+                                        <Button text="Browse"
+                                            type="{= ${appData>/taskViewMode} === 'browse' ? 'Emphasized' : 'Transparent'}"
+                                            press="onToggleTaskView"
+                                            class="hhUTab">
                                             <customData><core:CustomData key="mode" value="browse"/></customData>
                                         </Button>
-                                        <Button text="My Tasks" type="{= ${appData>/taskViewMode} === 'mine' ? 'Emphasized' : 'Default'}" press="onToggleTaskView" class="hhTogglePillBtn hhTogglePillRight">
+                                        <Button text="My Tasks"
+                                            type="{= ${appData>/taskViewMode} === 'mine' ? 'Emphasized' : 'Transparent'}"
+                                            press="onToggleTaskView"
+                                            class="hhUTab">
                                             <customData><core:CustomData key="mode" value="mine"/></customData>
                                         </Button>
                                     </HBox>
-                                    <Button text="+ Post Task" type="Emphasized" press="onOpenPostTask" class="hhPostTaskBtn"/>
+                                    <HBox alignItems="Center" class="hhTasksTopRight">
+                                        <Button icon="sap-icon://filter" type="Transparent" press="onTaskFilterMenu" class="hhTaskFilterIcon" tooltip="Filter &amp; Sort"/>
+                                        <Button text="+ Post Task" type="Emphasized" press="onOpenPostTask" class="hhPostTaskBtn"/>
+                                    </HBox>
                                 </HBox>
 
                                 <!-- ══ BROWSE VIEW ══════════════════════════════════ -->
@@ -91,7 +100,7 @@
                                             class="hhTasksSearchField"/>
                                     </VBox>
 
-                                    <!-- Category chips — single scrollable row -->
+                                    <!-- Category chips — single scrollable row, no More button -->
                                     <ScrollContainer horizontal="true" vertical="false" class="hhChipScrollWrap">
                                         <HBox alignItems="Center" class="hhChipRow">
                                             <Button text="All" type="{= ${appData>/taskCategoryFilter} === '' ? 'Emphasized' : 'Default'}" press="onTaskCategoryFilter" class="hhChip">
@@ -112,7 +121,12 @@
                                             <Button text="🐾 Pet Care" type="{= ${appData>/taskCategoryFilter} === 'Pet Care' ? 'Emphasized' : 'Default'}" press="onTaskCategoryFilter" class="hhChip">
                                                 <customData><core:CustomData key="cat" value="Pet Care"/></customData>
                                             </Button>
-                                            <Button text=">" type="Transparent" press="onTaskCategoryMore" class="hhChipMoreArrow"/>
+                                            <Button text="🌿 Gardening" type="{= ${appData>/taskCategoryFilter} === 'Gardening' ? 'Emphasized' : 'Default'}" press="onTaskCategoryFilter" class="hhChip">
+                                                <customData><core:CustomData key="cat" value="Gardening"/></customData>
+                                            </Button>
+                                            <Button text="📦 Moving" type="{= ${appData>/taskCategoryFilter} === 'Moving' ? 'Emphasized' : 'Default'}" press="onTaskCategoryFilter" class="hhChip">
+                                                <customData><core:CustomData key="cat" value="Moving"/></customData>
+                                            </Button>
                                         </HBox>
                                     </ScrollContainer>
 
@@ -146,10 +160,10 @@
                                                     </HBox>
                                                     <!-- Divider -->
                                                     <core:HTML content="&lt;div class='hhTaskDivider'&gt;&lt;/div&gt;"/>
-                                                    <!-- Footer: avatar + name + applicants pill -->
+                                                    <!-- Footer: person icon + name + applicants pill -->
                                                     <HBox justifyContent="SpaceBetween" alignItems="Center" class="hhTaskFooter">
-                                                        <HBox alignItems="Center">
-                                                            <Avatar displaySize="XS" src="{appData>poster_avatar}" initials="P" backgroundColor="Accent3" class="hhTaskAvatar"/>
+                                                        <HBox alignItems="Center" class="hhTaskPosterRow">
+                                                            <core:Icon src="sap-icon://person-placeholder" class="hhPosterIcon"/>
                                                             <Text text="{appData>poster_name}" class="hhTaskPosterName"/>
                                                         </HBox>
                                                         <HBox alignItems="Center" class="hhApplicantPill">
@@ -191,8 +205,8 @@
                                                     </HBox>
                                                     <core:HTML content="&lt;div class='hhTaskDivider'&gt;&lt;/div&gt;"/>
                                                     <HBox justifyContent="SpaceBetween" alignItems="Center" class="hhTaskFooter">
-                                                        <HBox alignItems="Center">
-                                                            <Avatar displaySize="XS" src="{appData>poster_avatar}" initials="P" backgroundColor="Accent3" class="hhTaskAvatar"/>
+                                                        <HBox alignItems="Center" class="hhTaskPosterRow">
+                                                            <core:Icon src="sap-icon://person-placeholder" class="hhPosterIcon"/>
                                                             <Text text="{appData>poster_name}" class="hhTaskPosterName"/>
                                                         </HBox>
                                                         <HBox alignItems="Center" class="hhApplicantPill">
