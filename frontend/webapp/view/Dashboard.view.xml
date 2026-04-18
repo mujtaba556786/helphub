@@ -103,7 +103,7 @@
                                             id="taskCatBtn"
                                             text="{= ${appData>/taskCategoryFilter} === '' ? 'Filter by Category ▾' : 'Category: ' + ${appData>/taskCategoryFilter} + ' ✕'}"
                                             type="{= ${appData>/taskCategoryFilter} === '' ? 'Default' : 'Emphasized'}"
-                                            press="onTaskCategoryMenu"
+                                            press="onTaskCategoryMore"
                                             class="hhCatDropBtn"/>
                                     </HBox>
 

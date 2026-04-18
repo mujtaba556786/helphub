@@ -71,7 +71,7 @@ sap.ui.define([
             this._loadTasksFeed();
         },
 
-        onTaskCategoryMenu: function(oEvent) {
+        onTaskCategoryMore: function(oEvent) {
             var oModel   = this.getModel("appData");
             var that     = this;
             var sCurrent = oModel.getProperty("/taskCategoryFilter") || "";
