@@ -22,9 +22,10 @@ sap.ui.define([
                 .then(function(r) { return r.json(); })
                 .then(function(oData) {
                     if (oData.success) {
-                        oModel.setProperty("/tasksFeed", oData.tasks);
+                        oModel.setProperty("/_allTasksFeed", oData.tasks);
                         oModel.setProperty("/openTaskCount", oData.tasks.length || 0);
                         this._updateTaskMarkers(oData.tasks);
+                        this._applyTaskFilters();
                     }
                 }.bind(this))
                 .catch(function() { /* silent */ });
@@ -338,6 +339,93 @@ sap.ui.define([
                 case "completed": return "None";
                 default:          return "Information";
             }
+        },
+
+        formatPostedTime: function(sCreatedAt) {
+            if (!sCreatedAt) return "";
+            var oNow  = new Date();
+            var oDate = new Date(sCreatedAt);
+            var iDiff = Math.floor((oNow - oDate) / 1000); // seconds
+            if (iDiff < 60)   return "Just now";
+            if (iDiff < 3600) return Math.floor(iDiff / 60) + " min ago";
+            if (iDiff < 86400) return Math.floor(iDiff / 3600) + " hr ago";
+            if (iDiff < 172800) return "Yesterday";
+            if (iDiff < 604800) return Math.floor(iDiff / 86400) + " days ago";
+            return oDate.toLocaleDateString([], { month: "short", day: "numeric" });
+        },
+
+        formatTaskDue: function(sDate) {
+            if (!sDate) return "";
+            var oNow  = new Date();
+            var oDue  = new Date(sDate);
+            var iDiff = Math.floor((oDue - oNow) / 86400000);
+            if (iDiff === 0)  return "📅 Today";
+            if (iDiff === 1)  return "📅 Tomorrow";
+            if (iDiff < 0)   return "Overdue";
+            if (iDiff < 7)   return "📅 In " + iDiff + " days";
+            return "📅 " + oDue.toLocaleDateString([], { month: "short", day: "numeric" });
+        },
+
+        onTaskBudgetMenu: function(oEvent) {
+            var oModel = this.getModel("appData");
+            var that   = this;
+            sap.ui.require(["sap/m/ActionSheet", "sap/m/Button"], function(ActionSheet, Button) {
+                var oSheet = new ActionSheet({
+                    title: "Filter by Budget",
+                    showCancelButton: true,
+                    buttons: [
+                        new Button({ text: "Any budget",   press: function() { oModel.setProperty("/taskBudgetFilter", "");      that._applyTaskFilters(); oSheet.close(); } }),
+                        new Button({ text: "Under €50",    press: function() { oModel.setProperty("/taskBudgetFilter", "<€50");   that._applyTaskFilters(); oSheet.close(); } }),
+                        new Button({ text: "€50 – €100",  press: function() { oModel.setProperty("/taskBudgetFilter", "€50–100"); that._applyTaskFilters(); oSheet.close(); } }),
+                        new Button({ text: "Over €100",   press: function() { oModel.setProperty("/taskBudgetFilter", ">€100");   that._applyTaskFilters(); oSheet.close(); } })
+                    ]
+                });
+                oSheet.openBy(oEvent.getSource());
+            });
+        },
+
+        onTaskSortMenu: function(oEvent) {
+            var oModel = this.getModel("appData");
+            var that   = this;
+            sap.ui.require(["sap/m/ActionSheet", "sap/m/Button"], function(ActionSheet, Button) {
+                var oSheet = new ActionSheet({
+                    title: "Sort Tasks",
+                    showCancelButton: true,
+                    buttons: [
+                        new Button({ text: "🕒 Newest first",  press: function() { oModel.setProperty("/taskSort", "newest");      that._applyTaskFilters(); oSheet.close(); } }),
+                        new Button({ text: "💎 Highest pay",   press: function() { oModel.setProperty("/taskSort", "budget_high"); that._applyTaskFilters(); oSheet.close(); } }),
+                        new Button({ text: "💸 Lowest pay",    press: function() { oModel.setProperty("/taskSort", "budget_low");  that._applyTaskFilters(); oSheet.close(); } })
+                    ]
+                });
+                oSheet.openBy(oEvent.getSource());
+            });
+        },
+
+        _applyTaskFilters: function() {
+            var oModel  = this.getModel("appData");
+            var sBudget = oModel.getProperty("/taskBudgetFilter") || "";
+            var sSort   = oModel.getProperty("/taskSort") || "newest";
+            var aAll    = (oModel.getProperty("/_allTasksFeed") || []).slice();
+
+            // Budget filter
+            if (sBudget === "<€50") {
+                aAll = aAll.filter(function(t) { return !t.budget || t.budget < 50; });
+            } else if (sBudget === "€50–100") {
+                aAll = aAll.filter(function(t) { return t.budget >= 50 && t.budget <= 100; });
+            } else if (sBudget === ">€100") {
+                aAll = aAll.filter(function(t) { return t.budget > 100; });
+            }
+
+            // Sort
+            if (sSort === "budget_high") {
+                aAll.sort(function(a, b) { return (b.budget || 0) - (a.budget || 0); });
+            } else if (sSort === "budget_low") {
+                aAll.sort(function(a, b) { return (a.budget || 0) - (b.budget || 0); });
+            } else {
+                aAll.sort(function(a, b) { return new Date(b.created_at || 0) - new Date(a.created_at || 0); });
+            }
+
+            oModel.setProperty("/tasksFeed", aAll);
         }
 
     };
