@@ -72,41 +72,38 @@ sap.ui.define([
         },
 
         onTaskCategoryMenu: function(oEvent) {
-            var oModel = this.getModel("appData");
-            var that   = this;
+            var oModel   = this.getModel("appData");
+            var that     = this;
             var sCurrent = oModel.getProperty("/taskCategoryFilter") || "";
 
             var aCategories = [
-                { text: "All Categories", value: "", icon: "🏷" },
-                { text: "Cleaning",        value: "Cleaning",  icon: "🧹" },
-                { text: "Handyman",        value: "Handyman",  icon: "🔧" },
-                { text: "Transport",       value: "Transport", icon: "🚗" },
-                { text: "Elder Care",      value: "Elder Care",icon: "🧓" },
-                { text: "Pet Care",        value: "Pet Care",  icon: "🐾" },
-                { text: "Gardening",       value: "Gardening", icon: "🌿" },
-                { text: "Moving",          value: "Moving",    icon: "📦" },
-                { text: "Tutoring",        value: "Tutoring",  icon: "📚" },
-                { text: "Cooking",         value: "Cooking",   icon: "🍳" }
+                { label: "All Tasks",   value: "",           icon: "🏷" },
+                { label: "Cleaning",    value: "Cleaning",   icon: "🧹" },
+                { label: "Handyman",    value: "Handyman",   icon: "🔧" },
+                { label: "Transport",   value: "Transport",  icon: "🚗" },
+                { label: "Elder Care",  value: "Elder Care", icon: "🧓" },
+                { label: "Pet Care",    value: "Pet Care",   icon: "🐾" },
+                { label: "Gardening",   value: "Gardening",  icon: "🌿" },
+                { label: "Moving",      value: "Moving",     icon: "📦" },
+                { label: "Tutoring",    value: "Tutoring",   icon: "📚" },
+                { label: "Cooking",     value: "Cooking",    icon: "🍳" }
             ];
 
-            sap.ui.require(["sap/m/ActionSheet", "sap/m/Button"], function(ActionSheet, Button) {
-                var oSheet = new ActionSheet({
-                    title: "Filter by Category",
-                    showCancelButton: true,
-                    buttons: aCategories.map(function(cat) {
-                        var bActive = cat.value === sCurrent;
-                        return new Button({
-                            text: (bActive ? "✓  " : "     ") + cat.icon + " " + cat.text,
-                            press: function() {
-                                oModel.setProperty("/taskCategoryFilter", cat.value);
-                                that._loadTasksFeed();
-                                oSheet.close();
-                            }
-                        });
-                    })
-                });
-                oSheet.openBy(oEvent.getSource());
+            var oSheet = new ActionSheet({
+                title: "Filter by Category",
+                showCancelButton: true,
+                buttons: aCategories.map(function(cat) {
+                    return new Button({
+                        text: (cat.value === sCurrent ? "✓  " : "      ") + cat.icon + "  " + cat.label,
+                        press: function() {
+                            oModel.setProperty("/taskCategoryFilter", cat.value);
+                            that._loadTasksFeed();
+                            oSheet.close();
+                        }
+                    });
+                })
             });
+            oSheet.openBy(oEvent.getSource());
         },
 
         onOpenPostTask: function() {

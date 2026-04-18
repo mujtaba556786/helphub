@@ -101,7 +101,7 @@
                                     <HBox class="hhCatDropWrap">
                                         <Button
                                             id="taskCatBtn"
-                                            text="{= ${appData>/taskCategoryFilter} === '' ? '🏷 All Categories ▾' : '🏷 ' + ${appData>/taskCategoryFilter} + ' ▾'}"
+                                            text="{= ${appData>/taskCategoryFilter} === '' ? 'Filter by Category ▾' : 'Category: ' + ${appData>/taskCategoryFilter} + ' ✕'}"
                                             type="{= ${appData>/taskCategoryFilter} === '' ? 'Default' : 'Emphasized'}"
                                             press="onTaskCategoryMenu"
                                             class="hhCatDropBtn"/>
