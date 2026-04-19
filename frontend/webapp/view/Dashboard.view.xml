@@ -43,19 +43,14 @@
                                 <VBox class="fiTabContent">
                                     <Title text="{i18n>howCanWeHelp}" level="H1" class="fiPageTitle"/>
                                     <Text text="{i18n>chooseService}" class="fiPageSubtitle"/>
-                                    <!-- Service cards grid -->
+                                    <!-- Service card grid -->
                                     <FlexBox wrap="Wrap" class="fiServicesGrid" items="{appData>/services}">
                                         <items>
-                                            <CustomListItem class="fiServiceCard" type="Active" press=".onServicePress">
-                                                <HBox alignItems="Center" class="fiServiceRow">
-                                                    <VBox class="fiServiceIconBox" justifyContent="Center" alignItems="Center">
-                                                        <core:Icon src="{path:'appData>name', formatter:'.formatServiceIcon'}" class="fiServiceIcon"/>
-                                                    </VBox>
-                                                    <VBox class="fiServiceTextBlock">
-                                                        <Text text="{appData>name}" class="fiServiceTitle"/>
-                                                        <Text text="{path:'appData>name', formatter:'.formatServiceDesc'}" class="fiServiceDesc"/>
-                                                    </VBox>
-                                                </HBox>
+                                            <CustomListItem class="fiSvcCard" type="Active" press=".onServicePress">
+                                                <VBox class="fiSvcCardInner" alignItems="Center" justifyContent="Center">
+                                                    <Text text="{appData>icon}" class="fiSvcEmoji"/>
+                                                    <Text text="{appData>name}" class="fiSvcName"/>
+                                                </VBox>
                                             </CustomListItem>
                                         </items>
                                     </FlexBox>
@@ -332,10 +327,10 @@
                         <!-- TAB 4: My Schedule -->
                         <IconTabFilter key="mySchedule" text="{i18n>mySchedule}" icon="sap-icon://calendar" count="{appData>/bookingCount}">
                             <ScrollContainer vertical="true" horizontal="false" height="100%">
-                                <VBox class="sapUiSmallMargin">
-                                    <Title text="{i18n>yourBookings}" level="H4" class="sapUiTinyMarginBottom"/>
+                                <VBox class="fiScheduleTab">
+                                    <Title text="{i18n>yourBookings}" level="H4" class="fiScheduleTitle"/>
                                     <!-- Status filters -->
-                                    <HBox wrap="Wrap" alignItems="Center" class="sapUiSmallMarginBottom">
+                                    <HBox wrap="Wrap" alignItems="Center" class="fiScheduleFilters">
                                         <Button text="{i18n>filterAll}" type="{= (${appData>/bookingStatusFilter} || 'all') === 'all' ? 'Emphasized' : 'Default'}" press="onBookingFilter" class="sapUiTinyMarginEnd sapUiTinyMarginBottom hhFilterPill">
                                             <customData><core:CustomData key="status" value="all"/></customData>
                                         </Button>
@@ -355,9 +350,9 @@
                                             <customData><core:CustomData key="status" value="cancelled"/></customData>
                                         </Button>
                                     </HBox>
-                                    <List id="bookingsList" items="{appData>/filteredBookings}" noDataText="{i18n>noBookingsYet}">
-                                        <CustomListItem>
-                                            <VBox class="sapUiSmallMargin">
+                                    <List id="bookingsList" items="{appData>/filteredBookings}" noDataText="{i18n>noBookingsYet}" class="fiCardList">
+                                        <CustomListItem class="fiBookingCard">
+                                            <VBox class="fiBookingCardInner">
                                                 <HBox justifyContent="SpaceBetween" alignItems="Start">
                                                     <VBox class="bookingInfoBox">
                                                         <Title text="{appData>service}" level="H5"/>
@@ -386,13 +381,13 @@
                         <!-- TAB 5: Saved -->
                         <IconTabFilter key="saved" text="{i18n>saved}" icon="sap-icon://heart">
                             <ScrollContainer vertical="true" horizontal="false" height="100%">
-                                <VBox class="sapUiSmallMargin mainContent">
+                                <VBox class="fiSavedTab">
 
                                     <!-- Recently Viewed -->
                                     <Title text="{i18n>recentlyViewed}" level="H4" class="sapUiSmallMarginBottom"/>
-                                    <List id="recentlyViewedList" items="{appData>/recentlyViewed}" noDataText="{i18n>noHelpersViewed}">
-                                        <CustomListItem>
-                                            <HBox class="sapUiSmallMargin" justifyContent="SpaceBetween" alignItems="Center">
+                                    <List id="recentlyViewedList" items="{appData>/recentlyViewed}" noDataText="{i18n>noHelpersViewed}" class="fiCardList">
+                                        <CustomListItem class="fiPersonCard">
+                                            <HBox class="fiPersonCardInner" justifyContent="SpaceBetween" alignItems="Center">
                                                 <HBox alignItems="Center">
                                                     <Avatar displaySize="S" src="{appData>photo}" initials="P" backgroundColor="Accent1" class="sapUiTinyMarginEnd"/>
                                                     <VBox>
@@ -407,9 +402,9 @@
 
                                     <!-- Saved Helpers -->
                                     <Title text="{i18n>savedHelpers}" level="H4" class="sapUiSmallMarginTop sapUiSmallMarginBottom"/>
-                                    <List id="favoritesList" items="{appData>/favoriteProviders}" noDataText="{i18n>noSavedHelpers}">
-                                        <CustomListItem>
-                                            <HBox class="sapUiSmallMargin" justifyContent="SpaceBetween" alignItems="Center">
+                                    <List id="favoritesList" items="{appData>/favoriteProviders}" noDataText="{i18n>noSavedHelpers}" class="fiCardList">
+                                        <CustomListItem class="fiPersonCard">
+                                            <HBox class="fiPersonCardInner" justifyContent="SpaceBetween" alignItems="Center">
                                                 <HBox alignItems="Center">
                                                     <Avatar displaySize="S" src="{appData>photo}" initials="P" backgroundColor="Accent1" class="sapUiTinyMarginEnd"/>
                                                     <VBox>
