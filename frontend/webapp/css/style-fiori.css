@@ -27,9 +27,16 @@ body,
 .sapMText,
 .sapMTitle,
 .sapMLabel,
-.sapMBtn .sapMBtnInner,
-.sapUiIcon {
+.sapMBtn .sapMBtnInner {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+}
+
+/* Keep SAP icon font intact — never override font-family on icon elements */
+.sapUiIcon,
+.sapMBtnIcon,
+[class*="sapMBtnIcon"],
+[class*="sapUiIcon"] {
+    font-family: 'SAP-icons' !important;
 }
 
 /* ── Page background ────────────────────────────────────────────────────────── */
