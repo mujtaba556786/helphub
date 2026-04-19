@@ -321,6 +321,49 @@ sap.ui.define([
                 .catch(function() { /* keep hardcoded list on network error */ });
         },
 
+        // ── Service card formatters ──────────────────────────────────────────────
+        formatServiceIcon: function(sName) {
+            var mIcons = {
+                "Babysitting":  "sap-icon://family-care",
+                "Elder Care":   "sap-icon://physical-activity",
+                "Pet Care":     "sap-icon://lab",
+                "Cleaning":     "sap-icon://home",
+                "Gardening":    "sap-icon://tree",
+                "Handyman":     "sap-icon://tools-opportunity",
+                "IT Support":   "sap-icon://laptop",
+                "Math Tuition": "sap-icon://education",
+                "Groceries":    "sap-icon://cart",
+                "Transport":    "sap-icon://car-rental",
+                "Cooking":      "sap-icon://meal",
+                "Massage":      "sap-icon://physical-activity",
+                "Driver":       "sap-icon://car-rental",
+                "Plumbing":     "sap-icon://wrench",
+                "Electrician":  "sap-icon://flash"
+            };
+            return mIcons[sName] || "sap-icon://activities";
+        },
+
+        formatServiceDesc: function(sName) {
+            var mDesc = {
+                "Babysitting":  "Trusted caregivers for your children",
+                "Elder Care":   "Experienced care for the elderly",
+                "Pet Care":     "Pet sitting, dog walking, and more",
+                "Cleaning":     "Professional home cleaning",
+                "Gardening":    "Lawn, plant care, and landscaping",
+                "Handyman":     "Repairs, maintenance, and fixes",
+                "IT Support":   "Technical help for computers",
+                "Math Tuition": "Tutoring for various math levels",
+                "Groceries":    "Grocery shopping and delivery",
+                "Transport":    "Rides and delivery services",
+                "Cooking":      "Personal chefs and meal prep",
+                "Massage":      "Relaxing at-home massage therapy",
+                "Driver":       "Professional driving services",
+                "Plumbing":     "Pipe repairs and installations",
+                "Electrician":  "Electrical repairs and wiring"
+            };
+            return mDesc[sName] || "Professional service near you";
+        },
+
         onNavToAdmin: function() {
             this.navTo("admin");
         },

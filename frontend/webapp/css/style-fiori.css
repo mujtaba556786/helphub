@@ -1,0 +1,213 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   HelpMate — Fiori Design Override  (loaded AFTER style.css)
+   DO NOT edit style.css — all overrides go here.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* ── Design tokens ─────────────────────────────────────────────────────────── */
+:root {
+    --fi-bg:            #F8FAFC;
+    --fi-card:          #FFFFFF;
+    --fi-border:        #E2E8F0;
+    --fi-border-hover:  #CBD5E1;
+    --fi-text-1:        #0F172A;
+    --fi-text-2:        #64748B;
+    --fi-text-3:        #94A3B8;
+    --fi-accent:        #B45309;
+    --fi-accent-bg:     #FFFBEB;
+    --fi-radius:        8px;
+    --fi-radius-lg:     12px;
+    --fi-shadow-sm:     0 1px 3px rgba(15,23,42,0.05);
+    --fi-shadow-md:     0 4px 16px rgba(15,23,42,0.08);
+}
+
+/* ── Font — Inter replaces SAP 72 ──────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+body,
+.sapMText,
+.sapMTitle,
+.sapMLabel,
+.sapMBtn .sapMBtnInner,
+.sapUiIcon {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+}
+
+/* ── Page background ────────────────────────────────────────────────────────── */
+.sapMPage,
+.sapMPageBg,
+.sapMScrollCont {
+    background: var(--fi-bg) !important;
+}
+
+/* ── Header bar ─────────────────────────────────────────────────────────────── */
+.sapMPageHeader .sapMBar {
+    background: #FFFFFF !important;
+    border-bottom: 1px solid #E2E8F0 !important;
+    box-shadow: none !important;
+    height: 56px !important;
+}
+
+.sapMPageHeader .sapMTitle .sapMTitleStyle {
+    font-size: 17px !important;
+    font-weight: 600 !important;
+    color: #0F172A !important;
+    letter-spacing: -0.01em !important;
+}
+
+.sapMPageHeader .sapMBtn .sapMBtnIcon,
+.sapMPageHeader .sapMBtnIcon {
+    color: #64748B !important;
+    font-size: 18px !important;
+}
+
+/* ── Tab bar — clean underline style, no colored circles ────────────────────── */
+.sapMITBHead {
+    background: #FFFFFF !important;
+    border-bottom: 1px solid #E2E8F0 !important;
+    box-shadow: none !important;
+}
+
+.sapMITBFilter {
+    background: transparent !important;
+    border: none !important;
+}
+
+.sapMITBFilterIcon {
+    background: transparent !important;
+    border-radius: 0 !important;
+    width: auto !important;
+    height: auto !important;
+    box-shadow: none !important;
+    border: none !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+}
+
+.sapMITBFilterIcon .sapUiIcon {
+    color: #64748B !important;
+    font-size: 20px !important;
+}
+
+.sapMITBText {
+    color: #64748B !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+}
+
+.sapMITBFilter.sapMITBSelected .sapMITBText {
+    color: #B45309 !important;
+}
+
+.sapMITBFilter.sapMITBSelected .sapMITBFilterIcon .sapUiIcon {
+    color: #B45309 !important;
+}
+
+.sapMITBFilter.sapMITBSelected {
+    border-bottom: 2.5px solid #B45309 !important;
+}
+
+.sapMITBCount {
+    background: #B45309 !important;
+    color: #fff !important;
+    border-radius: 10px !important;
+    font-size: 11px !important;
+    padding: 0 5px !important;
+    font-weight: 600 !important;
+}
+
+/* ── Page heading section (Find Help tab) ───────────────────────────────────── */
+.fiTabContent {
+    padding: 20px 16px 0 !important;
+    gap: 0 !important;
+}
+
+.fiPageTitle {
+    font-size: 22px !important;
+    font-weight: 600 !important;
+    color: #0F172A !important;
+    letter-spacing: -0.02em !important;
+    margin: 0 0 6px !important;
+}
+
+.fiPageSubtitle {
+    font-size: 14px !important;
+    color: #64748B !important;
+    margin: 0 0 24px !important;
+    line-height: 1.5 !important;
+}
+
+/* ── Service grid ────────────────────────────────────────────────────────────── */
+.fiServicesGrid {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 16px !important;
+    padding: 4px 0 80px !important;
+    width: 100% !important;
+    /* Override SAP FlexBox inline styles */
+    flex-wrap: unset !important;
+    flex-direction: unset !important;
+    justify-content: unset !important;
+    align-items: unset !important;
+}
+
+@media (max-width: 480px) {
+    .fiServicesGrid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+
+/* ── Service card ────────────────────────────────────────────────────────────── */
+.fiServiceCard.sapMLIB {
+    background: #FFFFFF !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 12px !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    transition: all 0.2s ease !important;
+}
+
+.fiServiceCard.sapMLIB:hover {
+    box-shadow: 0 4px 12px rgba(15,23,42,0.07) !important;
+    border-color: #CBD5E1 !important;
+    transform: translateY(-1px) !important;
+}
+
+.fiServiceRow {
+    padding: 16px !important;
+    gap: 14px !important;
+    align-items: center !important;
+}
+
+/* ── Service icon box ────────────────────────────────────────────────────────── */
+.fiServiceIconBox {
+    width: 42px !important;
+    height: 42px !important;
+    min-width: 42px !important;
+    background: #F1F5F9 !important;
+    border-radius: 8px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+}
+
+.fiServiceIcon.sapUiIcon {
+    font-size: 20px !important;
+    color: #374151 !important;
+}
+
+/* ── Service text ────────────────────────────────────────────────────────────── */
+.fiServiceTitle.sapMText {
+    font-size: 15px !important;
+    font-weight: 500 !important;
+    color: #0F172A !important;
+    margin: 0 !important;
+    line-height: 1.3 !important;
+}
+
+.fiServiceDesc.sapMText {
+    font-size: 12px !important;
+    color: #64748B !important;
+    margin-top: 3px !important;
+    line-height: 1.4 !important;
+}

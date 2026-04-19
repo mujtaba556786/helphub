@@ -40,24 +40,25 @@
                     <items>
                         <IconTabFilter key="findHelp" text="{i18n>findHelp}" icon="sap-icon://question-mark">
                             <ScrollContainer vertical="true" horizontal="false" height="100%">
-                                <VBox class="sapUiSmallMargin mainContent">
-                                    <Title text="{i18n>howCanWeHelp}" level="H2" class="sapUiLargeMarginBottom"/>
-                                    <Text text="{i18n>chooseService}" class="grayText sapUiSmallMarginBottom"/>
-
-                                    <!-- Service tiles -->
-                                    <FlexBox class="serviceTilesContainer" direction="Row" wrap="Wrap" justifyContent="Center" items="{appData>/services}">
+                                <VBox class="fiTabContent">
+                                    <Title text="{i18n>howCanWeHelp}" level="H1" class="fiPageTitle"/>
+                                    <Text text="{i18n>chooseService}" class="fiPageSubtitle"/>
+                                    <!-- Service cards grid -->
+                                    <FlexBox wrap="Wrap" class="fiServicesGrid" items="{appData>/services}">
                                         <items>
-                                            <CustomListItem class="hhTileItem" type="Active" press=".onServicePress">
-                                                <HBox direction="Column">
-                                                    <VBox class="circleButton" core:style="background-color:{appData>color}">
-                                                        <Text text="{appData>icon}" class="serviceIcon"/>
+                                            <CustomListItem class="fiServiceCard" type="Active" press=".onServicePress">
+                                                <HBox alignItems="Center" class="fiServiceRow">
+                                                    <VBox class="fiServiceIconBox" justifyContent="Center" alignItems="Center">
+                                                        <core:Icon src="{path:'appData>name', formatter:'.formatServiceIcon'}" class="fiServiceIcon"/>
                                                     </VBox>
-                                                    <Text text="{appData>name}" class="serviceName"/>
+                                                    <VBox class="fiServiceTextBlock">
+                                                        <Text text="{appData>name}" class="fiServiceTitle"/>
+                                                        <Text text="{path:'appData>name', formatter:'.formatServiceDesc'}" class="fiServiceDesc"/>
+                                                    </VBox>
                                                 </HBox>
                                             </CustomListItem>
                                         </items>
                                     </FlexBox>
-
                                 </VBox>
                             </ScrollContainer>
                         </IconTabFilter>
