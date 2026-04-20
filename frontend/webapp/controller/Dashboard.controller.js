@@ -321,6 +321,11 @@ sap.ui.define([
                 .catch(function() { /* keep hardcoded list on network error */ });
         },
 
+        // ── Service emoji HTML formatter ─────────────────────────────────────────
+        formatSvcEmoji: function(sIcon) {
+            return '<span class="fiSvcEmoji">' + (sIcon || "⚙️") + "</span>";
+        },
+
         // ── Service card formatters ──────────────────────────────────────────────
         formatServiceIcon: function(sName) {
             var mIcons = {
