@@ -1,0 +1,15 @@
+{
+	"mVersionDependency": {
+		"Base.icons.sap_horizon": "11.35.0",
+		"Base.icons": "11.35.0",
+		"Base": "11.35.0"
+	},
+	"sEntity": "Theme",
+	"sId": "helpmate",
+	"sLabel": "HelpMate Theme",
+	"oExtends": "Base.icons.sap_horizon",
+	"sTextDirections": "LTR,RTL",
+	"sType": "STANDARD",
+	"sThemability": "PUBLIC",
+	"sReleaseStage": "GENERAL_AVAILABILITY"
+}
