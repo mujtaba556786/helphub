@@ -16,6 +16,7 @@ import ServiceBrowserView from './components/ServiceBrowser';
 import ProviderDashboardView from './components/ProviderDashboard';
 import MyBookingsView from './components/MyBookings';
 import UserProfileView from './components/UserProfileView';
+import TrustSafetyView from './components/TrustSafety';
 
 const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -61,6 +62,7 @@ const App: React.FC = () => {
       case 'services': return <ServiceManagementView services={services} setServices={setServices} />;
       case 'bookings': return <BookingManagementView bookings={bookings} setBookings={setBookings} />;
       case 'reviews': return <ReviewModerationView reviews={reviews} setReviews={setReviews} />;
+      case 'trust-safety': return <TrustSafetyView />;
       case 'revenue': return <AdRevenueView stats={stats} />;
       
       // User/Provider Views
@@ -84,7 +86,7 @@ const App: React.FC = () => {
         <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 sticky top-0 z-20 shadow-sm">
           <div className="flex items-center space-x-4">
             <h1 className="text-xl font-black text-slate-800 capitalize tracking-tight">
-              {activeTab.replace('-', ' ')}
+              {activeTab === 'trust-safety' ? 'Trust & Safety' : activeTab.replace('-', ' ')}
             </h1>
             <div className={`px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-widest ${currentUser.role === UserRole.ADMIN ? 'bg-purple-50 text-purple-700' : 'bg-indigo-50 text-indigo-700'}`}>
               {currentUser.role} Control

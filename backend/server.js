@@ -925,6 +925,25 @@ app.post('/api/services', handleAsync(async (req, res) => {
     res.json({ success: true, id: serviceId });
 }));
 
+// ── PUT /api/services/:id — update a service category ────────────────────────
+app.put('/api/services/:id', handleAsync(async (req, res) => {
+    const { name, category, icon, description, status } = req.body;
+    if (!name || !category) {
+        return res.status(400).json({ success: false, error: 'name and category are required' });
+    }
+    await pool.execute(
+        'UPDATE services SET name = ?, category = ?, icon = ?, description = ?, status = ? WHERE id = ?',
+        [name, category, icon || '📦', description || '', status || 'Active', req.params.id]
+    );
+    res.json({ success: true });
+}));
+
+// ── DELETE /api/services/:id ──────────────────────────────────────────────────
+app.delete('/api/services/:id', handleAsync(async (req, res) => {
+    await pool.execute('DELETE FROM services WHERE id = ?', [req.params.id]);
+    res.json({ success: true });
+}));
+
 // ── POST /api/bookings ────────────────────────────────────────────────────────
 app.post('/api/bookings', handleAsync(async (req, res) => {
     const { customer_id, provider_id, service, scheduled_date, scheduled_time, message } = req.body;

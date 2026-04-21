@@ -156,6 +156,24 @@ export const apiService = {
         } catch { return true; }
     },
 
+    async updateService(id: string, data: Partial<Service>): Promise<boolean> {
+        try {
+            const res = await fetch(`${BASE_URL}/services/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            return res.ok;
+        } catch { return true; }
+    },
+
+    async deleteService(id: string): Promise<boolean> {
+        try {
+            const res = await fetch(`${BASE_URL}/services/${id}`, { method: 'DELETE' });
+            return res.ok;
+        } catch { return true; }
+    },
+
     async getUsers(): Promise<User[]> {
         try {
             const res = await fetch(`${BASE_URL}/users`);
@@ -200,6 +218,57 @@ export const apiService = {
             }
         } catch { }
         return MOCK_BOOKINGS;
+    },
+
+    // ── Trust & Safety ────────────────────────────────────────────────────────
+
+    async getReports(status?: string): Promise<any[]> {
+        try {
+            const url = status
+                ? `${BASE_URL}/admin/reports?status=${status}&limit=50`
+                : `${BASE_URL}/admin/reports?limit=50`;
+            const res = await fetch(url, { headers: { 'x-admin-token': ADMIN_TOKEN } });
+            if (res.ok) {
+                const data = await res.json();
+                return data.reports || [];
+            }
+        } catch { }
+        return [];
+    },
+
+    async actionReport(id: string, status: 'reviewed' | 'actioned'): Promise<boolean> {
+        try {
+            const res = await fetch(`${BASE_URL}/admin/reports/${id}/action`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'x-admin-token': ADMIN_TOKEN },
+                body: JSON.stringify({ status })
+            });
+            return res.ok;
+        } catch { return false; }
+    },
+
+    async getFlaggedUsers(): Promise<any[]> {
+        try {
+            const res = await fetch(`${BASE_URL}/admin/flagged-users`, {
+                headers: { 'x-admin-token': ADMIN_TOKEN }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                return data.users || [];
+            }
+        } catch { }
+        return [];
+    },
+
+    async adminActionUser(id: string, action: 'warn' | 'restrict' | 'ban' | 'clear'): Promise<boolean> {
+        try {
+            const res = await fetch(`${BASE_URL}/admin/users/${id}/action`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'x-admin-token': ADMIN_TOKEN },
+                body: JSON.stringify({ action })
+            });
+            return res.ok;
+        } catch { return false; }
     },
 
     async getReviews(): Promise<Review[]> {
