@@ -35,7 +35,7 @@ sap.ui.define([
         },
 
         onViewProfile: function(oEvent) {
-            // Button → VBox → HBox → CustomListItem
+            // Button → HBox(hhExpertActions) → VBox(hhExpertCard) → CustomListItem
             var oListItem = oEvent.getSource().getParent().getParent().getParent();
             var oCtx = oListItem.getBindingContext("appData");
             if (!oCtx) return;
@@ -46,7 +46,23 @@ sap.ui.define([
                     .split(" ").map(function(p) { return p[0]; })
                     .join("").substring(0, 2).toUpperCase();
             }
-            oProvider.reviews = [];
+
+            // Normalise any embedded mock reviews (format: {user, stars, comment})
+            // so the dialog has something to show while the API fetch is in-flight.
+            var aEmbedded = (oProvider.reviews || []).map(function(r) {
+                var sName = r.reviewer_name || r.user || "Anonymous";
+                var sInitials = sName.split(" ")
+                    .map(function(p) { return p[0] || ""; })
+                    .join("").substring(0, 2).toUpperCase() || "?";
+                return {
+                    reviewer_name:     sName,
+                    reviewer_initials: sInitials,
+                    stars:             r.stars || 0,
+                    comment:           r.comment || "",
+                    created_at_relative: r.created_at_relative || ""
+                };
+            });
+            oProvider.reviews = aEmbedded;
 
             var oModel = this.getModel("appData");
             oModel.setProperty("/selectedProfile", oProvider);
@@ -62,11 +78,13 @@ sap.ui.define([
             fetch(API_BASE + "/api/providers/" + encodeURIComponent(oProvider.id) + "/ratings")
                 .then(function(r) { return r.json(); })
                 .then(function(oData) {
-                    if (oData.success) {
+                    if (oData.success && oData.ratings && oData.ratings.length > 0) {
+                        // Replace with live DB reviews (may include pending ones)
                         oModel.setProperty("/selectedProfile/reviews", this._formatReviews(oData.ratings));
                     }
+                    // If API returns empty, keep the embedded mock reviews already set above
                 }.bind(this))
-                .catch(function() { /* keep empty */ });
+                .catch(function() { /* keep embedded reviews on network error */ });
         },
 
         onSubmitRating: function() {

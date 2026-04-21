@@ -525,12 +525,12 @@ app.get('/api/providers', handleAsync(async (req, res) => {
 // ── GET /api/providers/:id/ratings ───────────────────────────────────────────
 app.get('/api/providers/:id/ratings', handleAsync(async (req, res) => {
     const [rows] = await pool.query(
-        `SELECT r.id, r.stars, r.comment, r.created_at,
+        `SELECT r.id, r.stars, r.comment, r.created_at, r.status,
                 COALESCE(u.name, r.reviewer_name, 'Anonymous') AS reviewer_name,
                 u.avatar AS reviewer_avatar
          FROM ratings r
          LEFT JOIN users u ON u.id = r.user_id
-         WHERE r.provider_id = ? AND r.status = 'approved'
+         WHERE r.provider_id = ? AND r.status IN ('approved', 'pending')
          ORDER BY r.created_at DESC`,
         [req.params.id]
     );
