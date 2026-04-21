@@ -1,85 +1,139 @@
 <core:FragmentDefinition
     xmlns="sap.m"
-    xmlns:core="sap.ui.core">
+    xmlns:core="sap.ui.core"
+    displayBlock="true">
 
-    <Dialog id="profileDialog" title="{i18n>helperProfile}" verticalScrolling="true" stretch="{device>/system/phone}">
-        <VBox class="sapUiMediumMargin">
-            <HBox alignItems="Center" class="sapUiSmallMarginBottom">
-                <Avatar src="{appData>/selectedProfile/photo}" initials="{appData>/selectedProfile/initials}" displaySize="L" class="sapUiTinyMarginEnd"/>
-                <VBox>
-                    <Title text="{appData>/selectedProfile/name}" level="H2"/>
-                    <Text text="{appData>/selectedProfile/address}" class="grayText smallText"/>
-                    <Text text="{appData>/selectedProfile/serviceType}" class="smallText"/>
-                    <ObjectStatus
-                        text="{= ${appData>/selectedProfile/trust_level} === 'trusted_user' ? 'Trusted User' : ${appData>/selectedProfile/trust_level} === 'verified_user' ? 'Verified User' : 'New User' }"
-                        state="{= ${appData>/selectedProfile/trust_level} === 'trusted_user' ? 'Success' : ${appData>/selectedProfile/trust_level} === 'verified_user' ? 'Information' : 'None' }"
-                        visible="{= !!${appData>/selectedProfile/trust_level} }"/>
-                </VBox>
-            </HBox>
+    <Dialog id="profileDialog"
+        title="{appData>/selectedProfile/name}"
+        verticalScrolling="false"
+        stretch="{device>/system/phone}"
+        contentWidth="460px"
+        contentHeight="580px">
 
-            <HBox alignItems="Center" class="sapUiSmallMarginBottom">
-                <RatingIndicator value="{appData>/selectedProfile/rating}" maxValue="5" visualMode="Half" displayOnly="true" class="sapUiTinyMarginEnd"/>
-                <Text text="{= ${appData>/selectedProfile/rating} ? ${appData>/selectedProfile/rating} + ' / 5.0 rating' : 'No rating'}" class="smallText"/>
-            </HBox>
+        <content>
+            <VBox class="hhProfWrap">
 
-            <Title text="{i18n>aboutAndHobbies}" level="H4" class="sapUiSmallMarginBottom"/>
-            <Text text="{appData>/selectedProfile/hobbies}" class="smallText sapUiTinyMarginBottom"/>
-
-            <HBox class="sapUiTinyMarginBottom" justifyContent="Start" wrap="Wrap">
-                <ObjectStatus text="{appData>/selectedProfile/years} yrs experience" state="Information" class="smallText sapUiTinyMarginEnd"/>
-                <ObjectStatus text="{appData>/selectedProfile/languages}" state="None" class="smallText sapUiTinyMarginEnd"/>
-                <ObjectStatus text="{appData>/selectedProfile/rate} {appData>/selectedProfile/currency}/hr" state="None" class="smallText"/>
-            </HBox>
-
-            <Title text="{i18n>reviews}" level="H4" class="sapUiSmallMarginBottom"/>
-            <ScrollContainer height="220px" vertical="true" horizontal="false" class="sapUiTinyMarginBottom">
-                <List id="reviewsList" items="{appData>/selectedProfile/reviews}" noDataText="{i18n>noReviewsYet}">
-                    <CustomListItem>
-                        <HBox alignItems="Start" class="sapUiTinyMargin">
-                            <Avatar initials="{appData>reviewer_initials}" displaySize="XS"
-                                class="sapUiTinyMarginEnd sapUiFlexAlignSelf-Start"/>
-                            <VBox width="100%">
-                                <HBox justifyContent="SpaceBetween" alignItems="Center">
-                                    <Text text="{appData>reviewer_name}" class="fontBold smallText"/>
-                                    <RatingIndicator value="{appData>stars}" maxValue="5" displayOnly="true" iconSize="12px"/>
-                                </HBox>
-                                <Text text="{appData>created_at_relative}" class="smallText grayText sapUiTinyMarginBottom"/>
-                                <Text text="{appData>comment}" class="smallText grayText" wrapping="true"/>
-                            </VBox>
+                <!-- Avatar + basic info -->
+                <HBox alignItems="Center" class="hhProfHero">
+                    <Avatar
+                        src="{appData>/selectedProfile/photo}"
+                        initials="{appData>/selectedProfile/initials}"
+                        displaySize="L"
+                        class="hhProfAvatar"/>
+                    <VBox class="hhProfHeroText">
+                        <Text text="{appData>/selectedProfile/serviceType}" class="smallText"/>
+                        <HBox alignItems="Center" class="hhProfRatingRow">
+                            <RatingIndicator value="{appData>/selectedProfile/rating}" maxValue="5" visualMode="Half" displayOnly="true" class="sapUiTinyMarginEnd"/>
+                            <Text text="{= ${appData>/selectedProfile/rating} ? String(${appData>/selectedProfile/rating}) + ' / 5' : 'No rating'}" class="smallText"/>
                         </HBox>
-                    </CustomListItem>
-                </List>
-            </ScrollContainer>
-
-            <!-- Rate this helper -->
-            <Panel headerText="{i18n>rateThisHelper}" expandable="true" expanded="false" class="sapUiSmallMarginTop">
-                <VBox class="sapUiSmallMargin">
-                    <Label text="{i18n>yourRating}" required="true"/>
-                    <RatingIndicator id="newRatingStars" maxValue="5" value="0" class="sapUiTinyMarginBottom"/>
-                    <Label text="{i18n>yourComment}"/>
-                    <TextArea id="newRatingComment" rows="3" width="100%" placeholder="{i18n>ratingPlaceholder}" class="sapUiTinyMarginBottom"/>
-                    <Button text="{i18n>submitRating}" type="Emphasized" press="onSubmitRating" class="sapUiTinyMarginTop"/>
-                </VBox>
-            </Panel>
-
-            <!-- Primary actions -->
-            <HBox justifyContent="Center" wrap="Wrap" class="sapUiMediumMarginTop sapUiSmallMarginBottom"
-                visible="{= String(${appData>/selectedProfile/id}) !== String(${appData>/user/id})}">
-                <Button text="{i18n>bookHelper}" type="Emphasized" press="onOpenBooking" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
-                <Button text="{i18n>messageHelper}" type="Accept" press="onStartDm" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
-                <Button text="{i18n>askAiAbout}" type="Default" press="onOpenChat" icon="sap-icon://da" class="sapUiTinyMarginBottom"/>
-            </HBox>
-
-            <!-- Safety actions — collapsed by default, clearly separated -->
-            <Panel expandable="true" expanded="false" headerText="⚠️ Report or Block"
-                class="sapUiSmallMarginBottom"
-                visible="{= String(${appData>/selectedProfile/id}) !== String(${appData>/user/id})}">
-                <HBox justifyContent="Center" wrap="Wrap" class="sapUiSmallMargin">
-                    <Button text="🚫 Block this user" type="Reject" press="onBlockUser" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
-                    <Button text="⚑ Report" type="Ghost" press="onReportUser" class="sapUiTinyMarginBottom"/>
+                        <ObjectStatus
+                            text="{= ${appData>/selectedProfile/trust_level} === 'trusted_user' ? 'Trusted User' : ${appData>/selectedProfile/trust_level} === 'verified_user' ? 'Verified User' : 'New User' }"
+                            state="{= ${appData>/selectedProfile/trust_level} === 'trusted_user' ? 'Success' : ${appData>/selectedProfile/trust_level} === 'verified_user' ? 'Information' : 'None' }"
+                            visible="{= !!${appData>/selectedProfile/trust_level} }"/>
+                    </VBox>
                 </HBox>
-            </Panel>
-        </VBox>
+
+                <!-- 3 action buttons — always visible -->
+                <HBox justifyContent="SpaceBetween" class="hhProfActions"
+                    visible="{= String(${appData>/selectedProfile/id}) !== String(${appData>/user/id})}">
+                    <Button text="Book"    icon="sap-icon://appointment-2" type="Emphasized" press="onOpenBooking" class="hhProfActionBtn"/>
+                    <Button text="Message" icon="sap-icon://discussion"    type="Default"    press="onStartDm"    class="hhProfActionBtn"/>
+                    <Button text="Ask AI"  icon="sap-icon://da"            type="Default"    press="onOpenChat"   class="hhProfActionBtn"/>
+                </HBox>
+
+                <!-- Tabs -->
+                <IconTabBar expandable="false" class="hhProfTabs">
+                    <items>
+
+                        <!-- Overview -->
+                        <IconTabFilter text="Overview" icon="sap-icon://person-placeholder" key="overview">
+                            <ScrollContainer vertical="true" horizontal="false" height="340px">
+                                <VBox class="hhProfSection">
+
+                                    <!-- Info rows -->
+                                    <VBox class="hhInfoCard">
+                                        <HBox alignItems="Center" class="hhInfoRow">
+                                            <core:Icon src="sap-icon://badges"       class="hhInfoIcon"/>
+                                            <Text text="Experience" class="hhInfoLabel"/>
+                                            <Text text="{= ${appData>/selectedProfile/years} ? ${appData>/selectedProfile/years} + ' years' : '—'}" class="hhInfoValue"/>
+                                        </HBox>
+                                        <HBox alignItems="Center" class="hhInfoRow">
+                                            <core:Icon src="sap-icon://world"         class="hhInfoIcon"/>
+                                            <Text text="Language"   class="hhInfoLabel"/>
+                                            <Text text="{= ${appData>/selectedProfile/languages} || '—'}" class="hhInfoValue"/>
+                                        </HBox>
+                                        <HBox alignItems="Center" class="hhInfoRow">
+                                            <core:Icon src="sap-icon://money-bills"   class="hhInfoIcon"/>
+                                            <Text text="Rate"       class="hhInfoLabel"/>
+                                            <Text text="{= ${appData>/selectedProfile/rate} ? ${appData>/selectedProfile/rate} + ' ' + (${appData>/selectedProfile/currency} || 'EUR') + '/hr' : '—'}" class="hhInfoValue"/>
+                                        </HBox>
+                                        <HBox alignItems="Center" class="hhInfoRow hhInfoRowLast">
+                                            <core:Icon src="sap-icon://map"           class="hhInfoIcon"/>
+                                            <Text text="Location"   class="hhInfoLabel"/>
+                                            <Text text="{= ${appData>/selectedProfile/address} || '—'}" class="hhInfoValue" wrapping="true"/>
+                                        </HBox>
+                                    </VBox>
+
+                                    <!-- About / Bio -->
+                                    <Title text="About" level="H5" class="hhProfSectionTitle"/>
+                                    <Text text="{= ${appData>/selectedProfile/hobbies} || 'No bio added yet.'}" wrapping="true" class="hhProfBio"/>
+
+                                </VBox>
+                            </ScrollContainer>
+                        </IconTabFilter>
+
+                        <!-- Reviews -->
+                        <IconTabFilter text="Reviews" icon="sap-icon://customer-financial-fact-sheet" key="reviews">
+                            <ScrollContainer vertical="true" horizontal="false" height="340px">
+                                <VBox class="hhProfSection">
+                                    <List id="reviewsList"
+                                        items="{appData>/selectedProfile/reviews}"
+                                        noDataText="{i18n>noReviewsYet}"
+                                        showSeparators="None">
+                                        <CustomListItem class="hhReviewItem">
+                                            <HBox alignItems="Start" class="hhReviewRow">
+                                                <Avatar initials="{appData>reviewer_initials}" displaySize="XS" class="sapUiTinyMarginEnd"/>
+                                                <VBox class="hhReviewContent">
+                                                    <HBox justifyContent="SpaceBetween" alignItems="Center">
+                                                        <Text text="{appData>reviewer_name}" class="fontBold smallText"/>
+                                                        <RatingIndicator value="{appData>stars}" maxValue="5" displayOnly="true" iconSize="12px"/>
+                                                    </HBox>
+                                                    <Text text="{appData>created_at_relative}" class="smallText grayText"/>
+                                                    <Text text="{appData>comment}" wrapping="true" class="smallText"/>
+                                                </VBox>
+                                            </HBox>
+                                        </CustomListItem>
+                                    </List>
+                                    <VBox class="hhRateBox">
+                                        <Title text="{i18n>rateThisHelper}" level="H5"/>
+                                        <Label text="{i18n>yourRating}" required="true"/>
+                                        <RatingIndicator id="newRatingStars" maxValue="5" value="0" class="sapUiTinyMarginBottom"/>
+                                        <Label text="{i18n>yourComment}"/>
+                                        <TextArea id="newRatingComment" rows="3" width="100%" placeholder="{i18n>ratingPlaceholder}" class="sapUiTinyMarginBottom"/>
+                                        <Button text="{i18n>submitRating}" type="Emphasized" icon="sap-icon://paper-plane" press="onSubmitRating" width="100%"/>
+                                    </VBox>
+                                </VBox>
+                            </ScrollContainer>
+                        </IconTabFilter>
+
+                        <!-- Safety -->
+                        <IconTabFilter text="Safety" icon="sap-icon://shield" key="more"
+                            visible="{= String(${appData>/selectedProfile/id}) !== String(${appData>/user/id})}">
+                            <ScrollContainer vertical="true" horizontal="false" height="340px">
+                                <VBox class="hhProfSection">
+                                    <Text text="Use these options if you feel unsafe or this user is behaving inappropriately." wrapping="true" class="smallText hhSafetyNote"/>
+                                    <Button text="Block this user" type="Reject" icon="sap-icon://cancel" press="onBlockUser"  width="100%" class="hhActionBtn"/>
+                                    <Button text="Report this user" type="Ghost"  icon="sap-icon://flag"   press="onReportUser" width="100%" class="hhActionBtn"/>
+                                </VBox>
+                            </ScrollContainer>
+                        </IconTabFilter>
+
+                    </items>
+                </IconTabBar>
+
+            </VBox>
+        </content>
+
         <endButton>
             <Button text="{i18n>close}" press="onCloseProfile"/>
         </endButton>

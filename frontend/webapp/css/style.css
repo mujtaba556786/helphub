@@ -355,3 +355,75 @@
 section { -webkit-overflow-scrolling: touch; }
 .mainContent { padding-bottom: 40px; }
 .flexBasis65 { padding-bottom: 60px; }
+
+/* ══════════════════════════════════════════════════════════════
+   Helper Profile Dialog
+   ══════════════════════════════════════════════════════════════ */
+
+/* Outer wrapper — no extra margin */
+.hhProfWrap { height: 100%; }
+
+/* Hero section */
+.hhProfHero    { padding: 16px 16px 12px; gap: 14px; }
+.hhProfAvatar  { flex-shrink: 0; }
+.hhProfHeroText { flex: 1; min-width: 0; gap: 4px; }
+.hhProfRatingRow { gap: 6px; margin-top: 2px; }
+
+/* 3-button action bar */
+.hhProfActions {
+    padding: 0 16px 12px;
+    gap: 8px;
+    border-bottom: 1px solid;
+}
+.hhProfActionBtn.sapMBtn {
+    flex: 1 !important;
+    border-radius: 10px !important;
+    height: 42px !important;
+    font-size: 0.82rem !important;
+    font-weight: 600 !important;
+}
+
+/* Tabs */
+.hhProfTabs { flex: 1; }
+
+/* Tab content sections */
+.hhProfSection  { padding: 14px 16px; gap: 10px; }
+.hhProfStats    { gap: 6px; flex-wrap: wrap; }
+.hhStatPill     { font-size: 0.78rem !important; }
+.hhProfLocation { gap: 6px; }
+.hhProfSectionTitle { margin-top: 6px !important; margin-bottom: 2px !important; }
+.hhProfBio      { line-height: 1.6; }
+
+/* Reviews */
+.hhReviewItem   { padding: 0 !important; border: none !important; }
+.hhReviewRow    { padding: 8px 0; gap: 10px; }
+.hhReviewContent { flex: 1; min-width: 0; gap: 2px; }
+
+/* Rate box */
+.hhRateBox { border-radius: 12px; border: 1px solid; padding: 14px; gap: 8px; margin-top: 6px; }
+
+/* Info card (overview rows) */
+.hhInfoCard     { border-radius: 12px; border: 1px solid; overflow: hidden; margin-bottom: 12px; }
+
+.hhInfoRow {
+    padding: 11px 14px;
+    gap: 10px;
+    border-bottom: 1px solid;
+}
+.hhInfoRowLast  { border-bottom: none !important; }
+
+.hhInfoIcon     { font-size: 1rem !important; flex-shrink: 0; width: 18px; }
+.hhInfoLabel    { font-size: 0.82rem !important; color: inherit; opacity: 0.6; min-width: 80px; flex-shrink: 0; }
+.hhInfoValue    { font-size: 0.88rem !important; font-weight: 600 !important; flex: 1; }
+
+/* Safety tab */
+.hhSafetyNote   { opacity: 0.65; margin-bottom: 16px !important; line-height: 1.5; }
+
+/* Action buttons */
+.hhActionBtn.sapMBtn {
+    border-radius: 10px !important;
+    height: 44px !important;
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+    margin-bottom: 8px !important;
+}
