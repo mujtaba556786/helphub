@@ -438,103 +438,142 @@
         <Page id="searchPage" title="{i18n>localExperts}" showNavButton="true" navButtonPress="onNavBack" enableScrolling="true">
             <content>
                 <VBox>
-                    <VBox id="mapContainer" height="25vh" width="100%" class="mapPlaceholder">
-                        <core:HTML content='&lt;div id="googleMap" class="mapDiv"&gt;Map View Centered on You&lt;/div&gt;'/>
+
+                    <!-- ── Collapsible map ── -->
+                    <VBox class="hhMapWrap">
+                        <VBox id="mapContainer" class="hhMapBox mapPlaceholder" visible="{appData>/mapExpanded}">
+                            <core:HTML content='&lt;div id="googleMap" class="mapDiv"&gt;&lt;/div&gt;'/>
+                        </VBox>
+                        <Button id="mapToggleBtn"
+                            text="{= ${appData>/mapExpanded} ? '▲  Hide Map' : '▼  Show Map'}"
+                            type="Transparent"
+                            press="onToggleMap"
+                            class="hhMapToggleBtn"/>
                     </VBox>
 
-                    <VBox class="sapUiSmallMargin flexBasis65">
-                        <HBox justifyContent="SpaceBetween" alignItems="Center" class="sapUiSmallMarginBottom">
-                            <Title text="{appData>/selectedCategoryName} Experts Nearby" level="H3"/>
+                    <!-- ── Filter bar ── -->
+                    <VBox class="hhExpertFilters">
+
+                        <!-- Search -->
+                        <SearchField id="helperSearch"
+                            placeholder="{i18n>searchByNameOrSkill}"
+                            search="onHelperSearch"
+                            liveChange="onHelperSearch"
+                            width="100%"
+                            class="hhExpertSearch"/>
+
+                        <!-- Quick filter pills -->
+                        <HBox wrap="Wrap" alignItems="Center" class="hhExpertPills">
+                            <Button text="{i18n>availableNow}" type="{= ${appData>/filters/availableNow} ? 'Emphasized' : 'Default'}" press="onFilterAvailableNow" class="hhFilterPill"/>
+                            <Button text="{i18n>all}"          type="{= ${appData>/filters/priceCategory} === 'all' ? 'Emphasized' : 'Default'}" press="onFilterAll" class="hhFilterPill"/>
+                            <Button text="{i18n>topRated}"     type="{= ${appData>/filters/priceCategory} === 'top' ? 'Emphasized' : 'Default'}" press="onFilterTopRated" class="hhFilterPill"/>
+                            <Button text="{i18n>budgetFilter}" type="{= ${appData>/filters/priceCategory} === 'budget' ? 'Emphasized' : 'Default'}" press="onFilterBudget" class="hhFilterPill"/>
                         </HBox>
 
-                        <SearchField id="helperSearch" placeholder="{i18n>searchByNameOrSkill}" search="onHelperSearch" liveChange="onHelperSearch" width="100%" class="sapUiTinyMarginBottom"/>
-
-                        <!-- Filter pills -->
-                        <HBox wrap="Wrap" alignItems="Center" class="sapUiTinyMarginBottom">
-                            <Button text="{i18n>availableNow}" type="{= ${appData>/filters/availableNow} ? 'Emphasized' : 'Default'}" press="onFilterAvailableNow" class="sapUiTinyMarginEnd sapUiTinyMarginBottom hhFilterPill"/>
-                            <Button text="{i18n>all}" type="{= ${appData>/filters/priceCategory} === 'all' ? 'Emphasized' : 'Default'}" press="onFilterAll" class="sapUiTinyMarginEnd sapUiTinyMarginBottom hhFilterPill"/>
-                            <Button text="{i18n>topRated}" type="{= ${appData>/filters/priceCategory} === 'top' ? 'Emphasized' : 'Default'}" press="onFilterTopRated" class="sapUiTinyMarginEnd sapUiTinyMarginBottom hhFilterPill"/>
-                            <Button text="{i18n>budgetFilter}" type="{= ${appData>/filters/priceCategory} === 'budget' ? 'Emphasized' : 'Default'}" press="onFilterBudget" class="sapUiTinyMarginEnd sapUiTinyMarginBottom hhFilterPill"/>
+                        <!-- Distance + Language row -->
+                        <HBox alignItems="Center" class="hhExpertSliderRow">
+                            <core:Icon src="sap-icon://map" class="hhSliderIcon"/>
+                            <Slider min="1" max="50" step="1"
+                                value="{appData>/filters/distance}"
+                                liveChange="onDistanceChange"
+                                class="hhDistanceSlider"/>
+                            <Text text="{appData>/filters/distanceLabel}" class="hhSliderLabel fontBold"/>
                         </HBox>
-
-                        <!-- Distance slider -->
-                        <VBox class="sapUiTinyMarginBottom">
-                            <HBox justifyContent="SpaceBetween" alignItems="Center">
-                                <Text text="{i18n>distanceFilter}" class="smallText grayText"/>
-                                <Text text="{appData>/filters/distanceLabel}" class="smallText blueText fontBold"/>
-                            </HBox>
-                            <Slider min="1" max="50" step="1" value="{appData>/filters/distance}" liveChange="onDistanceChange"/>
-                        </VBox>
-
-                        <!-- Language filter -->
-                        <HBox alignItems="Center" class="sapUiTinyMarginBottom">
-                            <Text text="{i18n>languageFilter}" class="smallText grayText sapUiSmallMarginEnd"/>
-                            <Input value="{appData>/filters/language}" placeholder="{i18n>languagePlaceholder}" liveChange="onLangFilter" width="120px"/>
+                        <HBox alignItems="Center" class="hhExpertLangRow">
+                            <core:Icon src="sap-icon://world" class="hhSliderIcon"/>
+                            <Input value="{appData>/filters/language}"
+                                placeholder="{i18n>languagePlaceholder}"
+                                liveChange="onLangFilter"
+                                width="140px"
+                                class="hhLangInput"/>
+                            <Button text="{i18n>resetFilters}"
+                                type="Transparent"
+                                press="onResetFilters"
+                                visible="{= ${appData>/filters/activeCount} > 0}"
+                                class="hhResetBtn"/>
                         </HBox>
+                    </VBox>
 
-                        <!-- Reset filters -->
-                        <HBox visible="{= ${appData>/filters/activeCount} > 0}" class="sapUiTinyMarginBottom">
-                            <Button text="{i18n>resetFilters}" type="Transparent" press="onResetFilters" class="hhFilterPill"/>
-                        </HBox>
+                    <!-- ── Heading ── -->
+                    <HBox justifyContent="SpaceBetween" alignItems="Center" class="hhExpertHeading">
+                        <Title text="{appData>/selectedCategoryName} Experts Nearby" level="H4"/>
+                    </HBox>
 
-                        <!-- Ad slot: banner between filters and helper list (non-intrusive) -->
-                        <core:HTML content='&lt;div id="ad-slot-top" style="text-align:center;margin:4px 0;min-height:50px;background:#f5f5f5;border:1px dashed #ccc;display:flex;align-items:center;justify-content:center;"&gt;&lt;ins class="adsbygoogle" style="display:inline-block;width:100%;height:50px;" data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="1111111111"&gt;&lt;/ins&gt;&lt;span style="color:#aaa;font-size:11px;font-family:sans-serif;position:absolute;"&gt;Advertisement&lt;/span&gt;&lt;/div&gt;'/>
+                    <!-- ── Ad slot (soft) ── -->
+                    <core:HTML content='&lt;div class="hhAdSlot"&gt;&lt;ins class="adsbygoogle" style="display:inline-block;width:100%;height:50px;" data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="1111111111"&gt;&lt;/ins&gt;&lt;span class="hhAdLabel"&gt;Ad&lt;/span&gt;&lt;/div&gt;'/>
 
-                        <!-- Empty state: no providers found -->
-                        <VBox visible="{= !${appData>/filteredProviders} || ${appData>/filteredProviders}.length === 0 }" alignItems="Center" class="sapUiMediumMarginTop sapUiMediumMarginBottom">
-                            <core:Icon src="sap-icon://search" size="3rem" class="sapUiSmallMarginBottom"/>
-                            <Title text="{i18n>noHelpersFoundTitle}" level="H4" class="sapUiTinyMarginBottom" textAlign="Center"/>
-                            <Text text="{i18n>noHelpersFoundHint}" class="grayText smallText sapUiTinyMarginBottom" textAlign="Center"/>
-                            <Button text="{i18n>postTaskInstead}" type="Emphasized" press="onTabToTasks" class="sapUiTinyMarginTop"/>
-                        </VBox>
-                        <List items="{appData>/filteredProviders}" noDataText="">
-                            <CustomListItem>
-                                <VBox class="sapUiSmallMargin">
-                                    <HBox justifyContent="SpaceBetween" alignItems="Start">
-                                        <HBox alignItems="Center">
-                                            <Avatar displaySize="S" src="{appData>photo}" initials="P" backgroundColor="Accent1" class="sapUiTinyMarginEnd"/>
-                                            <VBox>
-                                                <Title text="{appData>name}" level="H4"/>
-                                                <Text text="{appData>address}" class="grayText smallText"/>
-                                            </VBox>
-                                        </HBox>
-                                        <VBox alignItems="End">
-                                            <ObjectStatus text="{path:'appData>', formatter:'.formatAvailabilityStatus'}" state="{path:'appData>', formatter:'.formatAvailabilityState'}" class="fontBold"/>
-                                            <Title text="{path:'appData>', formatter:'.formatPriceDisplay'}" level="H4" class="sapUiTinyMarginTop"/>
+                    <!-- ── Empty state ── -->
+                    <VBox visible="{= !${appData>/filteredProviders} || ${appData>/filteredProviders}.length === 0 }"
+                        alignItems="Center" class="hhExpertEmpty">
+                        <core:Icon src="sap-icon://search" size="3rem" class="sapUiSmallMarginBottom"/>
+                        <Title text="{i18n>noHelpersFoundTitle}" level="H4" class="sapUiTinyMarginBottom" textAlign="Center"/>
+                        <Text text="{i18n>noHelpersFoundHint}" class="grayText smallText sapUiTinyMarginBottom" textAlign="Center"/>
+                        <Button text="{i18n>postTaskInstead}" type="Emphasized" press="onTabToTasks" class="sapUiTinyMarginTop"/>
+                    </VBox>
+
+                    <!-- ── Helper cards ── -->
+                    <List items="{appData>/filteredProviders}" noDataText="" showSeparators="None" class="hhExpertList">
+                        <CustomListItem class="hhExpertCardItem" type="Inactive">
+                            <VBox class="hhExpertCard">
+
+                                <!-- Row 1: Avatar + Name + Price/Status -->
+                                <HBox justifyContent="SpaceBetween" alignItems="Center" class="hhExpertCardTop">
+                                    <HBox alignItems="Center" class="hhExpertCardLeft">
+                                        <Avatar displaySize="M" src="{appData>photo}" initials="{appData>initials}" backgroundColor="Accent1" class="hhExpertAvatar"/>
+                                        <VBox class="hhExpertNameBox">
+                                            <Title text="{appData>name}" level="H4" class="hhExpertName"/>
+                                            <HBox alignItems="Center" class="hhExpertMeta">
+                                                <RatingIndicator value="{appData>rating}" displayOnly="true" iconSize="13px" class="sapUiTinyMarginEnd"/>
+                                                <Text text="{path:'appData>', formatter:'.formatDistance'}" class="smallText hhExpertDist"/>
+                                            </HBox>
                                         </VBox>
                                     </HBox>
-                                    <HBox class="sapUiTinyMarginTop" alignItems="Center" wrap="Wrap">
-                                        <RatingIndicator value="{appData>rating}" displayOnly="true" iconSize="14px" class="sapUiTinyMarginEnd"/>
-                                        <Text text="{path:'appData>', formatter:'.formatDistance'}" class="blueText fontBold smallText sapUiTinyMarginEnd"/>
+                                    <VBox alignItems="End" class="hhExpertPriceBox">
                                         <ObjectStatus
-                                            text="{= ${appData>trust_level} === 'trusted_user' ? '✓ Trusted' : ${appData>trust_level} === 'verified_user' ? '✓ Verified' : '' }"
-                                            state="{= ${appData>trust_level} === 'trusted_user' ? 'Success' : 'Information' }"
-                                            visible="{= ${appData>trust_level} === 'trusted_user' || ${appData>trust_level} === 'verified_user' }"
-                                            class="smallText"/>
-                                    </HBox>
-                                    <HBox class="sapUiTinyMarginTop" wrap="Wrap">
-                                        <ObjectStatus text="{appData>years} yrs experience" state="Information" class="smallText sapUiTinyMarginEnd"/>
-                                        <ObjectStatus text="{appData>languages}" state="None" class="smallText"/>
-                                    </HBox>
-                                    <HBox class="sapUiTinyMarginTop helperCardActions" wrap="Wrap" alignItems="Center">
-                                        <Button icon="{= ${appData>/favorites}.indexOf(${appData>id}) >= 0 ? 'sap-icon://favorite' : 'sap-icon://unfavorite'}" type="{= ${appData>/favorites}.indexOf(${appData>id}) >= 0 ? 'Emphasized' : 'Transparent'}" press="onToggleFavorite" tooltip="{i18n>saveHelper}" class="sapUiTinyMarginEnd"
-                                            visible="{= ${appData>id} !== ${appData>/user/id}}"/>
-                                        <Button text="{i18n>profile}" type="Transparent" press="onViewProfile" class="sapUiTinyMarginEnd"/>
-                                        <Button text="{i18n>book}" type="Emphasized" press="onQuickBook" class="sapUiTinyMarginEnd"
-                                            visible="{= ${appData>id} !== ${appData>/user/id}}"/>
-                                        <Button text="{i18n>messageHelper}" type="Accept" press="onQuickMessage" class="sapUiTinyMarginEnd"
-                                            visible="{= ${appData>id} !== ${appData>/user/id}}"/>
-                                        <Button text="{i18n>askAi}" type="Transparent" press="onQuickChat" icon="sap-icon://da"
-                                            visible="{= ${appData>id} !== ${appData>/user/id}}"/>
-                                    </HBox>
-                                </VBox>
-                            </CustomListItem>
-                        </List>
+                                            text="{path:'appData>', formatter:'.formatAvailabilityStatus'}"
+                                            state="{path:'appData>', formatter:'.formatAvailabilityState'}"/>
+                                        <Text text="{path:'appData>', formatter:'.formatPriceDisplay'}" class="hhExpertPrice fontBold"/>
+                                    </VBox>
+                                </HBox>
 
-                        <!-- Ad slot: banner below helper list -->
-                        <core:HTML content='&lt;div id="ad-slot-bottom" style="text-align:center;margin:8px 0;min-height:50px;background:#f5f5f5;border:1px dashed #ccc;display:flex;align-items:center;justify-content:center;"&gt;&lt;ins class="adsbygoogle" style="display:inline-block;width:100%;height:50px;" data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="2222222222"&gt;&lt;/ins&gt;&lt;span style="color:#aaa;font-size:11px;font-family:sans-serif;position:absolute;"&gt;Advertisement&lt;/span&gt;&lt;/div&gt;'/>
+                                <!-- Row 2: Tags (trust + exp + language) -->
+                                <HBox wrap="Wrap" alignItems="Center" class="hhExpertTags">
+                                    <ObjectStatus
+                                        text="{= ${appData>trust_level} === 'trusted_user' ? '✓ Trusted' : '✓ Verified' }"
+                                        state="{= ${appData>trust_level} === 'trusted_user' ? 'Success' : 'Information' }"
+                                        visible="{= ${appData>trust_level} === 'trusted_user' || ${appData>trust_level} === 'verified_user' }"
+                                        class="hhExpertTag"/>
+                                    <Text text="{appData>years} yrs exp" class="hhExpertTag hhExpertTagPlain"/>
+                                    <Text text="{appData>languages}"     class="hhExpertTag hhExpertTagPlain"/>
+                                </HBox>
 
-                    </VBox>
+                                <!-- Row 3: Actions -->
+                                <HBox alignItems="Center" class="hhExpertActions"
+                                    visible="{= ${appData>id} !== ${appData>/user/id}}">
+                                    <!-- Favorite icon -->
+                                    <Button
+                                        icon="{= ${appData>/favorites}.indexOf(${appData>id}) >= 0 ? 'sap-icon://favorite' : 'sap-icon://unfavorite'}"
+                                        type="Transparent"
+                                        press="onToggleFavorite"
+                                        tooltip="{i18n>saveHelper}"
+                                        class="hhExpertIconBtn"/>
+                                    <!-- Profile text link -->
+                                    <Button text="{i18n>profile}" type="Transparent" press="onViewProfile" class="hhExpertProfileBtn"/>
+                                    <!-- Primary: Book -->
+                                    <Button text="{i18n>book}" type="Emphasized" icon="sap-icon://appointment-2" press="onQuickBook" class="hhExpertBookBtn"/>
+                                    <!-- Secondary: Message -->
+                                    <Button text="{i18n>messageHelper}" type="Default" icon="sap-icon://discussion" press="onQuickMessage" class="hhExpertMsgBtn"/>
+                                    <!-- AI icon -->
+                                    <Button icon="sap-icon://da" type="Transparent" press="onQuickChat" tooltip="{i18n>askAi}" class="hhExpertIconBtn"/>
+                                </HBox>
+
+                            </VBox>
+                        </CustomListItem>
+                    </List>
+
+                    <!-- ── Bottom ad (soft) ── -->
+                    <core:HTML content='&lt;div class="hhAdSlot"&gt;&lt;ins class="adsbygoogle" style="display:inline-block;width:100%;height:50px;" data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="2222222222"&gt;&lt;/ins&gt;&lt;span class="hhAdLabel"&gt;Ad&lt;/span&gt;&lt;/div&gt;'/>
+
                 </VBox>
             </content>
         </Page>
