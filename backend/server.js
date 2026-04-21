@@ -1949,6 +1949,26 @@ app.post('/api/reports', requireAuth, handleAsync(async (req, res) => {
 
 // ─── ADMIN MODERATION ENDPOINTS ───────────────────────────────────────────────
 
+// ── GET /api/admin/blocks — list all user blocks with names ───────────────────
+app.get('/api/admin/blocks', requireAdmin, handleAsync(async (req, res) => {
+    const [rows] = await pool.query(
+        `SELECT ub.id, ub.blocker_id, ub.blocked_id, ub.created_at,
+                u1.name AS blocker_name, u1.email AS blocker_email,
+                u2.name AS blocked_name, u2.email AS blocked_email
+         FROM user_blocks ub
+         LEFT JOIN users u1 ON u1.id = ub.blocker_id
+         LEFT JOIN users u2 ON u2.id = ub.blocked_id
+         ORDER BY ub.created_at DESC`
+    );
+    res.json({ success: true, blocks: rows });
+}));
+
+// ── DELETE /api/admin/blocks/:id — admin removes a block ─────────────────────
+app.delete('/api/admin/blocks/:id', requireAdmin, handleAsync(async (req, res) => {
+    await pool.execute('DELETE FROM user_blocks WHERE id = ?', [req.params.id]);
+    res.json({ success: true });
+}));
+
 // List reports (paginated)
 app.get('/api/admin/reports', requireAdmin, handleAsync(async (req, res) => {
     const page   = Math.max(1, parseInt(req.query.page)  || 1);

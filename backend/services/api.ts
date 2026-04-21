@@ -260,6 +260,29 @@ export const apiService = {
         return [];
     },
 
+    async getBlocks(): Promise<any[]> {
+        try {
+            const res = await fetch(`${BASE_URL}/admin/blocks`, {
+                headers: { 'x-admin-token': ADMIN_TOKEN }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                return data.blocks || [];
+            }
+        } catch { }
+        return [];
+    },
+
+    async removeBlock(id: string): Promise<boolean> {
+        try {
+            const res = await fetch(`${BASE_URL}/admin/blocks/${id}`, {
+                method: 'DELETE',
+                headers: { 'x-admin-token': ADMIN_TOKEN }
+            });
+            return res.ok;
+        } catch { return false; }
+    },
+
     async adminActionUser(id: string, action: 'warn' | 'restrict' | 'ban' | 'clear'): Promise<boolean> {
         try {
             const res = await fetch(`${BASE_URL}/admin/users/${id}/action`, {

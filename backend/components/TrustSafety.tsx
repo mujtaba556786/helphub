@@ -30,7 +30,7 @@ const riskColor = (score: number) => {
 };
 
 const TrustSafetyView: React.FC = () => {
-  const [tab, setTab] = useState<'reports' | 'flagged'>('reports');
+  const [tab, setTab] = useState<'reports' | 'flagged' | 'blocks'>('reports');
 
   // Reports state
   const [reports, setReports] = useState<any[]>([]);
@@ -42,6 +42,11 @@ const TrustSafetyView: React.FC = () => {
   const [flagged, setFlagged] = useState<any[]>([]);
   const [flaggedLoading, setFlaggedLoading] = useState(true);
   const [actioningUser, setActioningUser] = useState<string | null>(null);
+
+  // Blocks state
+  const [blocks, setBlocks] = useState<any[]>([]);
+  const [blocksLoading, setBlocksLoading] = useState(true);
+  const [removingBlock, setRemovingBlock] = useState<string | null>(null);
 
   const loadReports = useCallback(async () => {
     setReportsLoading(true);
@@ -58,8 +63,16 @@ const TrustSafetyView: React.FC = () => {
     setFlaggedLoading(false);
   }, []);
 
+  const loadBlocks = useCallback(async () => {
+    setBlocksLoading(true);
+    const data = await apiService.getBlocks();
+    setBlocks(data);
+    setBlocksLoading(false);
+  }, []);
+
   useEffect(() => { loadReports(); }, [loadReports]);
   useEffect(() => { loadFlagged(); }, [loadFlagged]);
+  useEffect(() => { loadBlocks(); }, [loadBlocks]);
 
   const handleReportAction = async (id: string, status: 'reviewed' | 'actioned') => {
     setActioningReport(id);
@@ -92,8 +105,19 @@ const TrustSafetyView: React.FC = () => {
     setActioningUser(null);
   };
 
-  const pendingCount  = reports.filter(r => r.status === 'pending').length;
-  const flaggedCount  = flagged.length;
+  const handleRemoveBlock = async (blockId: string) => {
+    if (!window.confirm('Remove this block? Both users will be able to contact each other again.')) return;
+    setRemovingBlock(blockId);
+    const ok = await apiService.removeBlock(String(blockId));
+    if (ok) {
+      setBlocks(prev => prev.filter(b => String(b.id) !== String(blockId)));
+    }
+    setRemovingBlock(null);
+  };
+
+  const pendingCount = reports.filter(r => r.status === 'pending').length;
+  const flaggedCount = flagged.length;
+  const blocksCount  = blocks.length;
 
   return (
     <div className="space-y-6">
@@ -102,7 +126,7 @@ const TrustSafetyView: React.FC = () => {
       <div className="bg-rose-900 text-white p-6 rounded-3xl shadow-xl flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-black italic">Trust &amp; Safety</h2>
-          <p className="text-rose-200 text-sm">Manage reports, flagged users, and community safety.</p>
+          <p className="text-rose-200 text-sm">Manage reports, flagged users, and community blocks.</p>
         </div>
         <div className="flex items-center space-x-8">
           <div className="text-right">
@@ -112,6 +136,10 @@ const TrustSafetyView: React.FC = () => {
           <div className="text-right">
             <p className="text-4xl font-black">{flaggedCount}</p>
             <p className="text-[10px] font-bold uppercase tracking-widest text-rose-300">Flagged Users</p>
+          </div>
+          <div className="text-right">
+            <p className="text-4xl font-black">{blocksCount}</p>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-rose-300">Active Blocks</p>
           </div>
         </div>
       </div>
@@ -136,13 +164,20 @@ const TrustSafetyView: React.FC = () => {
             <span>Flagged Users {flaggedCount > 0 && <span className="ml-1 bg-orange-500 text-white text-[10px] font-black rounded-full px-1.5">{flaggedCount}</span>}</span>
           </span>
         </button>
+        <button
+          onClick={() => setTab('blocks')}
+          className={`px-5 py-2 rounded-xl text-sm font-black transition-all ${tab === 'blocks' ? 'bg-white shadow text-slate-900' : 'text-slate-500 hover:text-slate-700'}`}
+        >
+          <span className="flex items-center space-x-2">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+            <span>Blocks {blocksCount > 0 && <span className="ml-1 bg-slate-500 text-white text-[10px] font-black rounded-full px-1.5">{blocksCount}</span>}</span>
+          </span>
+        </button>
       </div>
 
       {/* ── REPORTS TAB ── */}
       {tab === 'reports' && (
         <div className="space-y-4">
-
-          {/* Status filter */}
           <div className="flex items-center space-x-2">
             {(['all', 'pending', 'reviewed', 'actioned'] as ReportStatus[]).map(f => (
               <button
@@ -157,9 +192,7 @@ const TrustSafetyView: React.FC = () => {
                 {f}
               </button>
             ))}
-            <button onClick={loadReports} className="ml-auto text-xs text-slate-400 hover:text-slate-700 font-bold flex items-center space-x-1">
-              <span>↻ Refresh</span>
-            </button>
+            <button onClick={loadReports} className="ml-auto text-xs text-slate-400 hover:text-slate-700 font-bold">↻ Refresh</button>
           </div>
 
           {reportsLoading ? (
@@ -176,8 +209,6 @@ const TrustSafetyView: React.FC = () => {
                 <div key={report.id} className={`bg-white rounded-3xl border p-5 transition-all ${
                   report.status === 'pending' ? 'border-rose-200 shadow-sm' : 'border-slate-100 opacity-80'
                 }`}>
-
-                  {/* Top row */}
                   <div className="flex items-start justify-between mb-3">
                     <div>
                       <div className="flex items-center space-x-2 mb-1">
@@ -187,16 +218,13 @@ const TrustSafetyView: React.FC = () => {
                         <span className="text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full bg-slate-100 text-slate-600">
                           {CATEGORY_LABELS[report.category] || report.category}
                         </span>
-                        <span className="text-[10px] text-slate-400 font-semibold">
-                          #{report.id}
-                        </span>
+                        <span className="text-[10px] text-slate-400 font-semibold">#{report.id}</span>
                       </div>
                       <p className="text-xs text-slate-500">
                         <span className="font-bold text-slate-700">{report.reporter_name || 'Unknown'}</span>
                         {' '}reported{' '}
                         <span className="font-bold text-rose-700">{report.reported_name || report.reported_id}</span>
-                        {' · '}
-                        {report.reported_type === 'user' ? '👤 User' : report.reported_type}
+                        {' · '}{report.reported_type === 'user' ? '👤 User' : report.reported_type}
                       </p>
                     </div>
                     <span className="text-xs text-slate-400 whitespace-nowrap">
@@ -204,14 +232,10 @@ const TrustSafetyView: React.FC = () => {
                     </span>
                   </div>
 
-                  {/* Description */}
                   {report.description && (
-                    <p className="text-sm text-slate-600 bg-slate-50 rounded-xl p-3 mb-4 italic">
-                      "{report.description}"
-                    </p>
+                    <p className="text-sm text-slate-600 bg-slate-50 rounded-xl p-3 mb-4 italic">"{report.description}"</p>
                   )}
 
-                  {/* Actions */}
                   <div className="flex items-center justify-end space-x-2 pt-3 border-t border-slate-100">
                     {report.status === 'pending' && (
                       <>
@@ -219,16 +243,12 @@ const TrustSafetyView: React.FC = () => {
                           onClick={() => handleReportAction(String(report.id), 'reviewed')}
                           disabled={actioningReport === String(report.id)}
                           className="px-4 py-2 bg-blue-50 text-blue-700 rounded-xl text-xs font-black hover:bg-blue-100 transition-colors disabled:opacity-50"
-                        >
-                          Mark Reviewed
-                        </button>
+                        >Mark Reviewed</button>
                         <button
                           onClick={() => handleReportAction(String(report.id), 'actioned')}
                           disabled={actioningReport === String(report.id)}
                           className="px-4 py-2 bg-rose-600 text-white rounded-xl text-xs font-black hover:bg-rose-700 shadow-lg shadow-rose-600/20 transition-colors disabled:opacity-50"
-                        >
-                          Mark Actioned
-                        </button>
+                        >Mark Actioned</button>
                       </>
                     )}
                     {report.status === 'reviewed' && (
@@ -236,9 +256,7 @@ const TrustSafetyView: React.FC = () => {
                         onClick={() => handleReportAction(String(report.id), 'actioned')}
                         disabled={actioningReport === String(report.id)}
                         className="px-4 py-2 bg-rose-50 text-rose-700 rounded-xl text-xs font-black hover:bg-rose-100 transition-colors disabled:opacity-50"
-                      >
-                        Mark Actioned
-                      </button>
+                      >Mark Actioned</button>
                     )}
                     {report.status === 'actioned' && (
                       <span className="text-xs text-slate-400 font-semibold italic">Resolved</span>
@@ -254,7 +272,6 @@ const TrustSafetyView: React.FC = () => {
       {/* ── FLAGGED USERS TAB ── */}
       {tab === 'flagged' && (
         <div className="space-y-4">
-
           <div className="flex items-center justify-between">
             <p className="text-sm text-slate-500">Users with a risk score above 40 appear here automatically based on report volume and behaviour patterns.</p>
             <button onClick={loadFlagged} className="text-xs text-slate-400 hover:text-slate-700 font-bold">↻ Refresh</button>
@@ -295,67 +312,111 @@ const TrustSafetyView: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Risk score */}
                     <div className={`text-center px-4 py-2 rounded-2xl ${riskColor(user.risk_score || 0)}`}>
                       <p className="text-2xl font-black">{user.risk_score ?? '—'}</p>
                       <p className="text-[10px] font-bold uppercase tracking-widest">Risk Score</p>
                     </div>
 
-                    {/* Actions */}
                     <div className="flex items-center space-x-2">
-                      <button
-                        onClick={() => handleUserAction(user.id, 'warn')}
-                        disabled={actioningUser === user.id}
-                        title="Send a warning notification"
-                        className="px-3 py-2 bg-amber-50 text-amber-700 rounded-xl text-xs font-black hover:bg-amber-100 transition-colors disabled:opacity-50"
-                      >
+                      <button onClick={() => handleUserAction(user.id, 'warn')} disabled={actioningUser === user.id}
+                        className="px-3 py-2 bg-amber-50 text-amber-700 rounded-xl text-xs font-black hover:bg-amber-100 transition-colors disabled:opacity-50">
                         ⚠️ Warn
                       </button>
-                      <button
-                        onClick={() => handleUserAction(user.id, 'restrict')}
-                        disabled={actioningUser === user.id || user.status === 'Suspended'}
-                        title="Suspend account"
-                        className="px-3 py-2 bg-orange-50 text-orange-700 rounded-xl text-xs font-black hover:bg-orange-100 transition-colors disabled:opacity-50"
-                      >
+                      <button onClick={() => handleUserAction(user.id, 'restrict')} disabled={actioningUser === user.id || user.status === 'Suspended'}
+                        className="px-3 py-2 bg-orange-50 text-orange-700 rounded-xl text-xs font-black hover:bg-orange-100 transition-colors disabled:opacity-50">
                         🔒 Suspend
                       </button>
-                      <button
-                        onClick={() => handleUserAction(user.id, 'ban')}
-                        disabled={actioningUser === user.id || user.status === 'Blocked'}
-                        title="Permanently ban user"
-                        className="px-3 py-2 bg-red-600 text-white rounded-xl text-xs font-black hover:bg-red-700 shadow-lg shadow-red-600/20 transition-colors disabled:opacity-50"
-                      >
+                      <button onClick={() => handleUserAction(user.id, 'ban')} disabled={actioningUser === user.id || user.status === 'Blocked'}
+                        className="px-3 py-2 bg-red-600 text-white rounded-xl text-xs font-black hover:bg-red-700 shadow-lg shadow-red-600/20 transition-colors disabled:opacity-50">
                         🚫 Ban
                       </button>
-                      <button
-                        onClick={() => handleUserAction(user.id, 'clear')}
-                        disabled={actioningUser === user.id}
-                        title="Clear risk score and restore account"
-                        className="px-3 py-2 bg-slate-100 text-slate-600 rounded-xl text-xs font-black hover:bg-green-50 hover:text-green-700 transition-colors disabled:opacity-50"
-                      >
+                      <button onClick={() => handleUserAction(user.id, 'clear')} disabled={actioningUser === user.id}
+                        className="px-3 py-2 bg-slate-100 text-slate-600 rounded-xl text-xs font-black hover:bg-green-50 hover:text-green-700 transition-colors disabled:opacity-50">
                         ✓ Clear
                       </button>
                     </div>
                   </div>
 
-                  {/* Trust score bar */}
                   <div className="mt-4 pt-4 border-t border-slate-100">
                     <div className="flex items-center justify-between text-xs text-slate-500 mb-1">
                       <span className="font-semibold">Trust Score</span>
                       <span className="font-bold">{user.trust_score ?? 'N/A'}</span>
                     </div>
                     <div className="w-full bg-slate-100 rounded-full h-1.5">
-                      <div
-                        className="h-1.5 rounded-full bg-indigo-500 transition-all"
-                        style={{ width: `${Math.min(100, user.trust_score || 0)}%` }}
-                      />
+                      <div className="h-1.5 rounded-full bg-indigo-500 transition-all" style={{ width: `${Math.min(100, user.trust_score || 0)}%` }} />
                     </div>
-                    <div className="flex items-center justify-between text-xs text-slate-500 mt-1">
-                      <span>Member since {user.created_at ? new Date(user.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : '—'}</span>
-                    </div>
+                    <p className="text-xs text-slate-400 mt-1">
+                      Member since {user.created_at ? new Date(user.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : '—'}
+                    </p>
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── BLOCKS TAB ── */}
+      {tab === 'blocks' && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-slate-500">
+              All active user blocks across the platform. Removing a block allows both users to contact each other again.
+            </p>
+            <button onClick={loadBlocks} className="text-xs text-slate-400 hover:text-slate-700 font-bold">↻ Refresh</button>
+          </div>
+
+          {blocksLoading ? (
+            <div className="text-center py-16 text-slate-400 font-semibold">Loading blocks…</div>
+          ) : blocks.length === 0 ? (
+            <div className="bg-white rounded-3xl border border-slate-200 p-12 text-center">
+              <svg className="w-10 h-10 mx-auto text-slate-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+              <p className="text-slate-500 font-semibold">No active blocks</p>
+              <p className="text-slate-400 text-sm">User blocks will appear here when users block each other.</p>
+            </div>
+          ) : (
+            <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+              <table className="w-full text-left">
+                <thead className="bg-slate-50 border-b border-slate-100">
+                  <tr>
+                    <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Blocked By</th>
+                    <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Blocked User</th>
+                    <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Date</th>
+                    <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {blocks.map(block => (
+                    <tr key={block.id} className="hover:bg-slate-50/50 transition-colors">
+                      <td className="px-6 py-4">
+                        <p className="text-sm font-bold text-slate-900">{block.blocker_name || block.blocker_id}</p>
+                        <p className="text-xs text-slate-400">{block.blocker_email}</p>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center space-x-2">
+                          <span className="text-slate-300 text-lg">🚫</span>
+                          <div>
+                            <p className="text-sm font-bold text-slate-900">{block.blocked_name || block.blocked_id}</p>
+                            <p className="text-xs text-slate-400">{block.blocked_email}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-xs text-slate-500">
+                        {new Date(block.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <button
+                          onClick={() => handleRemoveBlock(String(block.id))}
+                          disabled={removingBlock === String(block.id)}
+                          className="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl text-xs font-black hover:bg-green-50 hover:text-green-700 transition-colors disabled:opacity-50"
+                        >
+                          {removingBlock === String(block.id) ? 'Removing…' : '↩ Unblock'}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </div>
