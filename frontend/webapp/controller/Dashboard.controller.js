@@ -629,6 +629,12 @@ sap.ui.define([
             if (oTabBar && oTabBar.setSelectedKey) { oTabBar.setSelectedKey("tasks"); }
         },
 
+        onToggleMap: function() {
+            var oModel = this.getModel("appData");
+            var bExpanded = oModel.getProperty("/mapExpanded");
+            oModel.setProperty("/mapExpanded", !bExpanded);
+        },
+
         onNavBack: function() {
             var oNavContainer  = this.byId("navContainer");
             var sCurrentPageId = oNavContainer.getCurrentPage().getId();

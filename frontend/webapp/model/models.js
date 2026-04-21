@@ -209,6 +209,8 @@ sap.ui.define([
             message: ""
         },
 
+        mapExpanded: true,
+
         filters: {
             distance: 10,
             distanceLabel: "Within 10 km",
