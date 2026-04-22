@@ -223,11 +223,11 @@ async function initDb() {
             ['S11', 'Math Tuition', 'Skills',    '📐', 'One-on-one math lessons for all ages and levels.'],
             ['S12', 'IT Support',   'Skills',    '💻', 'Tech help, device setup, and troubleshooting.'],
         ];
-        // Delete stale entries not in the current catalog, then upsert
+        // Seed defaults only if they don't already exist — INSERT IGNORE preserves admin edits
         await connection.query(`DELETE FROM services WHERE id IN ('S13','S14','S15')`);
         for (const [id, name, category, icon, description] of defaultServices) {
             await connection.query(
-                'REPLACE INTO services (id, name, category, icon, description, status) VALUES (?, ?, ?, ?, ?, ?)',
+                'INSERT IGNORE INTO services (id, name, category, icon, description, status) VALUES (?, ?, ?, ?, ?, ?)',
                 [id, name, category, icon, description, 'Active']
             );
         }
