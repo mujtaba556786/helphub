@@ -128,6 +128,40 @@
                             </ScrollContainer>
                         </IconTabFilter>
 
+                        <!-- ── Legal tab — only shown on own profile ── -->
+                        <IconTabFilter text="Legal" icon="sap-icon://document-text" key="legal"
+                            visible="{= String(${appData>/selectedProfile/id}) === String(${appData>/user/id})}">
+                            <ScrollContainer vertical="true" horizontal="false" height="340px">
+                                <VBox class="hhProfSection">
+
+                                    <!-- Terms status hint -->
+                                    <VBox class="sapUiSmallMarginBottom">
+                                        <Text text="{i18n>legalSection}" class="fontBold smallText sapUiTinyMarginBottom"/>
+                                        <Text text="{i18n>termsVersionHint}" wrapping="true" class="smallText grayText"/>
+                                    </VBox>
+
+                                    <!-- View Terms button -->
+                                    <Button
+                                        text="{i18n>viewTerms}"
+                                        icon="sap-icon://document-text"
+                                        type="Ghost"
+                                        width="100%"
+                                        press="onViewTerms"
+                                        class="hhActionBtn"/>
+
+                                    <!-- View Privacy button -->
+                                    <Button
+                                        text="{i18n>viewPrivacy}"
+                                        icon="sap-icon://privacy"
+                                        type="Ghost"
+                                        width="100%"
+                                        press="onViewPrivacy"
+                                        class="hhActionBtn sapUiTinyMarginTop"/>
+
+                                </VBox>
+                            </ScrollContainer>
+                        </IconTabFilter>
+
                     </items>
                 </IconTabBar>
 
