@@ -67,11 +67,23 @@ sap.ui.define([
 
         // Called from links INSIDE the terms dialog itself (can't re-open the same dialog)
         onViewTermsInline: function() {
-            sap.m.MessageToast.show("Full Terms & Conditions available in Profile → Legal.");
+            sap.m.MessageToast.show("Full Terms & Conditions available in Profile → Settings.");
         },
 
         onViewPrivacyInline: function() {
-            sap.m.MessageToast.show("Privacy Policy — coming soon in Profile → Legal.");
+            sap.m.MessageToast.show("Privacy Policy available in Profile → Settings.");
+        },
+
+        // ── Settings tab helpers ──────────────────────────────────────────────
+
+        onOpenHelp: function() {
+            // Future: open in-app Help & FAQ page or external link
+            sap.m.MessageToast.show("Help & FAQ — coming soon.");
+        },
+
+        onContactSupport: function() {
+            // Future: open support email / ticket form
+            sap.m.MessageToast.show("Contact Support — coming soon.");
         },
 
         onTermsEscapeHandler: function(oPromise) {
