@@ -78,8 +78,9 @@ sap.ui.define([
             this._getNotificationsDialog();
             this._getOnboardingDialog();
             this._getTermsDialog(); // pre-warm so it shows instantly if needed
-            setTimeout(this._checkOnboarding.bind(this), 350);
-            setTimeout(this._checkTermsAccepted.bind(this), 500);
+            // Terms checked first — onboarding only runs after terms are confirmed
+            // (see TrustSafetyMixin._checkTermsAccepted and onAcceptTerms)
+            setTimeout(this._checkTermsAccepted.bind(this), 350);
         },
 
         // ── FRAGMENT DIALOG FACTORIES ────────────────────────────────────────────
