@@ -1,8 +1,9 @@
-const router = require('express').Router();
+const router   = require('express').Router();
 const { handleAsync } = require('../middleware/auth');
-const ctrl = require('../controllers/userController');
+const validate = require('../middleware/validate');
+const s        = require('../middleware/schemas');
+const ctrl     = require('../controllers/userController');
 
-// POST /api/ratings — submit or update a rating
-router.post('/', handleAsync(ctrl.createRating));
+router.post('/', validate(s.createRating), handleAsync(ctrl.createRating));
 
 module.exports = router;
