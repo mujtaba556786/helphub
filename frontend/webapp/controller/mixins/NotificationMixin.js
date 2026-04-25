@@ -47,6 +47,19 @@ sap.ui.define([
                         if (iNew > iPrev) {
                             this._showInAppToast("🔔", "New notification",
                                 "You have " + iNew + " unread notification" + (iNew > 1 ? "s" : ""));
+                            // Refresh the list so it's up-to-date when the dialog opens
+                            var sUserId2 = oModel.getProperty("/user/id") || localStorage.getItem("helpmate_user_id");
+                            if (sUserId2) {
+                                fetch(API_BASE + "/api/notifications/" + encodeURIComponent(sUserId2))
+                                    .then(function(r) { return r.json(); })
+                                    .then(function(d) {
+                                        if (d.success) {
+                                            oModel.setProperty("/notifications", d.notifications || []);
+                                            this._applyNotifFilter();
+                                        }
+                                    }.bind(this))
+                                    .catch(function() {});
+                            }
                         }
                     }
                 }.bind(this))

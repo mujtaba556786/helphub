@@ -77,8 +77,10 @@ sap.ui.define([
         // ── Settings tab helpers ──────────────────────────────────────────────
 
         onOpenHelp: function() {
-            // Future: open in-app Help & FAQ page or external link
-            sap.m.MessageToast.show("Help & FAQ — coming soon.");
+            var oModel = this.getModel("appData");
+            oModel.setProperty("/onboarding/step", 1);
+            oModel.setProperty("/onboarding/interests", []);
+            this._getOnboardingDialog().then(function(d) { d.open(); });
         },
 
         onContactSupport: function() {

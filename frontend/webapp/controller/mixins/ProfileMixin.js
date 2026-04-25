@@ -134,6 +134,89 @@ sap.ui.define([
             .catch(function() { MessageToast.show("Could not reach the server."); });
         },
 
+        onOpenMyProfile: function() {
+            var oModel = this.getModel("appData");
+            var oUser  = oModel.getProperty("/user") || {};
+            var oProfile = Object.assign({}, oUser);
+
+            if (oProfile.name && !oProfile.initials) {
+                oProfile.initials = oProfile.name
+                    .split(" ").map(function(p) { return p[0]; })
+                    .join("").substring(0, 2).toUpperCase();
+            }
+            oProfile.reviews = oProfile.reviews || [];
+            oModel.setProperty("/selectedProfile", oProfile);
+
+            var oStars   = this.byId("newRatingStars");
+            var oComment = this.byId("newRatingComment");
+            if (oStars)   oStars.setValue(0);
+            if (oComment) oComment.setValue("");
+
+            this._getProfileDialog().then(function(oDialog) { oDialog.open(); }.bind(this));
+        },
+
+        onEditProfileFromDialog: function() {
+            var that = this;
+            this._getProfileDialog().then(function(d) {
+                d.close();
+                that.onEditProfile();
+            });
+        },
+
+        onViewBookingProfile: function(oEvent) {
+            var oCtx = oEvent.getSource().getParent().getParent().getBindingContext("appData");
+            if (!oCtx) return;
+            var oBooking = oCtx.getObject();
+            var sProviderId = oBooking.provider_id;
+            if (!sProviderId) { MessageToast.show("Provider not found."); return; }
+
+            var oModel = this.getModel("appData");
+            var oProfile = {
+                id:          sProviderId,
+                name:        oBooking.provider_name || "Provider",
+                serviceType: oBooking.service || "",
+                reviews:     []
+            };
+            oProfile.initials = oProfile.name
+                .split(" ").map(function(p) { return p[0]; })
+                .join("").substring(0, 2).toUpperCase();
+
+            oModel.setProperty("/selectedProfile", oProfile);
+            this._trackRecentlyViewed(oProfile);
+
+            var oStars   = this.byId("newRatingStars");
+            var oComment = this.byId("newRatingComment");
+            if (oStars)   oStars.setValue(0);
+            if (oComment) oComment.setValue("");
+
+            this._getProfileDialog().then(function(oDialog) { oDialog.open(); }.bind(this));
+
+            var that = this;
+            fetch(API_BASE + "/api/providers/" + encodeURIComponent(sProviderId))
+                .then(function(r) { return r.json(); })
+                .then(function(oData) {
+                    if (oData.success && oData.provider) {
+                        var oFull = Object.assign({}, oProfile, oData.provider);
+                        if (!oFull.initials) {
+                            oFull.initials = (oFull.name || "").split(" ")
+                                .map(function(p) { return p[0]; })
+                                .join("").substring(0, 2).toUpperCase();
+                        }
+                        oModel.setProperty("/selectedProfile", oFull);
+                    }
+                })
+                .catch(function() { /* keep stub data on error */ });
+
+            fetch(API_BASE + "/api/providers/" + encodeURIComponent(sProviderId) + "/ratings")
+                .then(function(r) { return r.json(); })
+                .then(function(oData) {
+                    if (oData.success) {
+                        oModel.setProperty("/selectedProfile/reviews", that._formatReviews(oData.ratings || []));
+                    }
+                })
+                .catch(function() { });
+        },
+
         onCloseProfile: function() {
             this._getProfileDialog().then(function(d) { d.close(); }.bind(this));
         }

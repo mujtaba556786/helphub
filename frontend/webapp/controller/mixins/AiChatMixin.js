@@ -107,6 +107,9 @@ sap.ui.define([
                                         sFullReply += o.text;
                                         that._chatMessages[iPlaceholder].content = sFullReply;
                                         that._renderChatBubbles(that._chatMessages);
+                                    } else if (o.error) {
+                                        that._chatMessages[iPlaceholder].content = "⚠️ " + o.error;
+                                        that._renderChatBubbles(that._chatMessages);
                                     }
                                 } catch (e) { /* skip */ }
                             });

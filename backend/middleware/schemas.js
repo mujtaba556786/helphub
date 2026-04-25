@@ -123,8 +123,8 @@ const deleteTask = z.object({
 
 // ── Messages ──────────────────────────────────────────────────────────────────
 const createConversation = z.object({
-    user1: userId,
-    user2: userId
+    user1_id: userId,
+    user2_id: userId
 });
 
 const sendMessage = z.object({

@@ -377,20 +377,25 @@ sap.ui.define([
 
         onLanguageMenu: function(oEvent) {
             var oButton = oEvent.getSource();
-            if (!this._oLangSheet) {
-                this._oLangSheet = new sap.m.ActionSheet({
+            if (!this._oLangPopover) {
+                this._oLangPopover = new sap.m.Popover({
                     title: "Select Language",
-                    showCancelButton: true,
-                    buttons: [
-                        new sap.m.Button({ text: "🇬🇧  English",  press: this._applyLanguage.bind(this, "en") }),
-                        new sap.m.Button({ text: "🇩🇪  Deutsch",  press: this._applyLanguage.bind(this, "de") }),
-                        new sap.m.Button({ text: "🇹🇷  Türkçe",   press: this._applyLanguage.bind(this, "tr") }),
-                        new sap.m.Button({ text: "🇸🇦  العربية",  press: this._applyLanguage.bind(this, "ar") })
+                    placement: sap.m.PlacementType.Bottom,
+                    content: [
+                        new sap.m.List({
+                            showSeparators: "None",
+                            items: [
+                                new sap.m.StandardListItem({ title: "🇬🇧  English",  press: this._applyLanguage.bind(this, "en") }),
+                                new sap.m.StandardListItem({ title: "🇩🇪  Deutsch",  press: this._applyLanguage.bind(this, "de") }),
+                                new sap.m.StandardListItem({ title: "🇹🇷  Türkçe",   press: this._applyLanguage.bind(this, "tr") }),
+                                new sap.m.StandardListItem({ title: "🇸🇦  العربية",  press: this._applyLanguage.bind(this, "ar") })
+                            ]
+                        })
                     ]
                 });
-                this.getView().addDependent(this._oLangSheet);
+                this.getView().addDependent(this._oLangPopover);
             }
-            this._oLangSheet.openBy(oButton);
+            this._oLangPopover.openBy(oButton);
         },
 
         _applyLanguage: function(sLang) {
