@@ -1,9 +1,11 @@
-const router = require('express').Router();
-const path = require('path');
-const multer = require('multer');
+const router   = require('express').Router();
+const path     = require('path');
+const multer   = require('multer');
 const { v4: uuidv4 } = require('uuid');
 const { handleAsync } = require('../middleware/auth');
-const ctrl = require('../controllers/userController');
+const validate = require('../middleware/validate');
+const s        = require('../middleware/schemas');
+const ctrl     = require('../controllers/userController');
 
 const UPLOADS_DIR = path.join(__dirname, '../uploads');
 const ALLOWED_MIME = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
@@ -24,12 +26,12 @@ const avatarUpload = multer({
     }
 });
 
-router.get('/',                         handleAsync(ctrl.getAll));
-router.put('/:id',                      handleAsync(ctrl.updateUser));
-router.post('/:id/avatar',              avatarUpload.single('avatar'), handleAsync(ctrl.uploadAvatar));
-router.put('/:id/status',               handleAsync(ctrl.updateStatus));
-router.put('/:id/approve',              handleAsync(ctrl.approveUser));
-router.put('/:id/onboard',              handleAsync(ctrl.onboardUser));
-router.put('/:id/profile',              handleAsync(ctrl.updateProfile));
+router.get('/',            handleAsync(ctrl.getAll));
+router.put('/:id',         validate(s.updateUser),    handleAsync(ctrl.updateUser));
+router.post('/:id/avatar', avatarUpload.single('avatar'), handleAsync(ctrl.uploadAvatar));
+router.put('/:id/status',  validate(s.updateStatus),  handleAsync(ctrl.updateStatus));
+router.put('/:id/approve', handleAsync(ctrl.approveUser));
+router.put('/:id/onboard', validate(s.onboardUser),   handleAsync(ctrl.onboardUser));
+router.put('/:id/profile', validate(s.updateProfile), handleAsync(ctrl.updateProfile));
 
 module.exports = router;
