@@ -21,13 +21,17 @@ sap.ui.define([
             var bNeedsAccept = !sTermsAt || sUserVersion !== CURRENT_TERMS_VERSION;
 
             if (bNeedsAccept) {
+                // Terms needed — show terms dialog, hold onboarding until accepted
                 var bIsUpdate = !!sTermsAt && sUserVersion !== CURRENT_TERMS_VERSION;
                 oModel.setProperty("/user/termsUpdateRequired", bIsUpdate);
-                oModel.setProperty("/termsCheckbox", false); // always reset on open
+                oModel.setProperty("/termsCheckbox", false);
 
                 this._getTermsDialog().then(function(oDialog) {
                     oDialog.open();
                 }.bind(this));
+            } else {
+                // Terms already accepted — safe to check onboarding now
+                setTimeout(this._checkOnboarding.bind(this), 150);
             }
         },
 
@@ -40,6 +44,8 @@ sap.ui.define([
                         oModel.setProperty("/user/terms_version", CURRENT_TERMS_VERSION);
                         oModel.setProperty("/user/termsUpdateRequired", false);
                         this._getTermsDialog().then(function(oDialog) { oDialog.close(); });
+                        // Terms just accepted — now check onboarding
+                        setTimeout(this._checkOnboarding.bind(this), 300);
                     }
                 }.bind(this))
                 .catch(function() {
