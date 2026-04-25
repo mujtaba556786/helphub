@@ -77,6 +77,7 @@ sap.ui.define([
             this._getTaskDetailDialog();
             this._getNotificationsDialog();
             this._getOnboardingDialog();
+            this._getTermsDialog(); // pre-warm so it shows instantly if needed
             setTimeout(this._checkOnboarding.bind(this), 350);
             setTimeout(this._checkTermsAccepted.bind(this), 500);
         },
