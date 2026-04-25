@@ -1,0 +1,209 @@
+const pool = require('../db/pool');
+const path = require('path');
+const fs = require('fs');
+const nodemailer = require('nodemailer');
+
+const UPLOADS_DIR = path.join(__dirname, '../uploads');
+
+async function createMailTransporter() {
+    if (process.env.USE_ETHEREAL === 'true') {
+        const testAccount = await nodemailer.createTestAccount();
+        const transporter = nodemailer.createTransport({ host: 'smtp.ethereal.email', port: 587, secure: false, auth: { user: testAccount.user, pass: testAccount.pass } });
+        return { transporter, isEthereal: true };
+    }
+    const host = process.env.SMTP_HOST || 'smtp.gmail.com';
+    const transporter = nodemailer.createTransport({ host, port: parseInt(process.env.SMTP_PORT || '587'), secure: process.env.SMTP_SECURE === 'true', auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS } });
+    return { transporter, isEthereal: host.includes('ethereal.email') };
+}
+
+async function getAll() {
+    const [rows] = await pool.query('SELECT * FROM users ORDER BY created_at DESC');
+    return rows;
+}
+
+async function updateUser(id, b) {
+    if (b.pincode && !/^[A-Za-z0-9\s\-]{3,10}$/.test(b.pincode.trim())) {
+        throw Object.assign(new Error('Invalid postal code format'), { status: 400 });
+    }
+
+    const fields = [];
+    const values = [];
+    const add = (col, val) => { fields.push(`${col} = ?`); values.push(val); };
+
+    if (b.name        !== undefined) add('name',              b.name || null);
+    if (b.bio         !== undefined) add('bio',               b.bio || null);
+    if (b.languages   !== undefined) add('languages',         b.languages || null);
+    if (b.years       !== undefined) add('years',             parseInt(b.years || 0));
+    if (b.phone       !== undefined) add('phone',             b.phone || null);
+    if (b.rate        !== undefined) add('rate',              parseFloat(b.rate || 0));
+    if (b.availability !== undefined) {
+        add('availability', Array.isArray(b.availability) ? b.availability.join(',') : (b.availability || ''));
+    }
+    if (b.serviceCategories !== undefined) {
+        add('service_categories', Array.isArray(b.serviceCategories) ? b.serviceCategories.join(',') : (b.serviceCategories || ''));
+    }
+    if (b.street_name   !== undefined) add('street_name',   b.street_name || null);
+    if (b.street_number !== undefined) add('street_number', b.street_number || null);
+    if (b.city          !== undefined) add('city',          b.city || null);
+    if (b.state         !== undefined) add('state',         b.state || null);
+    if (b.country       !== undefined) add('country',       b.country || null);
+    if (b.pincode       !== undefined) add('pincode',       b.pincode || null);
+    if (b.lat           !== undefined) add('lat',           parseFloat(b.lat) || null);
+    if (b.lng           !== undefined) add('lng',           parseFloat(b.lng) || null);
+
+    if (fields.length === 0) throw Object.assign(new Error('No fields to update'), { status: 400 });
+
+    values.push(id);
+    await pool.execute(`UPDATE users SET ${fields.join(', ')} WHERE id = ?`, values);
+}
+
+async function uploadAvatar(id, filename) {
+    const [existing] = await pool.query('SELECT avatar FROM users WHERE id = ?', [id]);
+    const oldAvatar = existing[0]?.avatar;
+    if (oldAvatar && oldAvatar.startsWith('/uploads/')) {
+        const oldPath = path.join(UPLOADS_DIR, path.basename(oldAvatar));
+        if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+    }
+    const avatarUrl = `/uploads/${filename}`;
+    await pool.execute('UPDATE users SET avatar = ? WHERE id = ?', [avatarUrl, id]);
+    return avatarUrl;
+}
+
+async function getProviders(category) {
+    let sql = `SELECT id, name, avatar, bio, rating, rate, city, state, country,
+                      lat, lng, languages, years, availability, service_categories, phone
+               FROM users
+               WHERE service_categories IS NOT NULL
+                 AND service_categories != ''
+                 AND service_categories != 'None'
+                 AND lat IS NOT NULL`;
+    const params = [];
+    if (category) {
+        sql += ' AND FIND_IN_SET(?, service_categories)';
+        params.push(category);
+    }
+    sql += ' ORDER BY rating DESC';
+    const [rows] = await pool.query(sql, params);
+    return rows.map(u => ({
+        id: u.id,
+        name: u.name,
+        photo: u.avatar && u.avatar.startsWith('/uploads/') ? `http://localhost:3000${u.avatar}` : (u.avatar || ''),
+        bio: u.bio || '',
+        rating: u.rating || 5.0,
+        rate: u.rate || 0,
+        currency: 'EUR',
+        city: u.city || '',
+        lat: u.lat,
+        lng: u.lng,
+        languages: u.languages || '',
+        years: u.years || 0,
+        availability: u.availability || 'Available Now',
+        serviceType: u.service_categories || '',
+        phone: u.phone || ''
+    }));
+}
+
+async function getProviderRatings(providerId) {
+    const [rows] = await pool.query(
+        `SELECT r.id, r.stars, r.comment, r.created_at, r.status,
+                COALESCE(u.name, r.reviewer_name, 'Anonymous') AS reviewer_name,
+                u.avatar AS reviewer_avatar
+         FROM ratings r
+         LEFT JOIN users u ON u.id = r.user_id
+         WHERE r.provider_id = ? AND r.status IN ('approved', 'pending')
+         ORDER BY r.created_at DESC`,
+        [providerId]
+    );
+    return rows;
+}
+
+async function createRating({ provider_id, user_id, reviewer_name, stars, comment }) {
+    if (!provider_id) throw Object.assign(new Error('provider_id is required'), { status: 400 });
+    if (!user_id)     throw Object.assign(new Error('user_id is required — must be logged in to rate'), { status: 400 });
+    if (user_id === provider_id) throw Object.assign(new Error('You cannot rate yourself'), { status: 400 });
+    const iStars = parseInt(stars);
+    if (!iStars || iStars < 1 || iStars > 5) throw Object.assign(new Error('stars must be 1–5'), { status: 400 });
+
+    const [[existing]] = await pool.query('SELECT id FROM ratings WHERE provider_id = ? AND user_id = ?', [provider_id, user_id]);
+    if (existing) {
+        await pool.execute(
+            'UPDATE ratings SET stars = ?, comment = ?, reviewer_name = ?, status = ?, created_at = NOW() WHERE provider_id = ? AND user_id = ?',
+            [iStars, comment || null, reviewer_name || 'Anonymous', 'pending', provider_id, user_id]
+        );
+    } else {
+        await pool.execute(
+            'INSERT INTO ratings (provider_id, user_id, reviewer_name, stars, comment, status) VALUES (?, ?, ?, ?, ?, ?)',
+            [provider_id, user_id, reviewer_name || 'Anonymous', iStars, comment || null, 'pending']
+        );
+    }
+
+    const [[{ avg }]] = await pool.query(
+        "SELECT ROUND(AVG(stars), 1) AS avg FROM ratings WHERE provider_id = ? AND status = 'approved'",
+        [provider_id]
+    );
+    await pool.execute('UPDATE users SET rating = ? WHERE id = ?', [avg || 0, provider_id]);
+    return { newAverage: avg, updated: !!existing };
+}
+
+async function updateStatus(id, status) {
+    if (!status) throw Object.assign(new Error('status is required'), { status: 400 });
+    await pool.execute('UPDATE users SET status = ? WHERE id = ?', [status, id]);
+}
+
+async function approveUser(id) {
+    await pool.execute("UPDATE users SET status = 'Active' WHERE id = ?", [id]);
+    try {
+        const [[user]] = await pool.query('SELECT name, email FROM users WHERE id = ?', [id]);
+        if (user) {
+            await pool.execute(
+                'INSERT INTO notifications (user_id, type, title, message) VALUES (?, ?, ?, ?)',
+                [id, 'admin_warning', '🎉 Account Approved!',
+                 'Your provider account has been approved. You can now receive bookings and apply to tasks.']
+            );
+            if (user.email) {
+                const { transporter, isEthereal } = await createMailTransporter();
+                const info = await transporter.sendMail({
+                    from: `"HelpHub" <${process.env.SMTP_USER || 'noreply@helphub.app'}>`,
+                    to: user.email,
+                    subject: '🎉 Your HelpHub provider account is approved!',
+                    html: `<div style="font-family:sans-serif;max-width:520px;margin:auto">
+                        <h2>Welcome to HelpHub, ${user.name || 'there'}!</h2>
+                        <p>Great news — your provider account has been <strong>approved</strong>.</p>
+                        <p>You can now:</p>
+                        <ul>
+                            <li>Receive booking requests from customers</li>
+                            <li>Browse and apply to posted tasks</li>
+                            <li>Build your reputation with reviews</li>
+                        </ul>
+                        <p>Log in to get started.</p>
+                        <p style="color:#888;font-size:12px">HelpHub — Neighborhood Help Network</p>
+                    </div>`
+                });
+                if (isEthereal) console.log('Provider approval email preview:', nodemailer.getTestMessageUrl(info));
+            }
+        }
+    } catch (e) {
+        console.error('Provider approval notification error:', e.message);
+    }
+}
+
+async function onboardUser(id, { name, role, bio }) {
+    const newStatus = role === 'Provider' ? 'Pending Approval' : 'Active';
+    await pool.execute(
+        'UPDATE users SET name = ?, role = ?, bio = ?, onboarded = 1, status = ? WHERE id = ?',
+        [name || null, role || 'Customer', bio || null, newStatus, id]
+    );
+    return newStatus;
+}
+
+async function updateProfile(id, { name, bio, avatar }) {
+    await pool.execute(
+        'UPDATE users SET name = ?, bio = ?, avatar = ? WHERE id = ?',
+        [name || null, bio || null, avatar || null, id]
+    );
+}
+
+module.exports = {
+    getAll, updateUser, uploadAvatar, getProviders, getProviderRatings,
+    createRating, updateStatus, approveUser, onboardUser, updateProfile
+};

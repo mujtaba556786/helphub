@@ -1,0 +1,120 @@
+const pool = require('../db/pool');
+const { calculateTrustScore } = require('./TrustService');
+
+async function createBooking({ customer_id, provider_id, service, scheduled_date, scheduled_time, message }) {
+    if (!customer_id || !provider_id) {
+        const err = new Error('customer_id and provider_id are required');
+        err.statusCode = 400;
+        throw err;
+    }
+
+    const id = 'B' + Date.now();
+    await pool.execute(
+        'INSERT INTO bookings (id, customer_id, provider_id, service, scheduled_date, scheduled_time, message) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [id, customer_id, provider_id, service || null, scheduled_date || null, scheduled_time || null, message || null]
+    );
+
+    const [[customer]] = await pool.query('SELECT name FROM users WHERE id = ?', [customer_id]);
+    const [[provider]] = await pool.query('SELECT name FROM users WHERE id = ?', [provider_id]);
+    const customerName = customer?.name || 'Someone';
+
+    await pool.execute(
+        'INSERT INTO notifications (user_id, type, title, message, booking_id) VALUES (?, ?, ?, ?, ?)',
+        [
+            provider_id,
+            'booking_request',
+            `New booking request from ${customerName}`,
+            `${customerName} wants to book ${service || 'your service'}${scheduled_date ? ' on ' + scheduled_date : ''}${scheduled_time ? ' at ' + scheduled_time : ''}.`,
+            id
+        ]
+    );
+
+    return { bookingId: id };
+}
+
+async function getBookingsByUser(userId) {
+    const [rows] = await pool.query(
+        `SELECT b.*,
+                c.name AS customer_name, c.avatar AS customer_avatar,
+                p.name AS provider_name, p.avatar AS provider_avatar,
+                p.service_categories AS provider_service
+         FROM bookings b
+         LEFT JOIN users c ON c.id = b.customer_id
+         LEFT JOIN users p ON p.id = b.provider_id
+         WHERE b.customer_id = ? OR b.provider_id = ?
+         ORDER BY b.created_at DESC`,
+        [userId, userId]
+    );
+    const newCount = rows.filter(b => !b.is_seen).length;
+    return { bookings: rows, newCount };
+}
+
+async function markSeen(userId) {
+    await pool.execute(
+        'UPDATE bookings SET is_seen = 1 WHERE (customer_id = ? OR provider_id = ?) AND is_seen = 0',
+        [userId, userId]
+    );
+}
+
+const VALID_STATUSES = ['confirmed', 'declined', 'completed', 'cancelled'];
+
+async function updateStatus(bookingId, status) {
+    if (!VALID_STATUSES.includes(status)) {
+        const err = new Error('Invalid status');
+        err.statusCode = 400;
+        throw err;
+    }
+
+    await pool.execute('UPDATE bookings SET status = ? WHERE id = ?', [status, bookingId]);
+
+    const [[booking]] = await pool.query(
+        'SELECT b.*, p.name AS provider_name, c.name AS customer_name FROM bookings b LEFT JOIN users p ON p.id = b.provider_id LEFT JOIN users c ON c.id = b.customer_id WHERE b.id = ?',
+        [bookingId]
+    );
+
+    if (booking) {
+        let notifyUserId, title, msg;
+        if (status === 'cancelled') {
+            notifyUserId = booking.provider_id;
+            title = `Booking cancelled by ${booking.customer_name || 'customer'}`;
+            msg = `The booking for ${booking.service || 'a service'} has been cancelled.`;
+        } else if (status === 'confirmed') {
+            notifyUserId = booking.customer_id;
+            title = `${booking.provider_name} confirmed your booking!`;
+            msg = `Your booking for ${booking.service || 'a service'} has been confirmed.`;
+        } else if (status === 'declined') {
+            notifyUserId = booking.customer_id;
+            title = `${booking.provider_name} declined your booking`;
+            msg = `Your booking for ${booking.service || 'a service'} was declined. Try another helper.`;
+        } else {
+            notifyUserId = booking.customer_id;
+            title = `Booking completed`;
+            msg = `Your booking with ${booking.provider_name} is marked as completed.`;
+        }
+
+        await pool.execute(
+            'INSERT INTO notifications (user_id, type, title, message, booking_id) VALUES (?, ?, ?, ?, ?)',
+            [notifyUserId, 'booking_' + status, title, msg, bookingId]
+        );
+
+        if (status === 'completed') {
+            calculateTrustScore(booking.customer_id).catch(() => {});
+            calculateTrustScore(booking.provider_id).catch(() => {});
+        }
+    }
+}
+
+async function getAllBookings() {
+    const [rows] = await pool.query(
+        `SELECT b.*,
+                c.name AS customer_name, c.avatar AS customer_avatar,
+                p.name AS provider_name, p.avatar AS provider_avatar
+         FROM bookings b
+         LEFT JOIN users c ON c.id = b.customer_id
+         LEFT JOIN users p ON p.id = b.provider_id
+         ORDER BY b.created_at DESC`
+    );
+    return rows;
+}
+
+module.exports = { createBooking, getBookingsByUser, markSeen, updateStatus, getAllBookings };
