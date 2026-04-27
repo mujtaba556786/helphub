@@ -331,18 +331,18 @@ sap.ui.define([
         // ── Service card formatters ──────────────────────────────────────────────
         formatServiceIcon: function(sName) {
             var mIcons = {
-                "Babysitting":  "sap-icon://family-care",
-                "Elder Care":   "sap-icon://physical-activity",
-                "Pet Care":     "sap-icon://lab",
-                "Cleaning":     "sap-icon://home",
+                "Cleaning":     "sap-icon://home-share",
                 "Gardening":    "sap-icon://tree",
-                "Handyman":     "sap-icon://tools-opportunity",
-                "IT Support":   "sap-icon://laptop",
-                "Math Tuition": "sap-icon://education",
-                "Groceries":    "sap-icon://cart",
+                "Handyman":     "sap-icon://wrench",
+                "Babysitting":  "sap-icon://group",
+                "Elder Care":   "sap-icon://heart",
+                "Pet Care":     "sap-icon://customer",
                 "Transport":    "sap-icon://car-rental",
+                "Groceries":    "sap-icon://basket",
                 "Cooking":      "sap-icon://meal",
                 "Massage":      "sap-icon://physical-activity",
+                "Math Tuition": "sap-icon://education",
+                "IT Support":   "sap-icon://laptop",
                 "Driver":       "sap-icon://car-rental",
                 "Plumbing":     "sap-icon://wrench",
                 "Electrician":  "sap-icon://flash"
