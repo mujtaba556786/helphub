@@ -56,6 +56,27 @@ sap.ui.define([
             const oAppData = models.createAppDataModel();
             this.setModel(oAppData, "appData");
 
+            // Overwrite service icons with sap-icon:// paths regardless of what models.js cached
+            var SERVICE_ICONS = {
+                "Cleaning":     "sap-icon://home-share",
+                "Gardening":    "sap-icon://tree",
+                "Handyman":     "sap-icon://wrench",
+                "Babysitting":  "sap-icon://group",
+                "Elder Care":   "sap-icon://heart",
+                "Pet Care":     "sap-icon://customer",
+                "Transport":    "sap-icon://car-rental",
+                "Groceries":    "sap-icon://basket",
+                "Cooking":      "sap-icon://meal",
+                "Massage":      "sap-icon://physical-activity",
+                "Math Tuition": "sap-icon://education",
+                "IT Support":   "sap-icon://laptop"
+            };
+            var aServices = oAppData.getProperty("/services") || [];
+            aServices.forEach(function(s) {
+                if (SERVICE_ICONS[s.name]) s.icon = SERVICE_ICONS[s.name];
+            });
+            oAppData.setProperty("/services", aServices);
+
             // Expose StorageHelper globally so all controllers can use it
             window.HelpHubStorage = StorageHelper;
 
