@@ -7,17 +7,17 @@ sap.ui.define([
 
     // Icon + colour per notification type
     var NOTIF_ICON = {
-        task_application: { icon: "📋", color: "#3b82f6" },
-        task_assigned:    { icon: "✅", color: "#16a34a" },
-        booking_request:  { icon: "📅", color: "#f97316" },
-        booking_accepted:  { icon: "🎉", color: "#16a34a" },
-        booking_confirmed: { icon: "🎉", color: "#16a34a" },
-        booking_declined:  { icon: "❌", color: "#ef4444" },
-        booking_completed: { icon: "⭐", color: "#eab308" },
-        booking_cancelled: { icon: "🚫", color: "#94a3b8" },
-        direct_message:   { icon: "💬", color: "#8b5cf6" },
-        admin_warning:    { icon: "⚠️", color: "#f97316" },
-        chat:             { icon: "🤖", color: "#06b6d4" }
+        task_application:  { icon: "sap-icon://task",           color: "#3b82f6" },
+        task_assigned:     { icon: "sap-icon://accept",         color: "#16a34a" },
+        booking_request:   { icon: "sap-icon://calendar",       color: "#f97316" },
+        booking_accepted:  { icon: "sap-icon://appointment-2",  color: "#16a34a" },
+        booking_confirmed: { icon: "sap-icon://appointment-2",  color: "#16a34a" },
+        booking_declined:  { icon: "sap-icon://decline",        color: "#ef4444" },
+        booking_completed: { icon: "sap-icon://star-filled",    color: "#eab308" },
+        booking_cancelled: { icon: "sap-icon://sys-cancel-2",   color: "#94a3b8" },
+        direct_message:    { icon: "sap-icon://discussion",     color: "#8b5cf6" },
+        admin_warning:     { icon: "sap-icon://alert",          color: "#f97316" },
+        chat:              { icon: "sap-icon://da",             color: "#06b6d4" }
     };
 
     return {
@@ -47,7 +47,7 @@ sap.ui.define([
                         var iNew = oData.count || 0;
                         oModel.setProperty("/unreadCount", iNew);
                         if (iNew > iPrev) {
-                            this._showInAppToast("🔔", "New notification",
+                            this._showInAppToast("sap-icon://bell", "New notification",
                                 "You have " + iNew + " unread notification" + (iNew > 1 ? "s" : ""));
                             // Refresh the list so it's up-to-date when the dialog opens
                             var sUserId2 = oModel.getProperty("/user/id") || localStorage.getItem("helpmate_user_id");
@@ -256,9 +256,14 @@ sap.ui.define([
             return oDate.toLocaleDateString([], { month: "short", day: "numeric" });
         },
 
-        formatNotifIconHtml: function (sType) {
-            var cfg   = NOTIF_ICON[sType] || { icon: "🔔", color: "#94a3b8" };
-            return "<span class=\"hhNotifIcon\" style=\"background:" + cfg.color + "20;\">" + cfg.icon + "</span>";
+        formatNotifIconSrc: function (sType) {
+            var cfg = NOTIF_ICON[sType] || { icon: "sap-icon://bell", color: "#94a3b8" };
+            return cfg.icon;
+        },
+
+        formatNotifIconColor: function (sType) {
+            var cfg = NOTIF_ICON[sType] || { icon: "sap-icon://bell", color: "#94a3b8" };
+            return cfg.color;
         },
 
         /* ─────────────────────────────────────────────

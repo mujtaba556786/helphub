@@ -40,7 +40,7 @@
 
                     <!-- TAB 1: Find Help -->
                     <items>
-                        <IconTabFilter key="findHelp" text="{i18n>findHelp}" icon="sap-icon://question-mark">
+                        <IconTabFilter key="findHelp" text="{i18n>findHelp}" icon="sap-icon://search">
                             <ScrollContainer vertical="true" horizontal="false" height="100%">
                                 <VBox class="fiTabContent">
                                     <Title text="{i18n>howCanWeHelp}" level="H1" class="fiPageTitle"/>
@@ -50,7 +50,7 @@
                                         <items>
                                             <CustomListItem class="fiSvcCard" type="Active" press=".onServicePress">
                                                 <VBox class="fiSvcCardInner" alignItems="Center" justifyContent="Center">
-                                                    <Text text="{appData>icon}" class="fiSvcEmoji"/>
+                                                    <core:Icon src="{appData>icon}" size="2.2rem" class="fiSvcIcon"/>
                                                     <Text text="{appData>name}" class="fiSvcName"/>
                                                 </VBox>
                                             </CustomListItem>

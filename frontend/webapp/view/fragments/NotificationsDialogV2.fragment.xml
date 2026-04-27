@@ -50,7 +50,12 @@
                     <HBox alignItems="Start" class="hhNotifRow">
 
                         <!-- Icon bubble -->
-                        <core:HTML content="{path:'appData>type', formatter:'.formatNotifIconHtml'}" class="hhNotifIconWrap"/>
+                        <VBox class="hhNotifIconWrap" justifyContent="Center" alignItems="Center">
+                            <core:Icon
+                                src="{path:'appData>type', formatter:'.formatNotifIconSrc'}"
+                                color="{path:'appData>type', formatter:'.formatNotifIconColor'}"
+                                size="1.1rem"/>
+                        </VBox>
 
                         <!-- Content -->
                         <VBox class="hhNotifContent">

@@ -68,22 +68,22 @@ sap.ui.define([
 
         services: [
             // Home
-            { id: "1",  name: "Cleaning",       icon: "🧹", color: "#a7f3d0", sector: "Home"      },
-            { id: "2",  name: "Gardening",       icon: "🌱", color: "#bbf7d0", sector: "Home"      },
-            { id: "3",  name: "Handyman",        icon: "🔧", color: "#e2e8f0", sector: "Home"      },
+            { id: "1",  name: "Cleaning",       icon: "sap-icon://home-share",      color: "#a7f3d0", sector: "Home"      },
+            { id: "2",  name: "Gardening",       icon: "sap-icon://tree",             color: "#bbf7d0", sector: "Home"      },
+            { id: "3",  name: "Handyman",        icon: "sap-icon://wrench",           color: "#e2e8f0", sector: "Home"      },
             // Care
-            { id: "4",  name: "Babysitting",     icon: "👶", color: "#fecdd3", sector: "Care"      },
-            { id: "5",  name: "Elder Care",      icon: "🧓", color: "#fde68a", sector: "Care"      },
-            { id: "6",  name: "Pet Care",        icon: "🐕", color: "#fbcfe8", sector: "Care"      },
+            { id: "4",  name: "Babysitting",     icon: "sap-icon://group",            color: "#fecdd3", sector: "Care"      },
+            { id: "5",  name: "Elder Care",      icon: "sap-icon://heart",            color: "#fde68a", sector: "Care"      },
+            { id: "6",  name: "Pet Care",        icon: "sap-icon://customer",         color: "#fbcfe8", sector: "Care"      },
             // Transport
-            { id: "7",  name: "Transport",       icon: "🚗", color: "#bfdbfe", sector: "Transport" },
-            { id: "8",  name: "Groceries",       icon: "🛒", color: "#ddd6fe", sector: "Transport" },
+            { id: "7",  name: "Transport",       icon: "sap-icon://car-rental",       color: "#bfdbfe", sector: "Transport" },
+            { id: "8",  name: "Groceries",       icon: "sap-icon://basket",           color: "#ddd6fe", sector: "Transport" },
             // Wellness
-            { id: "9",  name: "Cooking",         icon: "👨‍🍳", color: "#fed7aa", sector: "Wellness"  },
-            { id: "10", name: "Massage",         icon: "💆", color: "#e9d5ff", sector: "Wellness"  },
+            { id: "9",  name: "Cooking",         icon: "sap-icon://meal",             color: "#fed7aa", sector: "Wellness"  },
+            { id: "10", name: "Massage",         icon: "sap-icon://physical-activity",color: "#e9d5ff", sector: "Wellness"  },
             // Skills
-            { id: "11", name: "Math Tuition",    icon: "📐", color: "#fef9c3", sector: "Skills"    },
-            { id: "12", name: "IT Support",      icon: "💻", color: "#e0e7ff", sector: "Skills"    }
+            { id: "11", name: "Math Tuition",    icon: "sap-icon://education",        color: "#fef9c3", sector: "Skills"    },
+            { id: "12", name: "IT Support",      icon: "sap-icon://laptop",           color: "#e0e7ff", sector: "Skills"    }
         ],
 
         providers: [
