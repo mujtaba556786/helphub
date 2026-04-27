@@ -17,24 +17,26 @@
 
         <!-- Step 1: Welcome -->
         <VBox visible="{= ${appData>/onboarding/step} === 1}" class="sapUiMediumMargin hhOnboardStep">
-            <core:HTML content="&lt;div style='text-align:center;font-size:64px;margin-bottom:12px'&gt;🏠&lt;/div&gt;"/>
+            <VBox alignItems="Center" class="sapUiSmallMarginBottom">
+                <core:Icon src="sap-icon://home" size="4rem" class="hhOnboardHeroIcon"/>
+            </VBox>
             <Title text="{i18n>onboardTitle1}" level="H2" class="sapUiSmallMarginBottom textCenter"/>
             <Text text="{i18n>onboardDesc1}" class="grayText sapUiSmallMarginBottom textCenter" wrapping="true"/>
             <VBox class="sapUiSmallMarginTop">
                 <HBox alignItems="Center" class="sapUiTinyMarginBottom">
-                    <core:HTML content="&lt;span style='font-size:20px;margin-right:8px'&gt;📍&lt;/span&gt;"/>
+                    <core:Icon src="sap-icon://map-2" size="1.25rem" class="hhOnboardFeatureIcon sapUiTinyMarginEnd"/>
                     <Text text="{i18n>onboardFeature1}" wrapping="true"/>
                 </HBox>
                 <HBox alignItems="Center" class="sapUiTinyMarginBottom">
-                    <core:HTML content="&lt;span style='font-size:20px;margin-right:8px'&gt;💬&lt;/span&gt;"/>
+                    <core:Icon src="sap-icon://discussion" size="1.25rem" class="hhOnboardFeatureIcon sapUiTinyMarginEnd"/>
                     <Text text="{i18n>onboardFeature2}" wrapping="true"/>
                 </HBox>
                 <HBox alignItems="Center" class="sapUiTinyMarginBottom">
-                    <core:HTML content="&lt;span style='font-size:20px;margin-right:8px'&gt;📋&lt;/span&gt;"/>
+                    <core:Icon src="sap-icon://task" size="1.25rem" class="hhOnboardFeatureIcon sapUiTinyMarginEnd"/>
                     <Text text="{i18n>onboardFeature3}" wrapping="true"/>
                 </HBox>
                 <HBox alignItems="Center" class="sapUiTinyMarginBottom">
-                    <core:HTML content="&lt;span style='font-size:20px;margin-right:8px'&gt;🛋️&lt;/span&gt;"/>
+                    <core:Icon src="sap-icon://home" size="1.25rem" class="hhOnboardFeatureIcon sapUiTinyMarginEnd"/>
                     <Text text="{i18n>onboardFeature4}" wrapping="true"/>
                 </HBox>
             </VBox>
@@ -84,18 +86,18 @@
         <VBox visible="{= ${appData>/onboarding/step} === 3}" class="sapUiMediumMargin hhOnboardStep">
             <Text text="{i18n>onboardSelectInterests}" class="grayText sapUiSmallMarginBottom"/>
             <FlexBox wrap="Wrap" class="sapUiTinyMarginTop">
-                <Button text="🧹 Cleaning"     data:interestKey="Cleaning"     press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
-                <Button text="🌱 Gardening"    data:interestKey="Gardening"    press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
-                <Button text="🔧 Handyman"     data:interestKey="Handyman"     press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
-                <Button text="👶 Babysitting"  data:interestKey="Babysitting"  press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
-                <Button text="🧓 Elder Care"   data:interestKey="Elder Care"   press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
-                <Button text="🐕 Pet Care"     data:interestKey="Pet Care"     press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
-                <Button text="🚗 Transport"    data:interestKey="Transport"    press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
-                <Button text="🛒 Groceries"    data:interestKey="Groceries"    press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
-                <Button text="👨‍🍳 Cooking"    data:interestKey="Cooking"      press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
-                <Button text="💆 Massage"      data:interestKey="Massage"      press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
-                <Button text="📐 Math Tuition" data:interestKey="Math Tuition" press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
-                <Button text="💻 IT Support"   data:interestKey="IT Support"   press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                <Button icon="sap-icon://home-share"       text="Cleaning"     data:interestKey="Cleaning"     press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                <Button icon="sap-icon://tree"             text="Gardening"    data:interestKey="Gardening"    press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                <Button icon="sap-icon://wrench"           text="Handyman"     data:interestKey="Handyman"     press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                <Button icon="sap-icon://group"            text="Babysitting"  data:interestKey="Babysitting"  press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                <Button icon="sap-icon://heart"            text="Elder Care"   data:interestKey="Elder Care"   press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                <Button icon="sap-icon://customer"         text="Pet Care"     data:interestKey="Pet Care"     press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                <Button icon="sap-icon://car-rental"       text="Transport"    data:interestKey="Transport"    press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                <Button icon="sap-icon://basket"           text="Groceries"    data:interestKey="Groceries"    press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                <Button icon="sap-icon://meal"             text="Cooking"      data:interestKey="Cooking"      press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                <Button icon="sap-icon://physical-activity" text="Massage"     data:interestKey="Massage"      press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                <Button icon="sap-icon://education"        text="Math Tuition" data:interestKey="Math Tuition" press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                <Button icon="sap-icon://laptop"           text="IT Support"   data:interestKey="IT Support"   press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
             </FlexBox>
         </VBox>
 
