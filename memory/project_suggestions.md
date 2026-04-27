@@ -71,3 +71,36 @@ Emergency/Urgent Flag	"Need help TODAY" with higher rate — providers opt into 
 Provider Portfolio	Photo gallery of past work (especially for handyman, gardening, cooking)
 Group Bookings	Multiple neighbors book same provider (e.g., group cooking class)
 Seasonal Highlights	Auto-promote snow removal in winter, gardening in spring
+
+---
+
+## Frontend Field Validation Highlighting (Option B)
+
+**Status:** Deferred — implement later  
+**Priority:** Polish / UX improvement
+
+**What:** The backend now returns `{ success: false, error: "...", field: "fieldName" }` on validation failures. The frontend currently shows the error message via `MessageToast` (Option A — good enough for now). 
+
+**Goal:** Use the `field` property to highlight the specific SAP UI5 input with `ValueState.Error` + `ValueStateText`.
+
+**Pattern to implement in each mixin/controller:**
+```js
+// After a failed API call that returns oData.field:
+if (!oData.success && oData.field) {
+    var oInput = this.byId(fieldToInputIdMap[oData.field]);
+    if (oInput) {
+        oInput.setValueState("Error");
+        oInput.setValueStateText(oData.error);
+    }
+}
+// On dialog close / re-open: reset ValueState to None
+```
+
+**Affected files to update:**
+- `controller/Login.controller.js` → `emailInput`
+- `controller/mixins/BookingMixin.js` → booking dialog inputs
+- `controller/mixins/TaskMixin.js` → PostTaskDialog inputs  
+- `controller/mixins/ProfileMixin.js` → profile/rating inputs
+- `controller/mixins/TrustSafetyMixin.js` → report dialog inputs
+
+**Prerequisites:** Read each fragment XML to map field names → input IDs before coding.
