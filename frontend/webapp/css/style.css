@@ -331,14 +331,25 @@
     box-shadow: 0 6px 24px rgba(15,23,42,0.13) !important;
     transform: translateY(-3px) !important;
 }
+.fiSvcCard:hover .fiSvcIconWrap {
+    background: #10b981 !important;
+}
+.fiSvcCard:hover .fiSvcIcon { color: #fff !important; }
 
 .fiSvcCardInner {
     padding: 22px 12px 18px !important;
     gap: 10px !important; min-height: 100px;
 }
+.fiSvcIconWrap {
+    width: 56px; height: 56px; min-width: 56px;
+    border-radius: 50% !important;
+    background: rgba(16,185,129,0.12) !important;
+    transition: background 0.2s ease !important;
+    margin-bottom: 4px;
+}
 .fiSvcIcon {
-    font-size: 2.2rem !important;
-    color: #334155 !important;
+    color: #10b981 !important;
+    transition: color 0.2s ease !important;
 }
 .fiSvcName {
     font-size: 13px !important; font-weight: 600 !important;
