@@ -50,7 +50,9 @@
                                         <items>
                                             <CustomListItem class="fiSvcCard" type="Active" press=".onServicePress">
                                                 <VBox class="fiSvcCardInner" alignItems="Center" justifyContent="Center">
-                                                    <core:Icon src="{appData>icon}" size="2.2rem" class="fiSvcIcon"/>
+                                                    <VBox class="fiSvcIconWrap" alignItems="Center" justifyContent="Center">
+                                                        <core:Icon src="{appData>icon}" size="1.6rem" class="fiSvcIcon"/>
+                                                    </VBox>
                                                     <Text text="{appData>name}" class="fiSvcName"/>
                                                 </VBox>
                                             </CustomListItem>
