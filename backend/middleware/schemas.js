@@ -88,7 +88,7 @@ const createBooking = z.object({
 });
 
 const updateBookingStatus = z.object({
-    status: z.enum(['pending', 'confirmed', 'completed', 'cancelled'])
+    status: z.enum(['pending', 'confirmed', 'declined', 'completed', 'cancelled'])
 });
 
 // ── Tasks ─────────────────────────────────────────────────────────────────────

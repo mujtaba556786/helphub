@@ -92,10 +92,22 @@ async function updateStatus(bookingId, status) {
             msg = `Your booking with ${booking.provider_name} is marked as completed.`;
         }
 
+        const typeMap = { confirmed: 'booking_accepted', declined: 'booking_declined', completed: 'booking_completed', cancelled: 'booking_cancelled' };
         await pool.execute(
             'INSERT INTO notifications (user_id, type, title, message, booking_id) VALUES (?, ?, ?, ?, ?)',
-            [notifyUserId, 'booking_' + status, title, msg, bookingId]
+            [notifyUserId, typeMap[status] || ('booking_' + status), title, msg, bookingId]
         );
+
+        // Also notify the customer when they cancel so it appears in their own bell
+        if (status === 'cancelled' && booking.customer_id !== booking.provider_id) {
+            await pool.execute(
+                'INSERT INTO notifications (user_id, type, title, message, booking_id) VALUES (?, ?, ?, ?, ?)',
+                [booking.customer_id, 'booking_cancelled',
+                 `You cancelled your booking`,
+                 `Your booking for ${booking.service || 'a service'} with ${booking.provider_name || 'the helper'} has been cancelled.`,
+                 bookingId]
+            );
+        }
 
         if (status === 'completed') {
             calculateTrustScore(booking.customer_id).catch(() => {});

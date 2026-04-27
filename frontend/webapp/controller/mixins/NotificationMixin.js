@@ -10,9 +10,11 @@ sap.ui.define([
         task_application: { icon: "📋", color: "#3b82f6" },
         task_assigned:    { icon: "✅", color: "#16a34a" },
         booking_request:  { icon: "📅", color: "#f97316" },
-        booking_accepted: { icon: "🎉", color: "#16a34a" },
-        booking_declined: { icon: "❌", color: "#ef4444" },
-        booking_completed:{ icon: "⭐", color: "#eab308" },
+        booking_accepted:  { icon: "🎉", color: "#16a34a" },
+        booking_confirmed: { icon: "🎉", color: "#16a34a" },
+        booking_declined:  { icon: "❌", color: "#ef4444" },
+        booking_completed: { icon: "⭐", color: "#eab308" },
+        booking_cancelled: { icon: "🚫", color: "#94a3b8" },
         direct_message:   { icon: "💬", color: "#8b5cf6" },
         admin_warning:    { icon: "⚠️", color: "#f97316" },
         chat:             { icon: "🤖", color: "#06b6d4" }
@@ -164,7 +166,8 @@ sap.ui.define([
                 oTabBar.fireSelect({ key: "tasks" });
 
             } else if (sType === "booking_request" || sType === "booking_accepted" ||
-                       sType === "booking_declined" || sType === "booking_completed") {
+                       sType === "booking_confirmed" || sType === "booking_declined" ||
+                       sType === "booking_completed" || sType === "booking_cancelled") {
                 oTabBar.setSelectedKey("mySchedule");
                 oTabBar.fireSelect({ key: "mySchedule" });
 
