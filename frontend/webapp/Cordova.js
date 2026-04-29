@@ -759,11 +759,55 @@
         setTimeout(function() {
             var event = new Event('deviceready');
             document.dispatchEvent(event);
-            
+
             console.log('%c✅ Cordova Mock: deviceready event fired', 'color: #4CAF50; font-weight: bold; font-size: 14px;');
             console.log('%c💡 Running in browser mode. For actual mobile features, build with Cordova CLI.', 'color: #FF9800; font-size: 12px;');
             console.log('%cDevice Info:', 'font-weight: bold;', window.device);
+
+            // ── Push notification registration ────────────────────────────
+            initPushNotifications();
         }, 100);
+    }
+
+    function initPushNotifications() {
+        // Only run when the real Cordova push plugin is available (on-device builds)
+        if (typeof window.PushNotification === 'undefined') {
+            console.log('📵 Push plugin not available (browser mode) — skipping registration');
+            return;
+        }
+
+        var push = window.PushNotification.init({
+            android: { sound: true, vibrate: true, clearNotifications: true },
+            ios:     { alert: true, badge: true, sound: true },
+        });
+
+        push.on('registration', function(data) {
+            console.log('📲 FCM token received:', data.registrationId);
+            var userId = window._currentUserId || localStorage.getItem('userId');
+            if (!userId || !data.registrationId) return;
+
+            fetch('/api/notifications/device-token', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId:   userId,
+                    token:    data.registrationId,
+                    platform: window.device ? window.device.platform.toLowerCase() : 'android',
+                }),
+            }).catch(function(e) { console.warn('Token save failed:', e); });
+        });
+
+        push.on('notification', function(data) {
+            console.log('🔔 Push received:', data);
+            // Refresh notification bell count if app is open
+            if (typeof window._refreshNotifications === 'function') {
+                window._refreshNotifications();
+            }
+        });
+
+        push.on('error', function(e) {
+            console.warn('Push error:', e.message);
+        });
     }
     
     // ====================================================================

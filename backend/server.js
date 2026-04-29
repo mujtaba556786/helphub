@@ -5,6 +5,23 @@ const cors    = require('cors');
 const path    = require('path');
 const fs      = require('fs');
 
+// ── Firebase Admin init ───────────────────────────────────────────────────────
+const admin = require('firebase-admin');
+if (!admin.apps.length) {
+    try {
+        admin.initializeApp({
+            credential: admin.credential.cert({
+                projectId:   process.env.FIREBASE_PROJECT_ID,
+                clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+                privateKey:  (process.env.FIREBASE_PRIVATE_KEY || '').replace(/\\n/g, '\n'),
+            }),
+        });
+        console.log('🔔 Firebase Admin initialised');
+    } catch (e) {
+        console.warn('⚠️  Firebase Admin init skipped:', e.message);
+    }
+}
+
 // ── Uploads directory ─────────────────────────────────────────────────────────
 const UPLOADS_DIR = path.join(__dirname, 'uploads');
 if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
@@ -287,6 +304,17 @@ async function initDb() {
                 INDEX idx_reporter (reporter_id),
                 INDEX idx_reported (reported_id),
                 INDEX idx_status (status)
+            )
+        `);
+
+        await connection.query(`
+            CREATE TABLE IF NOT EXISTS device_tokens (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                user_id VARCHAR(50) NOT NULL,
+                token TEXT NOT NULL,
+                platform VARCHAR(20) DEFAULT 'android',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_user (user_id)
             )
         `);
 

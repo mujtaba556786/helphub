@@ -1,10 +1,11 @@
 sap.ui.define([
     "sap/m/MessageToast",
-    "sap/m/MessageBox"
-], function(MessageToast, MessageBox) {
+    "sap/m/MessageBox",
+    "helphub/config"
+], function(MessageToast, MessageBox, Config) {
     "use strict";
 
-    var API_BASE = "http://localhost:3000";
+    var API_BASE = Config.API_BASE;
 
     return {
 

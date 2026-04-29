@@ -1,4 +1,5 @@
 const NotificationService = require('../services/NotificationService');
+const PushService         = require('../services/PushService');
 
 async function getByUser(req, res) {
     const notifications = await NotificationService.getByUser(req.params.userId);
@@ -20,4 +21,18 @@ async function markAllRead(req, res) {
     res.json({ success: true });
 }
 
-module.exports = { getByUser, getUnreadCount, markRead, markAllRead };
+async function saveDeviceToken(req, res) {
+    const { userId, token, platform } = req.body;
+    if (!userId || !token) return res.status(400).json({ success: false, error: 'userId and token required' });
+    await PushService.saveToken(userId, token, platform || 'android');
+    res.json({ success: true });
+}
+
+async function deleteDeviceToken(req, res) {
+    const { token } = req.body;
+    if (!token) return res.status(400).json({ success: false, error: 'token required' });
+    await PushService.removeToken(token);
+    res.json({ success: true });
+}
+
+module.exports = { getByUser, getUnreadCount, markRead, markAllRead, saveDeviceToken, deleteDeviceToken };

@@ -1,4 +1,5 @@
-const pool = require('../db/pool');
+const pool        = require('../db/pool');
+const PushService = require('./PushService');
 
 async function getByUser(userId) {
     const [rows] = await pool.query(
@@ -24,4 +25,14 @@ async function markAllRead(userId) {
     await pool.execute('UPDATE notifications SET is_read = 1 WHERE user_id = ?', [userId]);
 }
 
-module.exports = { getByUser, getUnreadCount, markRead, markAllRead };
+// Create an in-app notification and also fire a push notification to the user's devices.
+async function createAndPush(userId, type, title, message, bookingId = null) {
+    await pool.execute(
+        'INSERT INTO notifications (user_id, type, title, message, booking_id) VALUES (?, ?, ?, ?, ?)',
+        [userId, type, title, message, bookingId]
+    );
+    // Fire push silently — don't let a push failure break the main flow
+    PushService.sendToUser(userId, title, message, { type, bookingId: bookingId || '' }).catch(() => {});
+}
+
+module.exports = { getByUser, getUnreadCount, markRead, markAllRead, createAndPush };
