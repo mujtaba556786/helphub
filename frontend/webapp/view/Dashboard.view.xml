@@ -20,16 +20,12 @@
                         </HBox>
                     </contentLeft>
                     <contentRight>
-                        <HBox alignItems="Center" class="sapUiTinyMarginEnd">
+                        <HBox alignItems="Center" class="hhHeaderRight">
                             <HBox class="hhNotifBtnWrap">
                                 <Button id="notifBtn" icon="sap-icon://bell" type="Transparent" press="onShowNotifications" tooltip="{i18n>notifications}"/>
                                 <core:HTML id="notifBadge" content="{= ${appData>/unreadCount} > 0 ? '&lt;span class=&quot;hhNotifBadge&quot;&gt;' + (${appData>/unreadCount} > 9 ? &apos;9+&apos; : ${appData>/unreadCount}) + '&lt;/span&gt;' : ''}"/>
                             </HBox>
-                            <Button icon="sap-icon://world" type="Transparent" press="onLanguageMenu" tooltip="{i18n>changeLanguage}"/>
-                            <Button icon="sap-icon://it-system" type="Transparent" press="onNavToAdmin" tooltip="{i18n>adminPanel}"
-                                visible="{= ${appData>/user/role} === 'admin'}"/>
-                            <Avatar src="{appData>/user/photo}" initials="{appData>/user/initials}" displaySize="XS" backgroundColor="Accent6" press="onEditProfile" class="sapUiTinyMarginEnd" />
-                            <Button icon="sap-icon://log" press="onLogout" type="Transparent" tooltip="{i18n>signOut}"/>
+                            <Avatar id="headerAvatar" src="{appData>/user/photo}" initials="{appData>/user/initials}" displaySize="XS" backgroundColor="Accent6" press="onHeaderAvatarMenu" class="hhHeaderAvatar"/>
                         </HBox>
                     </contentRight>
                 </Bar>
@@ -51,7 +47,7 @@
                                             <CustomListItem class="fiSvcCard" type="Active" press=".onServicePress">
                                                 <VBox class="fiSvcCardInner" alignItems="Center" justifyContent="Center">
                                                     <VBox class="fiSvcIconWrap" alignItems="Center" justifyContent="Center">
-                                                        <core:Icon src="{path:'appData>name', formatter:'.formatServiceIcon'}" size="1.6rem" class="fiSvcIcon"/>
+                                                        <core:Icon src="{path:'appData>name', formatter:'.formatServiceIcon'}" class="fiSvcIcon"/>
                                                     </VBox>
                                                     <Text text="{appData>name}" class="fiSvcName"/>
                                                 </VBox>
@@ -788,7 +784,18 @@
                 </IconTabBar>
             </content>
 
-            <dependents/>
+            <dependents>
+                <!-- Avatar header menu -->
+                <ActionSheet id="headerAvatarSheet" title="" showCancelButton="true" cancelButtonText="{i18n>cancel}">
+                    <buttons>
+                        <Button text="{i18n>editProfile}"     icon="sap-icon://person-placeholder" press="onEditProfile"/>
+                        <Button text="{i18n>changeLanguage}"  icon="sap-icon://world"              press="onLanguageMenu"/>
+                        <Button text="{i18n>adminPanel}"      icon="sap-icon://it-system"          press="onNavToAdmin"
+                            visible="{= ${appData>/user/role} === 'admin'}"/>
+                        <Button text="{i18n>signOut}"         icon="sap-icon://log"                press="onLogout" type="Reject"/>
+                    </buttons>
+                </ActionSheet>
+            </dependents>
 
         </Page>
 

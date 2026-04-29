@@ -373,6 +373,11 @@ sap.ui.define([
             return mDesc[sName] || "Professional service near you";
         },
 
+        onHeaderAvatarMenu: function(oEvent) {
+            var oSheet = this.byId("headerAvatarSheet");
+            oSheet.openBy(oEvent.getSource());
+        },
+
         onNavToAdmin: function() {
             this.navTo("admin");
         },

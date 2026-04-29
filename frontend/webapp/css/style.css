@@ -10,6 +10,69 @@
 .smallText  { font-size: 0.9rem; }
 .errorText  { font-size: 0.8rem; }
 
+/* ══════════════════════════════════════════════════════════════
+   HEADER — collapsed to 2 items (bell + avatar)
+   ══════════════════════════════════════════════════════════════ */
+.hhHeaderRight {
+    gap: 4px;
+    align-items: center;
+    padding-right: 4px;
+}
+/* Bell button — enforce 44px touch target */
+.hhNotifBtnWrap .sapMBtn {
+    width: 44px !important;
+    height: 44px !important;
+    padding: 0 !important;
+}
+/* Avatar in header — 44px touch target via wrapper */
+.hhHeaderAvatar {
+    cursor: pointer;
+    margin-left: 2px;
+}
+.hhHeaderAvatar.sapFAvatar {
+    width: 32px !important;
+    height: 32px !important;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SAFE AREA — notch + home indicator
+   ══════════════════════════════════════════════════════════════ */
+.sapMPage > header,
+.sapMPageHeader {
+    padding-top: env(safe-area-inset-top) !important;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   BOTTOM TAB BAR — pin IconTabBar header strip to bottom
+   Targets sapMITH (the visible tab strip) not the outer sapMITB
+   wrapper, because SAP overrides position on the outer element.
+   ══════════════════════════════════════════════════════════════ */
+html body .sapMITB {
+    display: flex !important;
+    flex-direction: column-reverse !important;
+    position: static !important;
+}
+html body .sapMITH {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 200 !important;
+    padding-bottom: env(safe-area-inset-bottom) !important;
+    border-top: 1px solid var(--sapContent_ForegroundBorderColor) !important;
+    border-bottom: none !important;
+    box-shadow: 0 -2px 12px rgba(15,23,42,0.08) !important;
+    background: var(--sapBaseColor, #fff) !important;
+}
+/* Push tab content above the fixed strip (56px bar + safe area) */
+html body .sapMITBContainerContent {
+    padding-bottom: calc(60px + env(safe-area-inset-bottom)) !important;
+}
+/* On very narrow screens hide tab labels — icons only */
+@media (max-width: 360px) {
+    .sapMITBText { display: none !important; }
+}
+
 /* ── Login ────────────────────────────────────────────────────── */
 .loginCard {
     border-radius: 18px;
@@ -341,14 +404,17 @@
     gap: 10px !important; min-height: 100px;
 }
 .fiSvcIconWrap {
-    width: 56px; height: 56px; min-width: 56px;
-    border-radius: 50% !important;
+    width: 48px !important;
+    height: 48px !important;
+    min-width: 48px !important;
+    border-radius: 12px !important;
     background: rgba(16,185,129,0.12) !important;
     transition: background 0.2s ease !important;
-    margin-bottom: 4px;
+    margin-bottom: 4px !important;
 }
-.fiSvcIcon {
+.fiSvcIcon.sapUiIcon {
     color: #10b981 !important;
+    font-size: 1.25rem !important;
     transition: color 0.2s ease !important;
 }
 .fiSvcName {
@@ -445,7 +511,7 @@
 
 /* Actions row */
 .hhExpertActions  { gap: 6px; align-items: center; flex-wrap: wrap; padding-top: 4px; border-top: 1px solid; }
-.hhExpertIconBtn.sapMBtn   { width: 34px !important; height: 34px !important; padding: 0 !important; border-radius: 50% !important; }
+.hhExpertIconBtn.sapMBtn   { width: 40px !important; height: 40px !important; padding: 0 !important; border-radius: 50% !important; }
 .hhExpertProfileBtn.sapMBtn { font-size: 0.82rem !important; padding: 0 8px !important; }
 .hhExpertBookBtn.sapMBtn    { border-radius: 8px !important; height: 34px !important; font-size: 0.82rem !important; font-weight: 600 !important; }
 .hhExpertMsgBtn.sapMBtn     { border-radius: 8px !important; height: 34px !important; font-size: 0.82rem !important; }
