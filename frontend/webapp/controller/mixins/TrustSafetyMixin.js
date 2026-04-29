@@ -1,10 +1,11 @@
 sap.ui.define([
     "sap/m/MessageToast",
-    "sap/ui/core/Fragment"
-], function(MessageToast, Fragment) {
+    "sap/ui/core/Fragment",
+    "helphub/config"
+], function(MessageToast, Fragment, Config) {
     "use strict";
 
-    var API_BASE = "http://localhost:3000";
+    var API_BASE = Config.API_BASE;
 
     // Must match CURRENT_TERMS_VERSION in backend/server.js.
     // Bump both when T&C or Privacy Policy change — existing users will be re-prompted.

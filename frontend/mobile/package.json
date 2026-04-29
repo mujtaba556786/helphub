@@ -1,0 +1,36 @@
+{
+  "name": "com.helpmate.app",
+  "displayName": "HelpMate",
+  "version": "1.0.0",
+  "description": "A sample Apache Cordova application that responds to the deviceready event.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "ecosystem:cordova"
+  ],
+  "author": "Apache Cordova Team",
+  "license": "Apache-2.0",
+  "cordova": {
+    "platforms": [
+      "android",
+      "ios"
+    ],
+    "plugins": {
+      "cordova-plugin-whitelist": {},
+      "cordova-plugin-statusbar": {},
+      "cordova-plugin-splashscreen": {},
+      "@havesource/cordova-plugin-push": {
+        "SENDER_ID": "24777544847"
+      }
+    }
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "cordova-plugin-whitelist": "^1.3.5",
+    "cordova-plugin-statusbar": "^2.4.3",
+    "cordova-plugin-splashscreen": "^6.0.0",
+    "@havesource/cordova-plugin-push": "^5.0.0"
+  }
+}

@@ -13,15 +13,17 @@ sap.ui.define([
     "helphub/controller/mixins/OnboardingFavoritesMixin",
     "helphub/controller/mixins/ProfileMixin",
     "helphub/controller/mixins/TaskMixin",
-    "helphub/controller/mixins/TrustSafetyMixin"
+    "helphub/controller/mixins/TrustSafetyMixin",
+    "helphub/config"
 ], function(
     BaseController, MessageToast, MessageBox, Fragment, CountryStates,
     NotificationMixin, MapMixin, FilterMixin, BookingMixin, AiChatMixin,
-    DmMixin, OnboardingFavoritesMixin, ProfileMixin, TaskMixin, TrustSafetyMixin
+    DmMixin, OnboardingFavoritesMixin, ProfileMixin, TaskMixin, TrustSafetyMixin,
+    Config
 ) {
     "use strict";
 
-    var API_BASE = "http://localhost:3000";
+    var API_BASE = Config.API_BASE;
 
     var DashboardController = BaseController.extend("helphub.controller.Dashboard", {
 

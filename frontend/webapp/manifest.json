@@ -84,16 +84,6 @@
           "name": "dashboard",
           "pattern": "dashboard",
           "target": "dashboard"
-        },
-        {
-          "name": "profile",
-          "pattern": "profile",
-          "target": "profile"
-        },
-        {
-          "name": "admin",
-          "pattern": "admin",
-          "target": "admin"
         }
       ],
       "targets": {
@@ -107,18 +97,6 @@
           "viewName": "Dashboard",
           "viewType": "XML",
           "viewId": "dashboard",
-          "viewLevel": 2
-        },
-        "profile": {
-          "viewName": "Profile",
-          "viewType": "XML",
-          "viewId": "profile",
-          "viewLevel": 3
-        },
-        "admin": {
-          "viewName": "Admin",
-          "viewType": "XML",
-          "viewId": "admin",
           "viewLevel": 2
         }
       }

@@ -1,5 +1,6 @@
-const pool = require('../db/pool');
+const pool                    = require('../db/pool');
 const { calculateTrustScore } = require('./TrustService');
+const { createAndPush }       = require('./NotificationService');
 
 async function createBooking({ customer_id, provider_id, service, scheduled_date, scheduled_time, message }) {
     if (!customer_id || !provider_id) {
@@ -18,15 +19,12 @@ async function createBooking({ customer_id, provider_id, service, scheduled_date
     const [[provider]] = await pool.query('SELECT name FROM users WHERE id = ?', [provider_id]);
     const customerName = customer?.name || 'Someone';
 
-    await pool.execute(
-        'INSERT INTO notifications (user_id, type, title, message, booking_id) VALUES (?, ?, ?, ?, ?)',
-        [
-            provider_id,
-            'booking_request',
-            `New booking request from ${customerName}`,
-            `${customerName} wants to book ${service || 'your service'}${scheduled_date ? ' on ' + scheduled_date : ''}${scheduled_time ? ' at ' + scheduled_time : ''}.`,
-            id
-        ]
+    await createAndPush(
+        provider_id,
+        'booking_request',
+        `New booking request from ${customerName}`,
+        `${customerName} wants to book ${service || 'your service'}${scheduled_date ? ' on ' + scheduled_date : ''}${scheduled_time ? ' at ' + scheduled_time : ''}.`,
+        id
     );
 
     return { bookingId: id };
@@ -93,19 +91,16 @@ async function updateStatus(bookingId, status) {
         }
 
         const typeMap = { confirmed: 'booking_accepted', declined: 'booking_declined', completed: 'booking_completed', cancelled: 'booking_cancelled' };
-        await pool.execute(
-            'INSERT INTO notifications (user_id, type, title, message, booking_id) VALUES (?, ?, ?, ?, ?)',
-            [notifyUserId, typeMap[status] || ('booking_' + status), title, msg, bookingId]
-        );
+        await createAndPush(notifyUserId, typeMap[status] || ('booking_' + status), title, msg, bookingId);
 
         // Also notify the customer when they cancel so it appears in their own bell
         if (status === 'cancelled' && booking.customer_id !== booking.provider_id) {
-            await pool.execute(
-                'INSERT INTO notifications (user_id, type, title, message, booking_id) VALUES (?, ?, ?, ?, ?)',
-                [booking.customer_id, 'booking_cancelled',
-                 `You cancelled your booking`,
-                 `Your booking for ${booking.service || 'a service'} with ${booking.provider_name || 'the helper'} has been cancelled.`,
-                 bookingId]
+            await createAndPush(
+                booking.customer_id,
+                'booking_cancelled',
+                `You cancelled your booking`,
+                `Your booking for ${booking.service || 'a service'} with ${booking.provider_name || 'the helper'} has been cancelled.`,
+                bookingId
             );
         }
 

@@ -1,10 +1,11 @@
 sap.ui.define([
     "sap/ui/core/UIComponent",
-    "helphub/model/models"
-], (UIComponent, models) => {
+    "helphub/model/models",
+    "helphub/config"
+], (UIComponent, models, Config) => {
     "use strict";
 
-    var API_BASE = "http://localhost:3000";
+    var API_BASE = Config.API_BASE; // TODO: replace with production URL before release
 
     // ── StorageHelper ──────────────────────────────────────────────────────────
     // Uses Cordova NativeStorage (iOS/Android) when available, falls back to

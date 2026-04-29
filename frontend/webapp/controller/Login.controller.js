@@ -1,11 +1,12 @@
 sap.ui.define([
     "helphub/controller/BaseController",
     "sap/m/MessageToast",
-    "sap/m/BusyDialog"
-], function (BaseController, MessageToast, BusyDialog) {
+    "sap/m/BusyDialog",
+    "helphub/config"
+], function (BaseController, MessageToast, BusyDialog, Config) {
     "use strict";
 
-    var API_BASE = "http://localhost:3000";
+    var API_BASE = Config.API_BASE;
 
     return BaseController.extend("helphub.controller.Login", {
 
