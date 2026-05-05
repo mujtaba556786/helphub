@@ -2,132 +2,95 @@
     xmlns="sap.m"
     xmlns:core="sap.ui.core">
 
-    <!--
-        Modern mobile-first Terms Acceptance screen.
-        No SAP dialog chrome — completely custom layout inside content aggregation.
-        Buttons are inside content so they sit naturally below the scroll card.
-    -->
     <Dialog id="termsAcceptanceDialog"
+            title="{= ${appData>/user/termsUpdateRequired} ? ${i18n>termsUpdatedTitle} : ${i18n>termsWelcome}}"
             contentWidth="480px"
             stretch="{device>/system/phone}"
-            verticalScrolling="false"
+            verticalScrolling="true"
             escapeHandler=".onTermsEscapeHandler"
             class="hhTermsDialog">
 
+        <beginButton>
+            <Button text="{i18n>termsAgree}"
+                    type="Emphasized"
+                    enabled="{appData>/termsCheckbox}"
+                    press="onAcceptTerms"/>
+        </beginButton>
+        <endButton>
+            <Button text="{i18n>termsDecline}"
+                    type="Transparent"
+                    press="onDeclineTerms"/>
+        </endButton>
+
         <content>
-            <VBox class="hhTermsWrapper">
 
-                <!-- ── Header: logo + title + intro ── -->
-                <VBox alignItems="Center" class="sapUiMediumMarginTop sapUiSmallMarginBegin sapUiSmallMarginEnd sapUiSmallMarginBottom">
-                    <core:HTML content="&lt;div class='hhTermsLogoCircle'&gt;🤝&lt;/div&gt;"/>
-
-                    <!-- Headline: "Terms Updated" for re-acceptance, normal welcome otherwise -->
-                    <Title text="{= ${appData>/user/termsUpdateRequired} ? ${i18n>termsUpdatedTitle} : ${i18n>termsWelcome}}"
-                           level="H2" class="sapUiTinyMarginBottom textCenter"/>
-                    <Text text="{i18n>termsIntro}"
-                          class="grayText smallText textCenter" wrapping="true"/>
-
-                    <!-- Warning banner — only shown when re-accepting after a version change -->
-                    <VBox visible="{appData>/user/termsUpdateRequired}" class="sapUiTinyMarginTop">
-                        <ObjectStatus text="{i18n>termsUpdatedBanner}"
-                                      state="Warning" icon="sap-icon://alert"/>
-                    </VBox>
-                </VBox>
-
-                <!-- ── Scrollable terms card ── -->
-                <VBox class="hhTermsCard sapUiSmallMarginBegin sapUiSmallMarginEnd sapUiSmallMarginBottom">
-                    <ScrollContainer height="260px" vertical="true" horizontal="false">
-                        <VBox class="sapUiSmallMargin">
-
-                            <!-- 🤝 Peer-to-peer -->
-                            <HBox alignItems="Start" class="hhTermsSection">
-                                <core:HTML content="&lt;span style='font-size:22px;min-width:34px;flex-shrink:0;margin-top:1px'&gt;🤝&lt;/span&gt;"/>
-                                <VBox class="sapUiTinyMarginBegin">
-                                    <Text text="{i18n>termsPeerTitle}" class="fontBold smallText"/>
-                                    <Text text="{i18n>termsPeerDesc}" class="smallText grayText" wrapping="true"/>
-                                </VBox>
-                            </HBox>
-                            <core:HTML content="&lt;hr class='hhTermsDivider'/&gt;"/>
-
-                            <!-- ⚠️ Responsibility -->
-                            <HBox alignItems="Start" class="hhTermsSection">
-                                <core:HTML content="&lt;span style='font-size:22px;min-width:34px;flex-shrink:0;margin-top:1px'&gt;⚠️&lt;/span&gt;"/>
-                                <VBox class="sapUiTinyMarginBegin">
-                                    <Text text="{i18n>termsResponsibilityTitle}" class="fontBold smallText"/>
-                                    <Text text="{i18n>termsResponsibilityDesc}" class="smallText grayText" wrapping="true"/>
-                                </VBox>
-                            </HBox>
-                            <core:HTML content="&lt;hr class='hhTermsDivider'/&gt;"/>
-
-                            <!-- 🛡 Safety -->
-                            <HBox alignItems="Start" class="hhTermsSection">
-                                <core:HTML content="&lt;span style='font-size:22px;min-width:34px;flex-shrink:0;margin-top:1px'&gt;🛡️&lt;/span&gt;"/>
-                                <VBox class="sapUiTinyMarginBegin">
-                                    <Text text="{i18n>termsSafetyTitle}" class="fontBold smallText"/>
-                                    <Text text="{i18n>termsSafetyDesc}" class="smallText grayText" wrapping="true"/>
-                                </VBox>
-                            </HBox>
-                            <core:HTML content="&lt;hr class='hhTermsDivider'/&gt;"/>
-
-                            <!-- 📜 Guidelines -->
-                            <HBox alignItems="Start" class="hhTermsSection">
-                                <core:HTML content="&lt;span style='font-size:22px;min-width:34px;flex-shrink:0;margin-top:1px'&gt;📜&lt;/span&gt;"/>
-                                <VBox class="sapUiTinyMarginBegin">
-                                    <Text text="{i18n>termsGuidelinesTitle}" class="fontBold smallText"/>
-                                    <Text text="{i18n>termsGuidelinesDesc}" class="smallText grayText" wrapping="true"/>
-                                </VBox>
-                            </HBox>
-                            <core:HTML content="&lt;hr class='hhTermsDivider'/&gt;"/>
-
-                            <!-- 🎂 Eligibility -->
-                            <HBox alignItems="Start" class="hhTermsSection">
-                                <core:HTML content="&lt;span style='font-size:22px;min-width:34px;flex-shrink:0;margin-top:1px'&gt;🎂&lt;/span&gt;"/>
-                                <VBox class="sapUiTinyMarginBegin">
-                                    <Text text="{i18n>termsEligibilityTitle}" class="fontBold smallText"/>
-                                    <Text text="{i18n>termsEligibilityDesc}" class="smallText grayText" wrapping="true"/>
-                                </VBox>
-                            </HBox>
-                            <core:HTML content="&lt;hr class='hhTermsDivider'/&gt;"/>
-
-                            <!-- 🔗 Full terms reference -->
-                            <HBox alignItems="Start" class="hhTermsSection">
-                                <core:HTML content="&lt;span style='font-size:22px;min-width:34px;flex-shrink:0;margin-top:1px'&gt;🔗&lt;/span&gt;"/>
-                                <VBox class="sapUiTinyMarginBegin">
-                                    <Text text="{i18n>termsFullTitle}" class="fontBold smallText"/>
-                                    <Text text="{i18n>termsFullDesc}" class="smallText grayText" wrapping="true"/>
-                                </VBox>
-                            </HBox>
-
-                        </VBox>
-                    </ScrollContainer>
-                </VBox>
-
-                <!-- ── Checkbox row ── -->
-                <HBox alignItems="Center" wrap="Wrap"
-                      class="hhTermsCheckboxRow sapUiSmallMarginBegin sapUiSmallMarginEnd sapUiSmallMarginBottom">
-                    <CheckBox id="termsCheckbox" selected="{appData>/termsCheckbox}"/>
-                    <Text text="{i18n>termsCheckboxPrefix}" class="smallText"/>
-                    <Link text="{i18n>viewTerms}"   press="onViewTermsInline"   class="smallText sapUiTinyMarginBegin sapUiTinyMarginEnd"/>
-                    <Text text="{i18n>termsCheckboxAnd}" class="smallText"/>
-                    <Link text="{i18n>viewPrivacy}" press="onViewPrivacyInline" class="smallText sapUiTinyMarginBegin"/>
-                </HBox>
-
-                <!-- ── Primary button: full width, disabled until checkbox ── -->
-                <Button text="{i18n>termsAgree}"
-                        type="Emphasized"
-                        width="100%"
-                        enabled="{appData>/termsCheckbox}"
-                        press="onAcceptTerms"
-                        class="hhTermsAgreeBtn sapUiSmallMarginBegin sapUiSmallMarginEnd sapUiTinyMarginBottom"/>
-
-                <!-- ── Decline: subtle, text-only feel ── -->
-                <Button text="{i18n>termsDecline}"
-                        type="Transparent"
-                        width="100%"
-                        press="onDeclineTerms"
-                        class="hhTermsDeclineBtn sapUiSmallMarginBegin sapUiSmallMarginEnd sapUiSmallMarginBottom"/>
-
+            <!-- Warning banner — only shown on re-acceptance -->
+            <VBox visible="{appData>/user/termsUpdateRequired}"
+                  class="sapUiSmallMarginBegin sapUiSmallMarginEnd sapUiTinyMarginTop">
+                <ObjectStatus text="{i18n>termsUpdatedBanner}"
+                              state="Warning" icon="sap-icon://alert"/>
             </VBox>
+
+            <!-- Intro -->
+            <Text text="{i18n>termsIntro}" wrapping="true"
+                  class="sapUiSmallMarginBegin sapUiSmallMarginEnd sapUiSmallMarginTop sapUiTinyMarginBottom grayText"/>
+
+            <!-- Terms sections as native SAP list -->
+            <List showSeparators="Inner" backgroundDesign="Transparent">
+                <StandardListItem
+                    icon="sap-icon://group"
+                    title="{i18n>termsPeerTitle}"
+                    description="{i18n>termsPeerDesc}"
+                    iconDensityAware="false"
+                    type="Inactive"
+                    class="hhTermsListItem"/>
+                <StandardListItem
+                    icon="sap-icon://warning2"
+                    title="{i18n>termsResponsibilityTitle}"
+                    description="{i18n>termsResponsibilityDesc}"
+                    iconDensityAware="false"
+                    type="Inactive"
+                    class="hhTermsListItem"/>
+                <StandardListItem
+                    icon="sap-icon://shield"
+                    title="{i18n>termsSafetyTitle}"
+                    description="{i18n>termsSafetyDesc}"
+                    iconDensityAware="false"
+                    type="Inactive"
+                    class="hhTermsListItem"/>
+                <StandardListItem
+                    icon="sap-icon://document-text"
+                    title="{i18n>termsGuidelinesTitle}"
+                    description="{i18n>termsGuidelinesDesc}"
+                    iconDensityAware="false"
+                    type="Inactive"
+                    class="hhTermsListItem"/>
+                <StandardListItem
+                    icon="sap-icon://customer"
+                    title="{i18n>termsEligibilityTitle}"
+                    description="{i18n>termsEligibilityDesc}"
+                    iconDensityAware="false"
+                    type="Inactive"
+                    class="hhTermsListItem"/>
+                <StandardListItem
+                    icon="sap-icon://chain-link"
+                    title="{i18n>termsFullTitle}"
+                    description="{i18n>termsFullDesc}"
+                    iconDensityAware="false"
+                    type="Inactive"
+                    class="hhTermsListItem"/>
+            </List>
+
+            <!-- Checkbox row -->
+            <HBox alignItems="Center" wrap="Wrap"
+                  class="hhTermsCheckboxRow sapUiSmallMarginBegin sapUiSmallMarginEnd sapUiSmallMarginTop sapUiSmallMarginBottom">
+                <CheckBox id="termsCheckbox" selected="{appData>/termsCheckbox}"/>
+                <Text text="{i18n>termsCheckboxPrefix}" class="smallText"/>
+                <Link text="{i18n>viewTerms}"   press="onViewTermsInline"   class="smallText sapUiTinyMarginBegin sapUiTinyMarginEnd"/>
+                <Text text="{i18n>termsCheckboxAnd}" class="smallText"/>
+                <Link text="{i18n>viewPrivacy}" press="onViewPrivacyInline" class="smallText sapUiTinyMarginBegin"/>
+            </HBox>
+
         </content>
 
     </Dialog>

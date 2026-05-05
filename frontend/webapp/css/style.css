@@ -289,33 +289,9 @@
 @media (max-width: 480px) { .hhQRChip { font-size: 11px; padding: 1px 8px; } }
 
 /* ── Terms dialog ─────────────────────────────────────────────── */
-.hhTermsDialog.sapMDialog { border-radius: 24px !important; overflow: hidden; }
-.hhTermsDialog .sapMDialogTitle,
-.hhTermsDialog .sapMDialogHeader { display: none !important; }
-.hhTermsDialog .sapMDialogSection { padding: 0 !important; }
-.hhTermsDialog .sapMDialogFooter  { display: none !important; }
-
-.hhTermsWrapper   { display: flex; flex-direction: column; min-height: 0; }
-.hhTermsLogoCircle {
-    width: 76px; height: 76px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 34px; margin: 0 auto 14px;
-}
-.hhTermsCard    { border-radius: 18px; overflow: hidden; }
-.hhTermsSection { padding: 13px 0; }
-.hhTermsDivider { border: none; border-top: 1px solid; margin: 0; }
-.hhTermsCheckboxRow { border-radius: 14px; padding: 12px 14px; gap: 0; }
+.hhTermsCheckboxRow { gap: 0; }
 .hhTermsCheckboxRow .sapMCbBg { flex-shrink: 0; }
-
-.hhTermsAgreeBtn .sapMBtnInner {
-    height: 52px !important; border-radius: 14px !important;
-    font-size: 15px !important; font-weight: 600 !important;
-}
-.hhTermsDeclineBtn .sapMBtnInner {
-    height: 44px !important; border: none !important;
-    background: transparent !important;
-    font-size: 14px !important; font-weight: 400 !important; box-shadow: none !important;
-}
+.hhTermsListItem .sapMSLIDescription { white-space: normal !important; overflow: visible !important; text-overflow: unset !important; }
 
 /* ── Onboarding dialog ────────────────────────────────────────── */
 .hhOnboardStep  { min-height: 220px; }
