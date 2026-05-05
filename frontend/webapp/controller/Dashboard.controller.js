@@ -391,27 +391,32 @@ sap.ui.define([
             this.navTo("admin");
         },
 
-        onLanguageMenu: function(oEvent) {
-            var oButton = oEvent.getSource();
-            if (!this._oLangPopover) {
-                this._oLangPopover = new sap.m.Popover({
-                    title: "Select Language",
-                    placement: sap.m.PlacementType.Bottom,
+        onLanguageMenu: function() {
+            var that = this;
+            if (!this._oLangDialog) {
+                this._oLangDialog = new sap.m.Dialog({
+                    title: "{i18n>changeLanguage}",
+                    contentWidth: "280px",
                     content: [
                         new sap.m.List({
                             showSeparators: "None",
                             items: [
-                                new sap.m.StandardListItem({ title: "🇬🇧  English",  press: this._applyLanguage.bind(this, "en") }),
-                                new sap.m.StandardListItem({ title: "🇩🇪  Deutsch",  press: this._applyLanguage.bind(this, "de") }),
-                                new sap.m.StandardListItem({ title: "🇹🇷  Türkçe",   press: this._applyLanguage.bind(this, "tr") }),
-                                new sap.m.StandardListItem({ title: "🇸🇦  العربية",  press: this._applyLanguage.bind(this, "ar") })
+                                new sap.m.StandardListItem({ title: "🇬🇧  English",  press: that._applyLanguage.bind(that, "en") }),
+                                new sap.m.StandardListItem({ title: "🇩🇪  Deutsch",  press: that._applyLanguage.bind(that, "de") }),
+                                new sap.m.StandardListItem({ title: "🇹🇷  Türkçe",   press: that._applyLanguage.bind(that, "tr") }),
+                                new sap.m.StandardListItem({ title: "🇸🇦  العربية",  press: that._applyLanguage.bind(that, "ar") })
                             ]
                         })
-                    ]
+                    ],
+                    endButton: new sap.m.Button({
+                        text: "{i18n>cancel}",
+                        type: "Transparent",
+                        press: function() { that._oLangDialog.close(); }
+                    })
                 });
-                this.getView().addDependent(this._oLangPopover);
+                this.getView().addDependent(this._oLangDialog);
             }
-            this._oLangPopover.openBy(oButton);
+            this._oLangDialog.open();
         },
 
         _applyLanguage: function(sLang) {
