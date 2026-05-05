@@ -55,6 +55,10 @@ sap.ui.define([
 
         _onRouteMatched: function() {
             this._oModel = this.getModel("appData");
+            // Default to Find Help tab on every route match
+            if (!this._oModel.getProperty("/currentTab")) {
+                this._oModel.setProperty("/currentTab", "findHelp");
+            }
             // Ensure user id is in model (may only be in storage after page reload)
             if (!this._oModel.getProperty("/user/id")) {
                 window.HelpHubStorage.get("helpmate_user_id", function(sSid) {
@@ -198,8 +202,9 @@ sap.ui.define([
             return this._pOnboardingDialog;
         },
 
-        onTabSelect: function(oEvent) {
-            var sKey = oEvent.getParameter("key");
+        onBottomNavSelect: function(oEvent) {
+            var sKey = oEvent.getSource().data("tab");
+            this.getModel("appData").setProperty("/currentTab", sKey);
             if (sKey === "mySchedule") {
                 this._markBookingsSeen();
             } else if (sKey === "messages") {
@@ -214,6 +219,10 @@ sap.ui.define([
                     }.bind(this), 400);
                 }
             }
+        },
+
+        onTabSelect: function(oEvent) {
+            this.onBottomNavSelect(oEvent);
         },
 
         _applyTileColors: function() {
@@ -636,11 +645,11 @@ sap.ui.define([
         },
 
         onTabToTasks: function() {
-            // Navigate back to dashboard and switch to Tasks tab
             var oNav = this.byId("navContainer");
             if (oNav) { oNav.back(); }
-            var oTabBar = this.byId("dashboardPage").getContent()[0];
-            if (oTabBar && oTabBar.setSelectedKey) { oTabBar.setSelectedKey("tasks"); }
+            this.getModel("appData").setProperty("/currentTab", "tasks");
+            this._loadTasksFeed();
+            this._loadMyTasks();
         },
 
         onToggleMap: function() {
