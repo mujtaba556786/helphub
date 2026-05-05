@@ -2,8 +2,13 @@
 require('dotenv').config({ path: require('path').resolve(__dirname, '.env') });
 const express = require('express');
 const cors    = require('cors');
+const helmet  = require('helmet');
 const path    = require('path');
 const fs      = require('fs');
+
+const ALLOWED_ORIGINS = (process.env.CORS_ORIGIN || 'http://localhost:8080')
+    .split(',')
+    .map(o => o.trim());
 
 // ── Firebase Admin init ───────────────────────────────────────────────────────
 const admin = require('firebase-admin');
@@ -28,8 +33,16 @@ if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 
 const app = express();
 
+app.use(helmet());
+// Allow /uploads images to be loaded cross-origin (helmet v4 doesn't have CORP built-in)
+app.use('/uploads', (req, res, next) => { res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin'); next(); });
+
 app.use(cors({
-    origin: (origin, callback) => callback(null, origin || '*'),
+    origin: function(origin, callback) {
+        // allow server-to-server (no origin) and whitelisted origins
+        if (!origin || ALLOWED_ORIGINS.includes(origin)) return callback(null, true);
+        callback(new Error('Not allowed by CORS'));
+    },
     credentials: true,
     methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'x-user-id', 'x-admin-token']
