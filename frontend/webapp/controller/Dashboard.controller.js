@@ -401,10 +401,10 @@ sap.ui.define([
                         new sap.m.List({
                             showSeparators: "None",
                             items: [
-                                new sap.m.StandardListItem({ title: "🇬🇧  English",  press: that._applyLanguage.bind(that, "en") }),
-                                new sap.m.StandardListItem({ title: "🇩🇪  Deutsch",  press: that._applyLanguage.bind(that, "de") }),
-                                new sap.m.StandardListItem({ title: "🇹🇷  Türkçe",   press: that._applyLanguage.bind(that, "tr") }),
-                                new sap.m.StandardListItem({ title: "🇸🇦  العربية",  press: that._applyLanguage.bind(that, "ar") })
+                                new sap.m.StandardListItem({ title: "🇬🇧  English",  type: "Active", press: that._applyLanguage.bind(that, "en") }),
+                                new sap.m.StandardListItem({ title: "🇩🇪  Deutsch",  type: "Active", press: that._applyLanguage.bind(that, "de") }),
+                                new sap.m.StandardListItem({ title: "🇹🇷  Türkçe",   type: "Active", press: that._applyLanguage.bind(that, "tr") }),
+                                new sap.m.StandardListItem({ title: "🇸🇦  العربية",  type: "Active", press: that._applyLanguage.bind(that, "ar") })
                             ]
                         })
                     ],
