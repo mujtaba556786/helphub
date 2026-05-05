@@ -289,9 +289,10 @@
 @media (max-width: 480px) { .hhQRChip { font-size: 11px; padding: 1px 8px; } }
 
 /* ── Terms dialog ─────────────────────────────────────────────── */
+.hhTermsItem      { padding: 10px 16px; }
+.hhTermsIcon      { font-size: 18px !important; margin-top: 2px; flex-shrink: 0; }
 .hhTermsCheckboxRow { gap: 0; }
 .hhTermsCheckboxRow .sapMCbBg { flex-shrink: 0; }
-.hhTermsListItem .sapMSLIDescription { white-space: normal !important; overflow: visible !important; text-overflow: unset !important; }
 
 /* ── Onboarding dialog ────────────────────────────────────────── */
 .hhOnboardStep  { min-height: 220px; }

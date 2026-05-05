@@ -35,50 +35,69 @@
             <Text text="{i18n>termsIntro}" wrapping="true"
                   class="sapUiSmallMarginBegin sapUiSmallMarginEnd sapUiSmallMarginTop sapUiTinyMarginBottom grayText"/>
 
-            <!-- Terms sections as native SAP list -->
+            <!-- Terms sections — CustomListItem so height grows with content -->
             <List showSeparators="Inner" backgroundDesign="Transparent">
-                <StandardListItem
-                    icon="sap-icon://group"
-                    title="{i18n>termsPeerTitle}"
-                    description="{i18n>termsPeerDesc}"
-                    iconDensityAware="false"
-                    type="Inactive"
-                    class="hhTermsListItem"/>
-                <StandardListItem
-                    icon="sap-icon://warning2"
-                    title="{i18n>termsResponsibilityTitle}"
-                    description="{i18n>termsResponsibilityDesc}"
-                    iconDensityAware="false"
-                    type="Inactive"
-                    class="hhTermsListItem"/>
-                <StandardListItem
-                    icon="sap-icon://shield"
-                    title="{i18n>termsSafetyTitle}"
-                    description="{i18n>termsSafetyDesc}"
-                    iconDensityAware="false"
-                    type="Inactive"
-                    class="hhTermsListItem"/>
-                <StandardListItem
-                    icon="sap-icon://document-text"
-                    title="{i18n>termsGuidelinesTitle}"
-                    description="{i18n>termsGuidelinesDesc}"
-                    iconDensityAware="false"
-                    type="Inactive"
-                    class="hhTermsListItem"/>
-                <StandardListItem
-                    icon="sap-icon://customer"
-                    title="{i18n>termsEligibilityTitle}"
-                    description="{i18n>termsEligibilityDesc}"
-                    iconDensityAware="false"
-                    type="Inactive"
-                    class="hhTermsListItem"/>
-                <StandardListItem
-                    icon="sap-icon://chain-link"
-                    title="{i18n>termsFullTitle}"
-                    description="{i18n>termsFullDesc}"
-                    iconDensityAware="false"
-                    type="Inactive"
-                    class="hhTermsListItem"/>
+
+                <CustomListItem type="Inactive">
+                    <HBox alignItems="Start" class="hhTermsItem">
+                        <core:Icon src="sap-icon://group" class="hhTermsIcon"/>
+                        <VBox class="sapUiTinyMarginBegin">
+                            <Text text="{i18n>termsPeerTitle}" class="fontBold"/>
+                            <Text text="{i18n>termsPeerDesc}" wrapping="true" class="grayText"/>
+                        </VBox>
+                    </HBox>
+                </CustomListItem>
+
+                <CustomListItem type="Inactive">
+                    <HBox alignItems="Start" class="hhTermsItem">
+                        <core:Icon src="sap-icon://warning2" class="hhTermsIcon"/>
+                        <VBox class="sapUiTinyMarginBegin">
+                            <Text text="{i18n>termsResponsibilityTitle}" class="fontBold"/>
+                            <Text text="{i18n>termsResponsibilityDesc}" wrapping="true" class="grayText"/>
+                        </VBox>
+                    </HBox>
+                </CustomListItem>
+
+                <CustomListItem type="Inactive">
+                    <HBox alignItems="Start" class="hhTermsItem">
+                        <core:Icon src="sap-icon://shield" class="hhTermsIcon"/>
+                        <VBox class="sapUiTinyMarginBegin">
+                            <Text text="{i18n>termsSafetyTitle}" class="fontBold"/>
+                            <Text text="{i18n>termsSafetyDesc}" wrapping="true" class="grayText"/>
+                        </VBox>
+                    </HBox>
+                </CustomListItem>
+
+                <CustomListItem type="Inactive">
+                    <HBox alignItems="Start" class="hhTermsItem">
+                        <core:Icon src="sap-icon://document-text" class="hhTermsIcon"/>
+                        <VBox class="sapUiTinyMarginBegin">
+                            <Text text="{i18n>termsGuidelinesTitle}" class="fontBold"/>
+                            <Text text="{i18n>termsGuidelinesDesc}" wrapping="true" class="grayText"/>
+                        </VBox>
+                    </HBox>
+                </CustomListItem>
+
+                <CustomListItem type="Inactive">
+                    <HBox alignItems="Start" class="hhTermsItem">
+                        <core:Icon src="sap-icon://customer" class="hhTermsIcon"/>
+                        <VBox class="sapUiTinyMarginBegin">
+                            <Text text="{i18n>termsEligibilityTitle}" class="fontBold"/>
+                            <Text text="{i18n>termsEligibilityDesc}" wrapping="true" class="grayText"/>
+                        </VBox>
+                    </HBox>
+                </CustomListItem>
+
+                <CustomListItem type="Inactive">
+                    <HBox alignItems="Start" class="hhTermsItem">
+                        <core:Icon src="sap-icon://chain-link" class="hhTermsIcon"/>
+                        <VBox class="sapUiTinyMarginBegin">
+                            <Text text="{i18n>termsFullTitle}" class="fontBold"/>
+                            <Text text="{i18n>termsFullDesc}" wrapping="true" class="grayText"/>
+                        </VBox>
+                    </HBox>
+                </CustomListItem>
+
             </List>
 
             <!-- Checkbox row -->
