@@ -20,51 +20,44 @@
                         </HBox>
                     </contentLeft>
                     <contentRight>
-                        <HBox alignItems="Center" class="sapUiTinyMarginEnd">
+                        <HBox alignItems="Center" class="hhHeaderRight">
                             <HBox class="hhNotifBtnWrap">
                                 <Button id="notifBtn" icon="sap-icon://bell" type="Transparent" press="onShowNotifications" tooltip="{i18n>notifications}"/>
                                 <core:HTML id="notifBadge" content="{= ${appData>/unreadCount} > 0 ? '&lt;span class=&quot;hhNotifBadge&quot;&gt;' + (${appData>/unreadCount} > 9 ? &apos;9+&apos; : ${appData>/unreadCount}) + '&lt;/span&gt;' : ''}"/>
                             </HBox>
-                            <Button icon="sap-icon://world" type="Transparent" press="onLanguageMenu" tooltip="{i18n>changeLanguage}"/>
-                            <Button icon="sap-icon://it-system" type="Transparent" press="onNavToAdmin" tooltip="{i18n>adminPanel}"
-                                visible="{= ${appData>/user/role} === 'admin'}"/>
-                            <Avatar src="{appData>/user/photo}" initials="{appData>/user/initials}" displaySize="XS" backgroundColor="Accent6" press="onEditProfile" class="sapUiTinyMarginEnd" />
-                            <Button icon="sap-icon://log" press="onLogout" type="Transparent" tooltip="{i18n>signOut}"/>
+                            <Avatar id="headerAvatar" src="{appData>/user/photo}" initials="{appData>/user/initials}" displaySize="XS" backgroundColor="Accent6" press="onHeaderAvatarMenu" class="hhHeaderAvatar"/>
                         </HBox>
                     </contentRight>
                 </Bar>
             </customHeader>
 
             <content>
-                <IconTabBar expandable="false" select=".onTabSelect">
 
-                    <!-- TAB 1: Find Help -->
-                    <items>
-                        <IconTabFilter key="findHelp" text="{i18n>findHelp}" icon="sap-icon://search">
-                            <ScrollContainer vertical="true" horizontal="false" height="100%">
-                                <VBox class="fiTabContent">
-                                    <Title text="{i18n>howCanWeHelp}" level="H1" class="fiPageTitle"/>
-                                    <Text text="{i18n>chooseService}" class="fiPageSubtitle"/>
-                                    <!-- Service card grid -->
-                                    <FlexBox wrap="Wrap" class="fiServicesGrid" items="{appData>/services}">
-                                        <items>
-                                            <CustomListItem class="fiSvcCard" type="Active" press=".onServicePress">
-                                                <VBox class="fiSvcCardInner" alignItems="Center" justifyContent="Center">
-                                                    <VBox class="fiSvcIconWrap" alignItems="Center" justifyContent="Center">
-                                                        <core:Icon src="{path:'appData>name', formatter:'.formatServiceIcon'}" size="1.6rem" class="fiSvcIcon"/>
-                                                    </VBox>
-                                                    <Text text="{appData>name}" class="fiSvcName"/>
-                                                </VBox>
-                                            </CustomListItem>
-                                        </items>
-                                    </FlexBox>
-                                </VBox>
-                            </ScrollContainer>
-                        </IconTabFilter>
+                <!-- ══ TAB PANELS — shown/hidden by currentTab model property ══ -->
 
-                        <!-- TAB 2: Tasks -->
-                        <IconTabFilter key="tasks" text="{i18n>tasks}" icon="sap-icon://task" count="{appData>/openTaskCount}">
-                            <VBox class="hhTasksTab">
+                <!-- PANEL 1: Find Help -->
+                <ScrollContainer vertical="true" horizontal="false" height="100%"
+                    visible="{= ${appData>/currentTab} === 'findHelp'}">
+                    <VBox class="fiTabContent">
+                        <Title text="{i18n>howCanWeHelp}" level="H2" class="fiPageTitle"/>
+                        <Text text="{i18n>chooseService}" class="fiPageSubtitle"/>
+                        <FlexBox wrap="Wrap" class="fiServicesGrid" items="{appData>/services}">
+                            <items>
+                                <CustomListItem class="fiSvcCard" type="Active" press=".onServicePress">
+                                    <VBox class="fiSvcCardInner" alignItems="Center" justifyContent="Center">
+                                        <VBox class="fiSvcIconWrap" alignItems="Center" justifyContent="Center">
+                                            <core:Icon src="{path:'appData>name', formatter:'.formatServiceIcon'}" class="fiSvcIcon"/>
+                                        </VBox>
+                                        <Text text="{appData>name}" class="fiSvcName"/>
+                                    </VBox>
+                                </CustomListItem>
+                            </items>
+                        </FlexBox>
+                    </VBox>
+                </ScrollContainer>
+
+                <!-- PANEL 2: Tasks -->
+                <VBox class="hhTasksTab" visible="{= ${appData>/currentTab} === 'tasks'}">
 
                                 <!-- ── Top bar: underline tabs + Filter icon + Post Task ── -->
                                 <HBox justifyContent="SpaceBetween" alignItems="Center" class="hhTasksTopBar">
@@ -199,12 +192,10 @@
                                 </VBox>
 
                             </VBox>
-                        </IconTabFilter>
-
-                        <!-- TAB 3: Messages -->
-                        <IconTabFilter key="messages" text="{i18n>messages}" icon="sap-icon://discussion" count="{appData>/unreadDmCount}">
-                            <ScrollContainer vertical="true" horizontal="false" height="100%">
-                                <VBox class="hhMsgTab">
+                <!-- PANEL 3: Messages -->
+                <ScrollContainer vertical="true" horizontal="false" height="100%"
+                    visible="{= ${appData>/currentTab} === 'messages'}">
+                    <VBox class="hhMsgTab">
 
                                     <!-- ── Search bar ── -->
                                     <VBox class="hhMsgSearchWrap">
@@ -324,37 +315,36 @@
                                         <Title text="{i18n>msgNoResults}" level="H5" class="textCenter sapUiSmallMarginTop"/>
                                     </VBox>
 
-                                </VBox>
-                            </ScrollContainer>
-                        </IconTabFilter>
+                    </VBox>
+                </ScrollContainer>
 
-                        <!-- TAB 4: My Schedule -->
-                        <IconTabFilter key="mySchedule" text="{i18n>mySchedule}" icon="sap-icon://calendar" count="{appData>/bookingCount}">
-                            <ScrollContainer vertical="true" horizontal="false" height="100%">
+                <!-- PANEL 4: My Schedule -->
+                <ScrollContainer vertical="true" horizontal="false" height="100%"
+                    visible="{= ${appData>/currentTab} === 'mySchedule'}">
                                 <VBox class="fiScheduleTab">
                                     <Title text="{i18n>yourBookings}" level="H4" class="fiScheduleTitle"/>
                                     <!-- Status filters -->
-                                    <HBox wrap="Wrap" alignItems="Center" class="fiScheduleFilters">
-                                        <Button text="{i18n>filterAll}" type="{= (${appData>/bookingStatusFilter} || 'all') === 'all' ? 'Emphasized' : 'Default'}" press="onBookingFilter" class="sapUiTinyMarginEnd sapUiTinyMarginBottom hhFilterPill">
+                                    <HBox alignItems="Center" class="fiScheduleFilters">
+                                        <Button text="{i18n>filterAll}" type="{= (${appData>/bookingStatusFilter} || 'all') === 'all' ? 'Emphasized' : 'Default'}" press="onBookingFilter" class="hhNotifChip">
                                             <customData><core:CustomData key="status" value="all"/></customData>
                                         </Button>
-                                        <Button text="{i18n>filterPending}" type="{= ${appData>/bookingStatusFilter} === 'pending' ? 'Emphasized' : 'Default'}" press="onBookingFilter" class="sapUiTinyMarginEnd sapUiTinyMarginBottom hhFilterPill">
+                                        <Button text="{i18n>filterPending}" type="{= ${appData>/bookingStatusFilter} === 'pending' ? 'Emphasized' : 'Default'}" press="onBookingFilter" class="hhNotifChip">
                                             <customData><core:CustomData key="status" value="pending"/></customData>
                                         </Button>
-                                        <Button text="{i18n>filterConfirmed}" type="{= ${appData>/bookingStatusFilter} === 'confirmed' ? 'Emphasized' : 'Default'}" press="onBookingFilter" class="sapUiTinyMarginEnd sapUiTinyMarginBottom hhFilterPill">
+                                        <Button text="{i18n>filterConfirmed}" type="{= ${appData>/bookingStatusFilter} === 'confirmed' ? 'Emphasized' : 'Default'}" press="onBookingFilter" class="hhNotifChip">
                                             <customData><core:CustomData key="status" value="confirmed"/></customData>
                                         </Button>
-                                        <Button text="{i18n>filterCompleted}" type="{= ${appData>/bookingStatusFilter} === 'completed' ? 'Emphasized' : 'Default'}" press="onBookingFilter" class="sapUiTinyMarginEnd sapUiTinyMarginBottom hhFilterPill">
+                                        <Button text="{i18n>filterCompleted}" type="{= ${appData>/bookingStatusFilter} === 'completed' ? 'Emphasized' : 'Default'}" press="onBookingFilter" class="hhNotifChip">
                                             <customData><core:CustomData key="status" value="completed"/></customData>
                                         </Button>
-                                        <Button text="{i18n>filterDeclined}" type="{= ${appData>/bookingStatusFilter} === 'declined' ? 'Emphasized' : 'Default'}" press="onBookingFilter" class="sapUiTinyMarginEnd sapUiTinyMarginBottom hhFilterPill">
+                                        <Button text="{i18n>filterDeclined}" type="{= ${appData>/bookingStatusFilter} === 'declined' ? 'Emphasized' : 'Default'}" press="onBookingFilter" class="hhNotifChip">
                                             <customData><core:CustomData key="status" value="declined"/></customData>
                                         </Button>
-                                        <Button text="{i18n>filterCancelled}" type="{= ${appData>/bookingStatusFilter} === 'cancelled' ? 'Emphasized' : 'Default'}" press="onBookingFilter" class="sapUiTinyMarginBottom hhFilterPill">
+                                        <Button text="{i18n>filterCancelled}" type="{= ${appData>/bookingStatusFilter} === 'cancelled' ? 'Emphasized' : 'Default'}" press="onBookingFilter" class="hhNotifChip">
                                             <customData><core:CustomData key="status" value="cancelled"/></customData>
                                         </Button>
                                     </HBox>
-                                    <List id="bookingsList" items="{appData>/filteredBookings}" noDataText="{i18n>noBookingsYet}" class="fiCardList">
+                                    <List id="bookingsList" items="{appData>/filteredBookings}" noDataText="{i18n>noBookingsYet}" showSeparators="None" class="fiCardList">
                                         <CustomListItem class="fiBookingCard">
                                             <VBox class="fiBookingCardInner">
                                                 <HBox justifyContent="SpaceBetween" alignItems="Start">
@@ -366,30 +356,29 @@
                                                     <ObjectStatus text="{appData>status}" state="{path:'appData>status', formatter:'.formatBookingState'}"/>
                                                 </HBox>
                                                 <!-- View provider profile -->
-                                                <HBox class="sapUiTinyMarginTop">
-                                                    <Button text="{i18n>profile}" type="Transparent" press="onViewBookingProfile" class="hhFilterPill"/>
+                                                <HBox>
+                                                    <Button text="{i18n>profile}" type="Transparent" press="onViewBookingProfile" class="hhNotifChip"/>
                                                 </HBox>
                                                 <!-- Provider actions: accept / decline -->
-                                                <HBox class="sapUiTinyMarginTop" wrap="Wrap" visible="{= ${appData>status} === 'pending' &amp;&amp; String(${appData>/user/id}) === String(${appData>provider_id})}">
-                                                    <Button text="{i18n>accept}" type="Accept" press="onAcceptBooking" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
-                                                    <Button text="{i18n>decline}" type="Reject" press="onDeclineBooking" class="sapUiTinyMarginBottom"/>
+                                                <HBox wrap="Wrap" class="fiBookingActions" visible="{= ${appData>status} === 'pending' &amp;&amp; String(${appData>/user/id}) === String(${appData>provider_id})}">
+                                                    <Button text="{i18n>accept}" type="Accept" press="onAcceptBooking"/>
+                                                    <Button text="{i18n>decline}" type="Reject" press="onDeclineBooking"/>
                                                 </HBox>
                                                 <!-- Customer action: cancel -->
-                                                <HBox class="sapUiTinyMarginTop" wrap="Wrap" visible="{= ${appData>status} === 'pending' &amp;&amp; String(${appData>/user/id}) === String(${appData>customer_id})}">
-                                                    <Button text="{i18n>cancelBooking}" type="Reject" press="onCancelBooking" class="sapUiTinyMarginBottom"/>
+                                                <HBox wrap="Wrap" class="fiBookingActions" visible="{= ${appData>status} === 'pending' &amp;&amp; String(${appData>/user/id}) === String(${appData>customer_id})}">
+                                                    <Button text="{i18n>cancelBooking}" type="Reject" press="onCancelBooking"/>
                                                 </HBox>
-                                                <Text text="{appData>message}" class="smallText grayText sapUiTinyMarginTop" visible="{= !!${appData>message}}"/>
+                                                <Text text="{appData>message}" class="smallText grayText" visible="{= !!${appData>message}}"/>
                                             </VBox>
                                         </CustomListItem>
                                     </List>
                                 </VBox>
-                            </ScrollContainer>
-                        </IconTabFilter>
+                </ScrollContainer>
 
-                        <!-- TAB 5: Saved -->
-                        <IconTabFilter key="saved" text="{i18n>saved}" icon="sap-icon://heart">
-                            <ScrollContainer vertical="true" horizontal="false" height="100%">
-                                <VBox class="fiSavedTab">
+                <!-- PANEL 5: Saved -->
+                <ScrollContainer vertical="true" horizontal="false" height="100%"
+                    visible="{= ${appData>/currentTab} === 'saved'}">
+                    <VBox class="fiSavedTab">
 
                                     <!-- Recently Viewed -->
                                     <Title text="{i18n>recentlyViewed}" level="H4" class="sapUiSmallMarginBottom"/>
@@ -432,14 +421,63 @@
                                         </CustomListItem>
                                     </List>
 
-                                </VBox>
-                            </ScrollContainer>
-                        </IconTabFilter>
+                    </VBox>
+                </ScrollContainer>
 
-                    </items>
-
-                </IconTabBar>
             </content>
+
+            <!-- ══ BOTTOM NAVIGATION BAR ══ -->
+            <footer>
+                <Bar class="hhBottomNav">
+                    <contentMiddle>
+                        <HBox width="100%" justifyContent="SpaceAround" alignItems="Center" class="hhBottomNavRow">
+
+                            <!-- Find Help -->
+                            <Button icon="sap-icon://search" text="{i18n>findHelp}" press="onBottomNavSelect"
+                                type="{= ${appData>/currentTab} === 'findHelp' ? 'Emphasized' : 'Transparent'}"
+                                class="hhNavBtn">
+                                <customData><core:CustomData key="tab" value="findHelp"/></customData>
+                            </Button>
+
+                            <!-- Tasks (with count badge) -->
+                            <HBox class="hhNavBtnWrap" alignItems="Center" justifyContent="Center">
+                                <Button icon="sap-icon://task" text="{i18n>tasks}" press="onBottomNavSelect"
+                                    type="{= ${appData>/currentTab} === 'tasks' ? 'Emphasized' : 'Transparent'}"
+                                    class="hhNavBtn">
+                                    <customData><core:CustomData key="tab" value="tasks"/></customData>
+                                </Button>
+                                <core:HTML content="{= ${appData>/openTaskCount} > 0 ? '&lt;span class=&quot;hhNavBadge&quot;&gt;' + (${appData>/openTaskCount} > 9 ? &apos;9+&apos; : ${appData>/openTaskCount}) + '&lt;/span&gt;' : ''}"/>
+                            </HBox>
+
+                            <!-- Messages (with unread badge) -->
+                            <HBox class="hhNavBtnWrap" alignItems="Center" justifyContent="Center">
+                                <Button icon="sap-icon://discussion" text="{i18n>messages}" press="onBottomNavSelect"
+                                    type="{= ${appData>/currentTab} === 'messages' ? 'Emphasized' : 'Transparent'}"
+                                    class="hhNavBtn">
+                                    <customData><core:CustomData key="tab" value="messages"/></customData>
+                                </Button>
+                                <core:HTML content="{= ${appData>/unreadDmCount} > 0 ? '&lt;span class=&quot;hhNavBadge&quot;&gt;' + (${appData>/unreadDmCount} > 9 ? &apos;9+&apos; : ${appData>/unreadDmCount}) + '&lt;/span&gt;' : ''}"/>
+                            </HBox>
+
+                            <!-- Schedule -->
+                            <Button icon="sap-icon://calendar" text="{i18n>mySchedule}" press="onBottomNavSelect"
+                                type="{= ${appData>/currentTab} === 'mySchedule' ? 'Emphasized' : 'Transparent'}"
+                                class="hhNavBtn">
+                                <customData><core:CustomData key="tab" value="mySchedule"/></customData>
+                            </Button>
+
+                            <!-- Saved -->
+                            <Button icon="sap-icon://heart" text="{i18n>saved}" press="onBottomNavSelect"
+                                type="{= ${appData>/currentTab} === 'saved' ? 'Emphasized' : 'Transparent'}"
+                                class="hhNavBtn">
+                                <customData><core:CustomData key="tab" value="saved"/></customData>
+                            </Button>
+
+                        </HBox>
+                    </contentMiddle>
+                </Bar>
+            </footer>
+
         </Page>
 
         <!-- PAGE 2: Search & Results -->
@@ -587,14 +625,13 @@
         </Page>
 
         <!-- PAGE 3: Edit Profile -->
-        <Page id="editPage" title="{i18n>myProfile}" showNavButton="true" navButtonPress="onNavBack" enableScrolling="false">
+        <Page id="editPage" title="{i18n>myProfile}" showNavButton="true" navButtonPress="onNavBack" enableScrolling="true">
             <content>
                 <IconTabBar expandable="false" class="hhEditProfileTabs">
                     <items>
 
                         <!-- TAB: Edit Profile -->
                         <IconTabFilter text="{i18n>editProfile}" icon="sap-icon://edit" key="editProfile">
-                            <ScrollContainer vertical="true" horizontal="false" height="100%">
                                 <VBox class="sapUiSmallMargin">
 
                                     <!-- PROFILE PHOTO -->
@@ -709,12 +746,10 @@
                                     <Button text="{i18n>saveProfile}" type="Emphasized" press="onSaveProfile" class="sapUiMediumMarginTop sapUiLargeMarginBottom" width="100%"/>
 
                                 </VBox>
-                            </ScrollContainer>
                         </IconTabFilter>
 
                         <!-- TAB: Settings -->
                         <IconTabFilter text="{i18n>settingsTab}" icon="sap-icon://action-settings" key="settings">
-                            <ScrollContainer vertical="true" horizontal="false" height="100%">
                                 <VBox class="sapUiSmallMargin hhSettingsPage">
 
                                     <!-- Help & Onboarding -->
@@ -781,14 +816,24 @@
                                     </VBox>
 
                                 </VBox>
-                            </ScrollContainer>
                         </IconTabFilter>
 
                     </items>
                 </IconTabBar>
             </content>
 
-            <dependents/>
+            <dependents>
+                <!-- Avatar header menu -->
+                <ActionSheet id="headerAvatarSheet" title="" showCancelButton="true" cancelButtonText="{i18n>cancel}">
+                    <buttons>
+                        <Button text="{i18n>editProfile}"     icon="sap-icon://person-placeholder" press="onEditProfile"/>
+                        <Button text="{i18n>changeLanguage}"  icon="sap-icon://world"              press="onLanguageMenu"/>
+                        <Button text="{i18n>adminPanel}"      icon="sap-icon://it-system"          press="onNavToAdmin"
+                            visible="{= ${appData>/user/role} === 'admin'}"/>
+                        <Button text="{i18n>signOut}"         icon="sap-icon://log"                press="onLogout" type="Reject"/>
+                    </buttons>
+                </ActionSheet>
+            </dependents>
 
         </Page>
 

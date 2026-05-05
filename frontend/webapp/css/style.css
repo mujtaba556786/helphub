@@ -10,6 +10,146 @@
 .smallText  { font-size: 0.9rem; }
 .errorText  { font-size: 0.8rem; }
 
+/* ══════════════════════════════════════════════════════════════
+   HEADER — collapsed to 2 items (bell + avatar)
+   ══════════════════════════════════════════════════════════════ */
+.hhHeaderRight {
+    gap: 4px;
+    align-items: center;
+    padding-right: 4px;
+}
+/* Bell button — enforce 44px touch target */
+.hhNotifBtnWrap .sapMBtn {
+    width: 44px !important;
+    height: 44px !important;
+    padding: 0 !important;
+}
+/* Avatar in header — 44px touch target via wrapper */
+.hhHeaderAvatar {
+    cursor: pointer;
+    margin-left: 2px;
+}
+.hhHeaderAvatar.sapFAvatar {
+    width: 32px !important;
+    height: 32px !important;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SAFE AREA — notch + home indicator
+   ══════════════════════════════════════════════════════════════ */
+.sapMPage > header,
+.sapMPageHeader {
+    padding-top: env(safe-area-inset-top) !important;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   BOTTOM NAVIGATION BAR — Page footer aggregation
+   SAP Page footer renders below content automatically — no
+   position:fixed hacks needed.
+   ══════════════════════════════════════════════════════════════ */
+/* ── Bottom navigation bar ────────────────────────────────────── */
+.hhBottomNav.sapMBar {
+    height: auto !important;
+    min-height: 64px !important;
+    padding: 0 0 env(safe-area-inset-bottom) 0 !important;
+    border-top: 1px solid var(--sapContent_ForegroundBorderColor) !important;
+    box-shadow: 0 -2px 12px rgba(15,23,42,0.08) !important;
+    display: flex !important;
+    align-items: stretch !important;
+}
+.hhBottomNav .sapMBarMiddle,
+.hhBottomNav .sapMBarPH {
+    display: flex !important;
+    align-items: center !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 64px !important;
+}
+.hhBottomNavRow {
+    width: 100% !important;
+    padding: 6px 4px !important;
+}
+/* Equal-width cells */
+.hhBottomNavRow > .sapMFlexItem {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    display: flex !important;
+    justify-content: center !important;
+}
+/* Nav button outer — fills cell, no side effects */
+.hhNavBtn.sapMBtn {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    height: auto !important;
+    min-width: 0 !important;
+    padding: 6px 4px !important;
+    border-radius: 12px !important;
+    gap: 0;
+    transition: background 0.15s ease !important;
+}
+/* SAP inner span — layout only, let SAP handle hover/focus visuals */
+.hhNavBtn .sapMBtnInner {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    height: auto !important;
+    gap: 3px !important;
+    padding: 0 !important;
+    min-width: 0 !important;
+    width: 100% !important;
+}
+.hhNavBtn .sapMBtnIcon.sapUiIcon {
+    font-size: 1.35rem !important;
+    margin: 0 !important;
+    line-height: 1 !important;
+    display: block !important;
+}
+.hhNavBtn .sapMBtnContent {
+    font-size: 0.65rem !important;
+    line-height: 1.1 !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    letter-spacing: 0.01em;
+    display: block !important;
+}
+/* Higher specificity to beat SAP Bar theme hiding labels */
+.hhBottomNav .hhNavBtn .sapMBtnContent { display: block !important; }
+/* Active/inactive coloring handled entirely by SAP UI5 Emphasized/Transparent types */
+/* Badge on Tasks / Messages */
+.hhNavBtnWrap {
+    position: relative;
+    flex: 1 1 0;
+    display: flex;
+    justify-content: center;
+}
+.hhNavBadge {
+    position: absolute;
+    top: 4px; right: 6px;
+    background: #ef4444; color: #fff;
+    font-size: 0.58rem; font-weight: 700;
+    min-width: 16px; height: 16px;
+    border-radius: 10px; padding: 0 4px;
+    display: inline-flex; align-items: center; justify-content: center;
+    line-height: 1; pointer-events: none;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+/* Small phones — tighten slightly */
+@media (max-width: 380px) {
+    .hhNavBtn.sapMBtn { padding: 5px 2px !important; }
+    .hhNavBtn .sapMBtnIcon.sapUiIcon { font-size: 1.2rem !important; }
+    .hhNavBtn .sapMBtnContent { font-size: 0.6rem !important; }
+}
+/* Very narrow — hide labels */
+@media (max-width: 320px) {
+    .hhNavBtn .sapMBtnContent { display: none !important; }
+}
+
 /* ── Login ────────────────────────────────────────────────────── */
 .loginCard {
     border-radius: 18px;
@@ -222,7 +362,7 @@
 @media (max-width: 480px) { .hhTaskToggle { font-size: 13px; } }
 
 /* ── Tasks tab ────────────────────────────────────────────────── */
-.hhTasksTab     { padding: 0; display: flex; flex-direction: column; height: 100%; overflow: hidden; }
+.hhTasksTab     { padding: 0; display: flex; flex-direction: column; overflow: hidden; }
 .hhTasksTopBar  { padding: 10px 16px 0; flex-shrink: 0; border-bottom: 1.5px solid; }
 .hhUnderlineTabs { gap: 0; }
 
@@ -250,8 +390,8 @@
     padding: 0 14px !important; font-size: 0.85rem !important; font-weight: 500 !important;
 }
 
-.hhTaskListScroll { flex: 1; overflow: hidden; }
-.hhTaskListScroll .sapMScrollCont { height: 100%; }
+.hhTaskListScroll { flex: 1; }
+.hhTaskListScroll .sapMScrollCont { height: calc(100dvh - 56px - 64px - 48px - 44px - 44px) !important; overflow-y: auto !important; }
 .hhTaskList.sapMList { background: transparent !important; padding-bottom: 80px; }
 .hhTaskList .sapMLIBBorderTop,
 .hhTaskList .sapMLIBBorderBottom { display: none !important; }
@@ -341,14 +481,17 @@
     gap: 10px !important; min-height: 100px;
 }
 .fiSvcIconWrap {
-    width: 56px; height: 56px; min-width: 56px;
-    border-radius: 50% !important;
+    width: 48px !important;
+    height: 48px !important;
+    min-width: 48px !important;
+    border-radius: 12px !important;
     background: rgba(16,185,129,0.12) !important;
     transition: background 0.2s ease !important;
-    margin-bottom: 4px;
+    margin-bottom: 4px !important;
 }
-.fiSvcIcon {
+.fiSvcIcon.sapUiIcon {
     color: #10b981 !important;
+    font-size: 1.25rem !important;
     transition: color 0.2s ease !important;
 }
 .fiSvcName {
@@ -357,9 +500,33 @@
 }
 
 /* ── My Schedule tab ──────────────────────────────────────────── */
-.fiScheduleTab      { padding: 16px; }
-.fiScheduleFilters  { margin-bottom: 16px; gap: 6px; flex-wrap: wrap; }
-.fiBookingCardInner { padding: 14px 16px; }
+.fiScheduleTab      { padding: 0; }
+.fiScheduleTitle.sapMTitle { padding: 16px 16px 0 !important; }
+
+/* Filter row — same pattern as notification chips */
+.fiScheduleFilters  {
+    gap: 6px; padding: 10px 16px 8px;
+    flex-wrap: nowrap; overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+.fiScheduleFilters::-webkit-scrollbar { display: none; }
+
+/* Booking list — no default SAP separators / backgrounds */
+.fiCardList.sapMList { background: transparent !important; padding: 0 0 80px !important; }
+.fiCardList .sapMLIBBorderTop,
+.fiCardList .sapMLIBBorderBottom { display: none !important; }
+
+/* Card item */
+.fiBookingCard.sapMLIB {
+    padding: 0 !important;
+    margin: 0 12px 8px !important;
+    border-radius: 12px !important;
+    background: var(--sapTile_Background, #fff) !important;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.07) !important;
+    overflow: hidden;
+}
+.fiBookingCardInner { padding: 14px 16px; gap: 8px; display: flex; flex-direction: column; }
+.fiBookingActions   { gap: 6px; flex-wrap: wrap; }
 
 /* ── Saved tab ────────────────────────────────────────────────── */
 .fiSavedTab       { padding: 16px; }
@@ -445,7 +612,7 @@
 
 /* Actions row */
 .hhExpertActions  { gap: 6px; align-items: center; flex-wrap: wrap; padding-top: 4px; border-top: 1px solid; }
-.hhExpertIconBtn.sapMBtn   { width: 34px !important; height: 34px !important; padding: 0 !important; border-radius: 50% !important; }
+.hhExpertIconBtn.sapMBtn   { width: 40px !important; height: 40px !important; padding: 0 !important; border-radius: 50% !important; }
 .hhExpertProfileBtn.sapMBtn { font-size: 0.82rem !important; padding: 0 8px !important; }
 .hhExpertBookBtn.sapMBtn    { border-radius: 8px !important; height: 34px !important; font-size: 0.82rem !important; font-weight: 600 !important; }
 .hhExpertMsgBtn.sapMBtn     { border-radius: 8px !important; height: 34px !important; font-size: 0.82rem !important; }

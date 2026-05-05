@@ -17,7 +17,7 @@
     <preference name="scheme" value="http" />
     <preference name="Orientation" value="portrait" />
     <preference name="StatusBarOverlaysWebView" value="false" />
-    <preference name="StatusBarBackgroundColor" value="#0070f2" />
+    <preference name="StatusBarBackgroundColor" value="#0f172a" />
     <preference name="StatusBarStyle" value="lightcontent" />
     
     <platform name="android">
