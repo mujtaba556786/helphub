@@ -31,14 +31,14 @@
         }
     </style>
     <!-- App stylesheet — bump ?v= whenever style.css changes to bust browser cache -->
-    <link rel="stylesheet" href="css/style.css?v=2.14">
+    <link rel="stylesheet" href="css/style.css?v=2.15">
 
     <!-- Cache-bust helphub app JS modules — SAP UI5 loads controller/mixin files via
          <script> tags, so we intercept the HTMLScriptElement src setter before UI5
          boots. Bump _HH_BUILD whenever JS files change to force a fresh fetch. -->
     <script>
         (function () {
-            var _HH_BUILD = '2.14';
+            var _HH_BUILD = '2.15';
             var _desc = Object.getOwnPropertyDescriptor(HTMLScriptElement.prototype, 'src');
             Object.defineProperty(HTMLScriptElement.prototype, 'src', {
                 get: _desc.get,

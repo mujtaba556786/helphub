@@ -138,10 +138,10 @@ async function createRating({ provider_id, user_id, reviewer_name, stars, commen
     }
 
     const [[{ avg }]] = await pool.query(
-        "SELECT ROUND(AVG(stars), 1) AS avg FROM ratings WHERE provider_id = ? AND status = 'approved'",
+        "SELECT ROUND(AVG(stars), 1) AS avg FROM ratings WHERE provider_id = ? AND status != 'rejected'",
         [provider_id]
     );
-    await pool.execute('UPDATE users SET rating = ? WHERE id = ?', [avg || 0, provider_id]);
+    await pool.execute('UPDATE users SET rating = ? WHERE id = ?', [avg || null, provider_id]);
     return { newAverage: avg, updated: !!existing };
 }
 

@@ -24,10 +24,10 @@ async function _recalcProviderRating(reviewId) {
     const [[review]] = await pool.query('SELECT provider_id FROM ratings WHERE id = ?', [reviewId]);
     if (!review) throw Object.assign(new Error('Review not found'), { status: 404 });
     const [[{ avg }]] = await pool.query(
-        "SELECT ROUND(AVG(stars), 1) AS avg FROM ratings WHERE provider_id = ? AND status = 'approved'",
+        "SELECT ROUND(AVG(stars), 1) AS avg FROM ratings WHERE provider_id = ? AND status != 'rejected'",
         [review.provider_id]
     );
-    await pool.execute('UPDATE users SET rating = ? WHERE id = ?', [avg || 0, review.provider_id]);
+    await pool.execute('UPDATE users SET rating = ? WHERE id = ?', [avg || null, review.provider_id]);
     return { avg, providerId: review.provider_id };
 }
 
@@ -48,10 +48,10 @@ async function deleteReview(id) {
     if (!review) throw Object.assign(new Error('Review not found'), { status: 404 });
     await pool.execute('DELETE FROM ratings WHERE id = ?', [id]);
     const [[{ avg }]] = await pool.query(
-        "SELECT ROUND(AVG(stars), 1) AS avg FROM ratings WHERE provider_id = ? AND status = 'approved'",
+        "SELECT ROUND(AVG(stars), 1) AS avg FROM ratings WHERE provider_id = ? AND status != 'rejected'",
         [review.provider_id]
     );
-    await pool.execute('UPDATE users SET rating = ? WHERE id = ?', [avg || 0, review.provider_id]);
+    await pool.execute('UPDATE users SET rating = ? WHERE id = ?', [avg || null, review.provider_id]);
 }
 
 // ── Stats ─────────────────────────────────────────────────────────────────────

@@ -360,6 +360,20 @@ async function initDb() {
             );
         }
 
+        // Fix stale 0-ratings caused by the old status='approved' filter bug
+        await connection.query(`
+            UPDATE users u
+            JOIN (
+                SELECT provider_id,
+                       ROUND(AVG(stars), 1) AS avg
+                FROM   ratings
+                WHERE  status != 'rejected'
+                GROUP  BY provider_id
+            ) r ON r.provider_id = u.id
+            SET u.rating = r.avg
+            WHERE u.rating = 0 OR u.rating IS NULL
+        `);
+
         connection.release();
         return true;
     } catch (err) {

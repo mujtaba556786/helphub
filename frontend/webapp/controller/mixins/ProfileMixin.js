@@ -8,6 +8,23 @@ sap.ui.define([
 
     return {
 
+        // Fetch ratings for a provider and update both the reviews list and header rating
+        _loadProfileRatings: function(sProviderId) {
+            var oModel = this.getModel("appData");
+            fetch(API_BASE + "/api/providers/" + encodeURIComponent(sProviderId) + "/ratings")
+                .then(function(r) { return r.json(); })
+                .then(function(oData) {
+                    if (!oData.success) return;
+                    var aReviews = oData.ratings || [];
+                    oModel.setProperty("/selectedProfile/reviews", this._formatReviews(aReviews));
+                    if (aReviews.length > 0) {
+                        var fAvg = aReviews.reduce(function(s, r) { return s + (r.stars || 0); }, 0) / aReviews.length;
+                        oModel.setProperty("/selectedProfile/rating", Math.round(fAvg * 10) / 10);
+                    }
+                }.bind(this))
+                .catch(function() {});
+        },
+
         // Shared helper — exposed as this.this._formatReviews() so other mixins can use it
         _formatReviews: function(aRatings) {
             var now = new Date();
@@ -75,17 +92,7 @@ sap.ui.define([
             if (oComment) oComment.setValue("");
 
             this._getProfileDialog().then(function(oDialog) { oDialog.open(); }.bind(this));
-
-            fetch(API_BASE + "/api/providers/" + encodeURIComponent(oProvider.id) + "/ratings")
-                .then(function(r) { return r.json(); })
-                .then(function(oData) {
-                    if (oData.success && oData.ratings && oData.ratings.length > 0) {
-                        // Replace with live DB reviews (may include pending ones)
-                        oModel.setProperty("/selectedProfile/reviews", this._formatReviews(oData.ratings));
-                    }
-                    // If API returns empty, keep the embedded mock reviews already set above
-                }.bind(this))
-                .catch(function() { /* keep embedded reviews on network error */ });
+            this._loadProfileRatings(oProvider.id);
         },
 
         onSubmitRating: function() {
@@ -123,11 +130,7 @@ sap.ui.define([
                     if (oComment) oComment.setValue("");
                     // Note: average and review list only update after admin approval
                     var sId = oModel.getProperty("/selectedProfile/id");
-                    fetch(API_BASE + "/api/providers/" + encodeURIComponent(sId) + "/ratings")
-                        .then(function(r) { return r.json(); })
-                        .then(function(d) {
-                            if (d.success) oModel.setProperty("/selectedProfile/reviews", this._formatReviews(d.ratings));
-                        }.bind(this));
+                    this._loadProfileRatings(sId);
                 } else {
                     MessageToast.show(oData.error || "Could not submit rating.");
                 }
@@ -154,6 +157,10 @@ sap.ui.define([
             if (oComment) oComment.setValue("");
 
             this._getProfileDialog().then(function(oDialog) { oDialog.open(); }.bind(this));
+
+            if (oProfile.id) {
+                this._loadProfileRatings(oProfile.id);
+            }
         },
 
         onEditProfileFromDialog: function() {
@@ -208,14 +215,7 @@ sap.ui.define([
                 })
                 .catch(function() { /* keep stub data on error */ });
 
-            fetch(API_BASE + "/api/providers/" + encodeURIComponent(sProviderId) + "/ratings")
-                .then(function(r) { return r.json(); })
-                .then(function(oData) {
-                    if (oData.success) {
-                        oModel.setProperty("/selectedProfile/reviews", that._formatReviews(oData.ratings || []));
-                    }
-                })
-                .catch(function() { });
+            this._loadProfileRatings(sProviderId);
         },
 
         onCloseProfile: function() {
