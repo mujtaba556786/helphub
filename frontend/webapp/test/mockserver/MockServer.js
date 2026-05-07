@@ -188,6 +188,22 @@ sap.ui.define([
     return {
         start: function () {
             if (_started) return;
+
+            // Pre-seed localStorage so Component.js auto-login finds a token
+            // and navigates to the dashboard instead of staying on login.
+            localStorage.setItem("helpmate_token",        MockData.ACCESS_TOKEN);
+            localStorage.setItem("helphub_refresh_token", MockData.REFRESH_TOKEN);
+            localStorage.setItem("helpmate_user_id",      MockData.USER.id);
+
+            // Provide HelpmateStorage alias used by Dashboard.controller.js
+            if (!window.HelpmateStorage) {
+                window.HelpmateStorage = {
+                    get:   function (k, cb) { cb(localStorage.getItem(k)); },
+                    set:   function (k, v)  { localStorage.setItem(k, v); },
+                    clear: function ()      {}
+                };
+            }
+
             _originalFetch = window.fetch;
             window.fetch = function (url, options) {
                 return handleFetch(url, options);
@@ -202,6 +218,9 @@ sap.ui.define([
             if (!_started) return;
             window.fetch = _originalFetch;
             _originalFetch = null;
+            localStorage.removeItem("helpmate_token");
+            localStorage.removeItem("helphub_refresh_token");
+            localStorage.removeItem("helpmate_user_id");
             _started = false;
         },
 
