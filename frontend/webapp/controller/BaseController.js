@@ -5,6 +5,9 @@ sap.ui.define([
 ], function (Controller, History, UIComponent) {
     "use strict";
 
+    // Absorbs model calls after a controller's view is destroyed (e.g. OPA5 teardown race)
+    var _oNullModel = { getProperty: function () { return null; }, setProperty: function () {}, refresh: function () {} };
+
     return Controller.extend("helphub.controller.BaseController", {
         /**
          * Convenience method for getting the router.
@@ -21,7 +24,10 @@ sap.ui.define([
          * @returns {sap.ui.model.Model} the model instance
          */
         getModel: function (sName) {
-            return this.getView().getModel(sName) || this.getOwnerComponent().getModel(sName);
+            var oView = this.getView();
+            if (!oView) { return _oNullModel; }
+            var oComp = this.getOwnerComponent();
+            return oView.getModel(sName) || (oComp && oComp.getModel(sName)) || _oNullModel;
         },
 
         /**

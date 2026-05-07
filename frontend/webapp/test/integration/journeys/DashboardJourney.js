@@ -1,8 +1,9 @@
 sap.ui.define([
     "sap/ui/test/opaQunit",
+    "sap/ui/test/Opa5",
     "helphub/test/integration/pages/DashboardPage",
     "helphub/test/mockserver/MockServer"
-], function (opaTest, DashboardPage, MockServer) {
+], function (opaTest, Opa5, DashboardPage, MockServer) {
     "use strict";
 
     QUnit.module("Dashboard — Launch Features", {
