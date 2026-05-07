@@ -1,4 +1,4 @@
-# HelpHub
+# Helpmate
 
 Neighborhood Help Network — connect with trusted neighbors for everyday tasks.
 

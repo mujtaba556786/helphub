@@ -199,6 +199,9 @@ sap.ui.define([
         chatMessages: [],
         filteredProviders: [],
 
+        homeActivity: { helpers: 0, requests: 0, recent: [] },
+        subscriptionStatus: { plan: "free", monthly_booking_value: 0 },
+
         notifications: [],
         unreadCount: 0,
         bookingCount: 0,

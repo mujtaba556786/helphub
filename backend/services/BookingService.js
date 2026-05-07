@@ -107,6 +107,17 @@ async function updateStatus(bookingId, status) {
         if (status === 'completed') {
             calculateTrustScore(booking.customer_id).catch(() => {});
             calculateTrustScore(booking.provider_id).catch(() => {});
+
+            // Accumulate monthly booking value on the provider for GMV cap tracking
+            const [[bRow]] = await pool.query('SELECT total_price FROM bookings WHERE id = ?', [bookingId]);
+            if (bRow && bRow.total_price) {
+                await pool.query(
+                    `UPDATE users
+                     SET monthly_booking_value = monthly_booking_value + ?
+                     WHERE id = ?`,
+                    [bRow.total_price, booking.provider_id]
+                ).catch(() => {});
+            }
         }
     }
 }

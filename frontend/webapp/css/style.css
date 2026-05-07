@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════════════════════
-   HelpMate — Custom stylesheet
+   Helpmate — Custom stylesheet
    Rule: Colors come from the SAP theme.
          This file owns only: layout, spacing, shape, elevation.
    ══════════════════════════════════════════════════════════════ */
@@ -720,4 +720,87 @@ section { -webkit-overflow-scrolling: touch; }
 
 .hhSettingsInfoRow:last-child {
     border-bottom: none;
+}
+
+/* ── Activity strip ──────────────────────────────────────────────────────── */
+.fiActivityStrip {
+    background: var(--sapList_HeaderBackground, #f5f5f5);
+    border-radius: 10px;
+    padding: 8px 12px;
+    margin-bottom: 10px;
+    gap: 4px;
+}
+
+.fiActivityItem {
+    gap: 4px;
+}
+
+.fiActivityIcon.sapUiIcon {
+    font-size: 0.85rem;
+    color: var(--sapBrandColor, #0070f3);
+}
+
+.fiActivityText.sapMText {
+    font-size: 0.78rem;
+    color: var(--sapContent_LabelColor, #6a6d70);
+    white-space: nowrap;
+}
+
+/* ── Primary CTA ─────────────────────────────────────────────────────────── */
+.fiPrimaryCta {
+    margin-bottom: 14px;
+}
+
+.fiCtaBtn.sapMBtn {
+    border-radius: 10px !important;
+    height: 44px !important;
+    font-size: 0.95rem !important;
+    font-weight: 600 !important;
+}
+
+/* ── Hero badge on service tile ──────────────────────────────────────────── */
+.fiHeroBadge .sapMObjStatusText {
+    font-size: 0.65rem !important;
+    font-weight: 700 !important;
+}
+
+.fiHeroBadge.sapMObjStatus {
+    margin-top: 2px;
+    padding: 1px 5px !important;
+    border-radius: 6px !important;
+    background: rgba(48, 164, 108, 0.12) !important;
+}
+
+/* ── Sponsored badge ─────────────────────────────────────────────────────── */
+.fiSponsoredBadge .sapMObjStatusText {
+    font-size: 0.7rem !important;
+    font-weight: 600 !important;
+}
+
+/* ── Pro badge ───────────────────────────────────────────────────────────── */
+.fiProBadge .sapMObjStatusText {
+    font-size: 0.7rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.5px;
+}
+
+/* ── Native inline ad slot ───────────────────────────────────────────────── */
+.fiAdNative {
+    padding: 10px 16px;
+    border-radius: 10px;
+    background: var(--sapList_HeaderBackground, #f5f5f5);
+    border: 1px dashed var(--sapContent_ForegroundBorderColor, #e0e0e0);
+    min-height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+/* ── Earnings chip ───────────────────────────────────────────────────────── */
+.fiEarningsChip.sapMObjStatus {
+    font-size: 0.78rem !important;
+    padding: 2px 8px !important;
+    border-radius: 10px !important;
+    background: rgba(0, 112, 243, 0.08) !important;
 }

@@ -278,6 +278,23 @@ async function initDb() {
         try { await connection.query('ALTER TABLE tasks ADD COLUMN lat FLOAT'); } catch(e) {}
         try { await connection.query('ALTER TABLE tasks ADD COLUMN lng FLOAT'); } catch(e) {}
 
+        // ── Monetization schema additions ─────────────────────────────────────
+        const monetizationCols = [
+            { table: 'users',    name: 'subscription_plan',       type: "ENUM('free','pro') NOT NULL DEFAULT 'free'" },
+            { table: 'users',    name: 'featured_until',          type: 'DATETIME NULL' },
+            { table: 'users',    name: 'featured_category',       type: 'VARCHAR(100) NULL' },
+            { table: 'users',    name: 'monthly_booking_value',   type: 'DECIMAL(10,2) NOT NULL DEFAULT 0.00' },
+            { table: 'users',    name: 'monthly_booking_reset_date', type: 'DATE NULL' },
+            { table: 'bookings', name: 'total_price',             type: 'DECIMAL(10,2) NULL' },
+        ];
+        for (const col of monetizationCols) {
+            const [exists] = await connection.query(`SHOW COLUMNS FROM ${col.table} LIKE '${col.name}'`);
+            if (exists.length === 0) {
+                await connection.query(`ALTER TABLE ${col.table} ADD COLUMN ${col.name} ${col.type}`).catch(() => {});
+            }
+        }
+
+
 
         await connection.query(`
             CREATE TABLE IF NOT EXISTS task_applications (
@@ -383,6 +400,8 @@ async function initDb() {
 }
 
 // ── Route mounts ──────────────────────────────────────────────────────────────
+app.use('/api/home',           require('./routes/homeRoutes'));
+app.use('/api/subscription',   require('./routes/subscriptionRoutes'));
 app.use('/api/users',          require('./routes/userRoutes'));
 app.use('/api/providers',      require('./routes/providerRoutes'));
 app.use('/api/ratings',        require('./routes/ratingRoutes'));

@@ -1,4 +1,5 @@
-const svc = require('../services/AdminService');
+const svc             = require('../services/AdminService');
+const SubscriptionSvc = require('../services/SubscriptionService');
 
 // ── Reviews ───────────────────────────────────────────────────────────────────
 async function getReviews(req, res) {
@@ -81,11 +82,41 @@ async function submitReport(req, res) {
     res.json({ success: true });
 }
 
+// ── Subscription plan management ──────────────────────────────────────────────
+async function setSubscriptionPlan(req, res) {
+    const result = await SubscriptionSvc.setSubscriptionPlan(req.params.id, req.body.plan);
+    res.json({ success: true, ...result });
+}
+
+// ── Featured provider management ──────────────────────────────────────────────
+async function featureProvider(req, res) {
+    const { days = 7, category = null } = req.body;
+    const pool = require('../db/pool');
+    await pool.query(
+        `UPDATE users
+         SET featured_until = DATE_ADD(NOW(), INTERVAL ? DAY),
+             featured_category = ?
+         WHERE id = ?`,
+        [days, category, req.params.id]
+    );
+    res.json({ success: true, featured_days: days, category });
+}
+
+async function unfeatureProvider(req, res) {
+    const pool = require('../db/pool');
+    await pool.query(
+        'UPDATE users SET featured_until = NULL, featured_category = NULL WHERE id = ?',
+        [req.params.id]
+    );
+    res.json({ success: true });
+}
+
 module.exports = {
     getReviews, approveReview, rejectReview, deleteReview,
     getStats,
     getBlocks, deleteBlock,
     getReports, actionReport,
     getFlaggedUsers, actionUser,
-    blockUser, unblockUser, getMyBlocks, submitReport
+    blockUser, unblockUser, getMyBlocks, submitReport,
+    setSubscriptionPlan, featureProvider, unfeatureProvider
 };

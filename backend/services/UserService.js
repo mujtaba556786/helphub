@@ -40,7 +40,15 @@ async function updateUser(id, b) {
         add('availability', Array.isArray(b.availability) ? b.availability.join(',') : (b.availability || ''));
     }
     if (b.serviceCategories !== undefined) {
-        add('service_categories', Array.isArray(b.serviceCategories) ? b.serviceCategories.join(',') : (b.serviceCategories || ''));
+        const cats = Array.isArray(b.serviceCategories)
+            ? b.serviceCategories
+            : (b.serviceCategories || '').split(',').filter(Boolean);
+        // Fetch current plan to enforce free-tier category limit
+        const [[current]] = await pool.query('SELECT subscription_plan, role FROM users WHERE id = ?', [id]);
+        if (current && current.role === 'provider' && (current.subscription_plan || 'free') === 'free' && cats.length > 3) {
+            throw Object.assign(new Error('Free providers can list up to 3 service categories. Upgrade to Pro for unlimited.'), { status: 400 });
+        }
+        add('service_categories', cats.join(','));
     }
     if (b.street_name   !== undefined) add('street_name',   b.street_name || null);
     if (b.street_number !== undefined) add('street_number', b.street_number || null);
@@ -69,9 +77,13 @@ async function uploadAvatar(id, filename) {
     return avatarUrl;
 }
 
+const HERO_CATEGORY = 'Cleaning';
+
 async function getProviders(category) {
+    // Select monetization columns alongside existing fields
     let sql = `SELECT id, name, avatar, bio, rating, rate, city, state, country,
-                      lat, lng, languages, years, availability, service_categories, phone
+                      lat, lng, languages, years, availability, service_categories, phone,
+                      subscription_plan, featured_until, featured_category, monthly_booking_value
                FROM users
                WHERE service_categories IS NOT NULL
                  AND service_categories != ''
@@ -82,12 +94,24 @@ async function getProviders(category) {
         sql += ' AND FIND_IN_SET(?, service_categories)';
         params.push(category);
     }
-    sql += ' ORDER BY rating DESC';
+    // Ranking: featured (1000) → Pro (+20) → hero category (+15) → rating×10
+    const heroBoost  = category === HERO_CATEGORY ? 15 : 0;
+    const catParam   = category || '';
+    sql += `
+        ORDER BY
+          (CASE WHEN featured_until > NOW()
+                 AND (featured_category = ? OR featured_category IS NULL)
+                THEN 1000 ELSE 0 END) DESC,
+          (CASE WHEN subscription_plan = 'pro' THEN 20 ELSE 0 END
+           + ${heroBoost}
+           + COALESCE(rating, 0) * 10) DESC`;
+    params.push(catParam);
+
     const [rows] = await pool.query(sql, params);
     return rows.map(u => ({
         id: u.id,
         name: u.name,
-        photo: u.avatar && u.avatar.startsWith('/uploads/') ? `http://localhost:3000${u.avatar}` : (u.avatar || ''),
+        photo: u.avatar && u.avatar.startsWith('/uploads/') ? `${process.env.API_BASE_URL || 'http://localhost:3000'}${u.avatar}` : (u.avatar || ''),
         bio: u.bio || '',
         rating: u.rating || 5.0,
         rate: u.rate || 0,
@@ -99,7 +123,12 @@ async function getProviders(category) {
         years: u.years || 0,
         availability: u.availability || 'Available Now',
         serviceType: u.service_categories || '',
-        phone: u.phone || ''
+        service_categories: u.service_categories || '',
+        phone: u.phone || '',
+        subscription_plan: u.subscription_plan || 'free',
+        featured_until: u.featured_until || null,
+        featured_category: u.featured_category || null,
+        monthly_booking_value: parseFloat(u.monthly_booking_value) || 0
     }));
 }
 
@@ -163,11 +192,11 @@ async function approveUser(id) {
             if (user.email) {
                 const { transporter, isEthereal } = await createMailTransporter();
                 const info = await transporter.sendMail({
-                    from: `"HelpHub" <${process.env.SMTP_USER || 'noreply@helphub.app'}>`,
+                    from: `"Helpmate" <${process.env.SMTP_USER || 'noreply@helpmate.app'}>`,
                     to: user.email,
-                    subject: '🎉 Your HelpHub provider account is approved!',
+                    subject: '🎉 Your Helpmate provider account is approved!',
                     html: `<div style="font-family:sans-serif;max-width:520px;margin:auto">
-                        <h2>Welcome to HelpHub, ${user.name || 'there'}!</h2>
+                        <h2>Welcome to Helpmate, ${user.name || 'there'}!</h2>
                         <p>Great news — your provider account has been <strong>approved</strong>.</p>
                         <p>You can now:</p>
                         <ul>
@@ -176,7 +205,7 @@ async function approveUser(id) {
                             <li>Build your reputation with reviews</li>
                         </ul>
                         <p>Log in to get started.</p>
-                        <p style="color:#888;font-size:12px">HelpHub — Neighborhood Help Network</p>
+                        <p style="color:#888;font-size:12px">Helpmate — Neighborhood Help Network</p>
                     </div>`
                 });
                 if (isEthereal) console.log('Provider approval email preview:', nodemailer.getTestMessageUrl(info));

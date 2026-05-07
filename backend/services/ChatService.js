@@ -32,7 +32,7 @@ async function streamChat(res, { provider_id, messages, user_id }) {
         return;
     }
 
-    const systemPrompt = `You are an AI assistant for ${p.name}, a service provider on HelpMate.
+    const systemPrompt = `You are an AI assistant for ${p.name}, a service provider on Helpmate.
 
 Here is ${p.name}'s profile:
 - Service: ${p.service_categories || 'General'}
@@ -42,9 +42,9 @@ Here is ${p.name}'s profile:
 - Location: ${[p.city, p.country].filter(Boolean).join(', ') || 'Not specified'}
 - Languages: ${p.languages || 'Not specified'}
 - Availability: ${p.availability || 'Flexible'}
-- About: ${p.bio || 'Professional service provider on HelpMate.'}
+- About: ${p.bio || 'Professional service provider on Helpmate.'}
 
-Your job is to help users learn about ${p.name}, answer questions about their services, availability, and pricing. Be friendly, professional, and helpful. If asked about booking, tell them to use the HelpMate booking system. Do not make up information not provided above.`;
+Your job is to help users learn about ${p.name}, answer questions about their services, availability, and pricing. Be friendly, professional, and helpful. If asked about booking, tell them to use the Helpmate booking system. Do not make up information not provided above.`;
 
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');

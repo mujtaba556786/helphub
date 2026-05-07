@@ -33,4 +33,9 @@ router.get('/users/me/blocks',           requireAuth,  handleAsync(ctrl.getMyBlo
 // ── Reporting ─────────────────────────────────────────────────────────────────
 router.post('/reports',                  requireAuth,  validate(s.submitReport), handleAsync(ctrl.submitReport));
 
+// ── Subscription + featured management (admin) ────────────────────────────────
+router.patch('/admin/users/:id/subscription', requireAdmin, handleAsync(ctrl.setSubscriptionPlan));
+router.post('/admin/users/:id/feature',       requireAdmin, handleAsync(ctrl.featureProvider));
+router.delete('/admin/users/:id/feature',     requireAdmin, handleAsync(ctrl.unfeatureProvider));
+
 module.exports = router;

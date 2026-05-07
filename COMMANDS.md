@@ -1,4 +1,4 @@
-# HelpHub — Commands Reference
+# Helpmate — Commands Reference
 
 ## Start the App
 

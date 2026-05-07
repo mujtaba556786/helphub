@@ -30,8 +30,10 @@ sap.ui.define([
             var now = new Date();
             return (aRatings || []).map(function(r) {
                 var sName     = r.reviewer_name || "Anonymous";
-                var sInitials = sName.split(" ").map(function(p) { return p[0] || ""; })
-                    .join("").substring(0, 2).toUpperCase() || "?";
+                var sInitials = r.reviewer_name
+                    ? (sName.split(" ").map(function(p) { return p[0] || ""; })
+                        .join("").substring(0, 2).toUpperCase() || "?")
+                    : "AN";
 
                 var d = r.created_at ? new Date(r.created_at) : null;
                 var sRelative = "";
