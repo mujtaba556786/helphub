@@ -61,7 +61,7 @@ sap.ui.define([
             }
             // Ensure user id is in model (may only be in storage after page reload)
             if (!this._oModel.getProperty("/user/id")) {
-                window.HelpHubStorage.get("helpmate_user_id", function(sSid) {
+                window.HelpmateStorage.get("helpmate_user_id", function(sSid) {
                     if (sSid) { this._oModel.setProperty("/user/id", sSid); }
                 }.bind(this));
             }
@@ -71,6 +71,8 @@ sap.ui.define([
             this._loadFavorites();
             this._loadUnreadDmCount();
             this._loadTasksFeed();
+            this._loadHomeActivity();
+            this._loadSubscriptionStatus();
             if (!this._notifInterval) {
                 this._startNotificationPolling();
             }
@@ -259,6 +261,35 @@ sap.ui.define([
             apply();
         },
 
+        _loadHomeActivity: function() {
+            var oModel = this.getModel("appData");
+            fetch(API_BASE + "/api/home/activity")
+                .then(function(r) { return r.json(); })
+                .then(function(oData) {
+                    if (oData.success) {
+                        oModel.setProperty("/homeActivity", {
+                            helpers: oData.helpers || 0,
+                            requests: oData.requests || 0,
+                            recent: oData.recent || []
+                        });
+                    }
+                })
+                .catch(function() { /* non-critical — stay silent */ });
+        },
+
+        _loadSubscriptionStatus: function() {
+            var oModel = this.getModel("appData");
+            var sRole = oModel.getProperty("/user/role");
+            if (sRole !== "provider") { return; }
+            this.apiFetch(API_BASE + "/api/subscription/status")
+                .then(function(oData) {
+                    if (oData.success) {
+                        oModel.setProperty("/subscriptionStatus", oData);
+                    }
+                })
+                .catch(function() { /* non-critical */ });
+        },
+
         _loadProvidersFromApi: function() {
             var oModel = this.getModel("appData");
             fetch(API_BASE + "/api/providers")
@@ -429,13 +460,13 @@ sap.ui.define([
             var sEmail = this.getModel("appData").getProperty("/user/email") || "";
 
             // Revoke refresh token on backend, then show logout dialog
-            window.HelpHubStorage.get("helphub_refresh_token", function(sRefresh) {
+            window.HelpmateStorage.get("helpmate_refresh_token", function(sRefresh) {
                 var fnShowDialog = function() {
-                    window.HelpHubStorage.clear();
+                    window.HelpmateStorage.clear();
                     that._showLogoutDialog(sEmail);
                 };
                 if (sRefresh) {
-                    window.HelpHubStorage.get("helpmate_token", function(sToken) {
+                    window.HelpmateStorage.get("helpmate_token", function(sToken) {
                         fetch(API_BASE + "/api/auth/logout", {
                             method: "POST",
                             headers: {
@@ -701,7 +732,7 @@ sap.ui.define([
 
             var sUserId = oUser.id;
             if (!sUserId) {
-                window.HelpHubStorage.get("helpmate_user_id", function(sid) {
+                window.HelpmateStorage.get("helpmate_user_id", function(sid) {
                     if (sid) { oModel.setProperty("/user/id", sid); }
                 });
                 MessageToast.show("Session expired. Please log in again."); return;

@@ -161,6 +161,20 @@ sap.ui.define([], function () {
                 return da - db;
             });
 
+            // Inject ad placeholders every 6th card for free users (max 4 per session)
+            var sPlan = oModel.getProperty("/user/subscription_plan");
+            if (sPlan !== "pro") {
+                var iAdCount = 0, iAdMax = 4, aWithAds = [];
+                aFiltered.forEach(function (p, i) {
+                    aWithAds.push(p);
+                    if ((i + 1) % 6 === 0 && iAdCount < iAdMax) {
+                        aWithAds.push({ isAd: true });
+                        iAdCount++;
+                    }
+                });
+                return aWithAds;
+            }
+
             return aFiltered;
         },
 

@@ -92,13 +92,13 @@ async function sendMagicLink(req, res) {
     const { transporter, isEthereal } = await createMailTransporter();
     try {
         const info = await transporter.sendMail({
-            from: process.env.SMTP_FROM || `"HelpHub" <noreply@helphub.local>`,
+            from: process.env.SMTP_FROM || `"Helpmate" <noreply@helphub.local>`,
             to: email,
-            subject: 'Sign in to HelpHub',
+            subject: 'Sign in to Helpmate',
             html: `<div style="font-family:sans-serif;max-width:420px;margin:auto">
-                    <h2 style="color:#f97316">HelpHub</h2>
+                    <h2 style="color:#f97316">Helpmate</h2>
                     <p>Click the button below to sign in. This link expires in <strong>15 minutes</strong> and can only be used once.</p>
-                    <a href="${magicUrl}" style="display:inline-block;padding:12px 28px;background:#f97316;color:#fff;border-radius:8px;text-decoration:none;font-weight:bold;font-size:16px;margin:16px 0">Sign in to HelpHub</a>
+                    <a href="${magicUrl}" style="display:inline-block;padding:12px 28px;background:#f97316;color:#fff;border-radius:8px;text-decoration:none;font-weight:bold;font-size:16px;margin:16px 0">Sign in to Helpmate</a>
                     <p style="color:#888;font-size:12px">If you didn't request this, you can safely ignore this email.</p>
                    </div>`
         });
@@ -128,7 +128,7 @@ async function magicLinkCallback(req, res) {
             ? 'This sign-in link has expired. Links are valid for 15 minutes.'
             : 'This sign-in link is invalid or has already been used.';
         return res.status(400).send(`<html><body style="font-family:sans-serif;text-align:center;padding:40px">
-            <h2 style="color:#f97316">HelpHub</h2><p>${msg}</p>
+            <h2 style="color:#f97316">Helpmate</h2><p>${msg}</p>
             <p><a href="${FRONTEND_URL}">Request a new link</a></p>
             </body></html>`);
     }

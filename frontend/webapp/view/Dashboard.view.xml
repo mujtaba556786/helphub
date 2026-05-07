@@ -42,6 +42,31 @@
                     <VBox class="fiTabContent">
                         <Title text="{i18n>howCanWeHelp}" level="H2" class="fiPageTitle"/>
                         <Text text="{i18n>chooseService}" class="fiPageSubtitle"/>
+
+                        <!-- Activity strip: live marketplace pulse -->
+                        <HBox id="activityStrip" class="fiActivityStrip" justifyContent="SpaceBetween"
+                            visible="{= ${appData>/homeActivity/helpers} > 0}">
+                            <HBox alignItems="Center" class="fiActivityItem">
+                                <core:Icon src="sap-icon://employee" class="fiActivityIcon"/>
+                                <Text text="{appData>/homeActivity/helpers} helpers nearby" class="fiActivityText"/>
+                            </HBox>
+                            <HBox alignItems="Center" class="fiActivityItem">
+                                <core:Icon src="sap-icon://task" class="fiActivityIcon"/>
+                                <Text text="{appData>/homeActivity/requests} open tasks today" class="fiActivityText"/>
+                            </HBox>
+                            <HBox alignItems="Center" class="fiActivityItem"
+                                visible="{= !!${appData>/homeActivity/recent/0/city}}">
+                                <core:Icon src="sap-icon://accept" class="fiActivityIcon"/>
+                                <Text text="Active in {appData>/homeActivity/recent/0/city}" class="fiActivityText"/>
+                            </HBox>
+                        </HBox>
+
+                        <!-- Primary CTA: shifts app from directory to marketplace -->
+                        <VBox id="primaryCta" class="fiPrimaryCta" alignItems="Stretch">
+                            <Button text="Post a Task" type="Emphasized" icon="sap-icon://add"
+                                press="onOpenPostTask" class="fiCtaBtn"/>
+                        </VBox>
+
                         <FlexBox wrap="Wrap" class="fiServicesGrid" items="{appData>/services}">
                             <items>
                                 <CustomListItem class="fiSvcCard" type="Active" press=".onServicePress">
@@ -50,6 +75,9 @@
                                             <core:Icon src="{path:'appData>name', formatter:'.formatServiceIcon'}" class="fiSvcIcon"/>
                                         </VBox>
                                         <Text text="{appData>name}" class="fiSvcName"/>
+                                        <ObjectStatus text="Popular" state="Success"
+                                            visible="{= ${appData>name} === 'Cleaning'}"
+                                            class="fiHeroBadge"/>
                                     </VBox>
                                 </CustomListItem>
                             </items>
@@ -323,7 +351,15 @@
                 <ScrollContainer vertical="true" horizontal="false" height="100%"
                     visible="{= ${appData>/currentTab} === 'mySchedule'}">
                                 <VBox class="fiScheduleTab">
-                                    <Title text="{i18n>yourBookings}" level="H4" class="fiScheduleTitle"/>
+                                    <HBox justifyContent="SpaceBetween" alignItems="Center">
+                                        <Title text="{i18n>yourBookings}" level="H4" class="fiScheduleTitle"/>
+                                        <!-- Monthly earnings chip: visible to providers only -->
+                                        <ObjectStatus
+                                            text="€{appData>/subscriptionStatus/monthly_booking_value} earned"
+                                            state="{= parseFloat(${appData>/subscriptionStatus/monthly_booking_value}) > 300 ? 'Warning' : 'None'}"
+                                            visible="{= ${appData>/user/role} === 'provider'}"
+                                            class="fiEarningsChip"/>
+                                    </HBox>
                                     <!-- Status filters -->
                                     <HBox alignItems="Center" class="fiScheduleFilters">
                                         <Button text="{i18n>filterAll}" type="{= (${appData>/bookingStatusFilter} || 'all') === 'all' ? 'Emphasized' : 'Default'}" press="onBookingFilter" class="hhNotifChip">
@@ -561,7 +597,11 @@
                     <!-- ── Helper cards ── -->
                     <List items="{appData>/filteredProviders}" noDataText="" showSeparators="None" class="hhExpertList">
                         <CustomListItem class="hhExpertCardItem" type="Inactive">
-                            <VBox class="hhExpertCard">
+                            <!-- Ad slot — rendered when FilterMixin injects {isAd:true} every 6th item -->
+                            <core:HTML
+                                content='&lt;div class="fiAdNative"&gt;&lt;ins class="adsbygoogle" style="display:block;text-align:center;" data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="3333333333" data-ad-format="fluid"&gt;&lt;/ins&gt;&lt;span class="hhAdLabel"&gt;Sponsored&lt;/span&gt;&lt;/div&gt;'
+                                visible="{= !!${appData>isAd}}"/>
+                            <VBox class="hhExpertCard" visible="{= !${appData>isAd}}">
 
                                 <!-- Row 1: Avatar + Name + Price/Status -->
                                 <HBox justifyContent="SpaceBetween" alignItems="Center" class="hhExpertCardTop">
@@ -583,8 +623,14 @@
                                     </VBox>
                                 </HBox>
 
-                                <!-- Row 2: Tags (trust + exp + language) -->
+                                <!-- Row 2: Tags (trust + exp + language + plan badges) -->
                                 <HBox wrap="Wrap" alignItems="Center" class="hhExpertTags">
+                                    <ObjectStatus text="Sponsored" state="Warning" icon="sap-icon://favorite"
+                                        visible="{= !!${appData>featured_until}}"
+                                        class="hhExpertTag fiSponsoredBadge"/>
+                                    <ObjectStatus text="PRO" state="Success"
+                                        visible="{= ${appData>subscription_plan} === 'pro'}"
+                                        class="hhExpertTag fiProBadge"/>
                                     <ObjectStatus
                                         text="{= ${appData>trust_level} === 'trusted_user' ? '✓ Trusted' : '✓ Verified' }"
                                         state="{= ${appData>trust_level} === 'trusted_user' ? 'Success' : 'Information' }"
