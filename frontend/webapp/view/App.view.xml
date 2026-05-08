@@ -1,8 +1,0 @@
-<mvc:View controllerName="helphub.controller.App"
-    displayBlock="true"
-    xmlns:mvc="sap.ui.core.mvc"
-    xmlns="sap.m">
-    <App id="app">
-    <NavContainer id="navContainer" />
-    </App>
-</mvc:View>
