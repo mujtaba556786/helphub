@@ -1,0 +1,49 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core">
+
+    <Dialog id="reportDialog"
+            title="Submit a Report"
+            contentWidth="420px"
+            verticalScrolling="false">
+
+        <VBox class="sapUiMediumMargin">
+
+            <Label text="What are you reporting?" class="sapUiTinyMarginBottom"/>
+            <Select id="reportCategorySelect"
+                    selectedKey="{appData>/report/category}"
+                    width="100%"
+                    class="sapUiSmallMarginBottom">
+                <items>
+                    <core:Item key=""                        text="— Select a category —"/>
+                    <core:Item key="spam"                    text="Spam"/>
+                    <core:Item key="harassment"              text="Harassment"/>
+                    <core:Item key="scam_fraud"              text="Scam / Fraud"/>
+                    <core:Item key="inappropriate_content"   text="Inappropriate Content"/>
+                    <core:Item key="fake_profile"            text="Fake Profile"/>
+                    <core:Item key="other"                   text="Other"/>
+                </items>
+            </Select>
+
+            <Label text="Description (optional)" class="sapUiTinyMarginBottom"/>
+            <TextArea value="{appData>/report/description}"
+                      rows="4"
+                      width="100%"
+                      placeholder="Describe the issue in more detail..."
+                      class="sapUiSmallMarginBottom"/>
+
+            <Text text="Reports are anonymous and reviewed by our moderation team. Repeated reports may result in automatic content restriction."
+                  class="smallText grayText" wrapping="true"/>
+
+        </VBox>
+
+        <beginButton>
+            <Button text="Submit Report" type="Emphasized" press="onSubmitReport"/>
+        </beginButton>
+        <endButton>
+            <Button text="Cancel" press="onCloseReport"/>
+        </endButton>
+
+    </Dialog>
+
+</core:FragmentDefinition>

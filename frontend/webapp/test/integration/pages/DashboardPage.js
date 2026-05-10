@@ -1,0 +1,122 @@
+sap.ui.define([
+    "sap/ui/test/Opa5",
+    "sap/ui/test/actions/Press",
+    "sap/ui/test/matchers/PropertyStrictEquals",
+    "sap/ui/test/matchers/AggregationFilled"
+], function (Opa5, Press, PropertyStrictEquals, AggregationFilled) {
+    "use strict";
+
+    var DASHBOARD_VIEW = "helphub.view.Dashboard";
+
+    Opa5.createPageObjects({
+        onTheDashboard: {
+            actions: {
+                iPressServiceTile: function (sServiceName) {
+                    return this.waitFor({
+                        controlType: "sap.m.CustomListItem",
+                        viewName: DASHBOARD_VIEW,
+                        matchers: function (oItem) {
+                            var oIcon = oItem.$().find(".fiSvcName");
+                            return oIcon.length && oIcon.text() === sServiceName;
+                        },
+                        actions: new Press(),
+                        errorMessage: "Could not find service tile: " + sServiceName
+                    });
+                },
+
+                iPressNavTab: function (sTabKey) {
+                    return this.waitFor({
+                        controlType: "sap.m.Button",
+                        viewName: DASHBOARD_VIEW,
+                        matchers: function (oBtn) {
+                            var aData = oBtn.getCustomData();
+                            return aData.some(function (d) { return d.getKey() === "tab" && d.getValue() === sTabKey; });
+                        },
+                        actions: new Press(),
+                        errorMessage: "Could not find nav tab: " + sTabKey
+                    });
+                },
+
+                iPressPostTaskCta: function () {
+                    return this.waitFor({
+                        id: "primaryCta",
+                        viewName: DASHBOARD_VIEW,
+                        actions: function (oVBox) {
+                            var aButtons = oVBox.getItems ? oVBox.getItems() : [];
+                            var oBtn = aButtons.find(function (c) { return c.isA("sap.m.Button"); });
+                            if (oBtn) { oBtn.firePress(); }
+                        },
+                        errorMessage: "Post a Task CTA button not found"
+                    });
+                }
+            },
+
+            assertions: {
+                iSeeActivityStrip: function () {
+                    return this.waitFor({
+                        id: "activityStrip",
+                        viewName: DASHBOARD_VIEW,
+                        matchers: new PropertyStrictEquals({ name: "visible", value: true }),
+                        success: function () { Opa5.assert.ok(true, "Activity strip is visible"); },
+                        errorMessage: "Activity strip not visible"
+                    });
+                },
+
+                iSeePostTaskCta: function () {
+                    return this.waitFor({
+                        id: "primaryCta",
+                        viewName: DASHBOARD_VIEW,
+                        success: function () { Opa5.assert.ok(true, "Post a Task CTA is rendered"); },
+                        errorMessage: "Post a Task CTA not found"
+                    });
+                },
+
+                iSeeHeroBadgeOnCleaning: function () {
+                    return this.waitFor({
+                        controlType: "sap.m.ObjectStatus",
+                        viewName: DASHBOARD_VIEW,
+                        matchers: new PropertyStrictEquals({ name: "text", value: "Popular" }),
+                        success: function (aItems) {
+                            Opa5.assert.ok(aItems.length > 0, "'Popular' hero badge is present on Cleaning tile");
+                        },
+                        errorMessage: "Hero badge 'Popular' not found on Cleaning tile"
+                    });
+                },
+
+                iSeeSponsoredBadge: function () {
+                    return this.waitFor({
+                        controlType: "sap.m.ObjectStatus",
+                        viewName: DASHBOARD_VIEW,
+                        matchers: new PropertyStrictEquals({ name: "text", value: "Sponsored" }),
+                        success: function (aItems) {
+                            Opa5.assert.ok(aItems.length > 0, "Sponsored badge found on featured provider card");
+                        },
+                        errorMessage: "Sponsored badge not found — check mock data has featured_until set"
+                    });
+                },
+
+                iSeeProBadge: function () {
+                    return this.waitFor({
+                        controlType: "sap.m.ObjectStatus",
+                        viewName: DASHBOARD_VIEW,
+                        matchers: new PropertyStrictEquals({ name: "text", value: "PRO" }),
+                        success: function (aItems) {
+                            Opa5.assert.ok(aItems.length > 0, "PRO badge found on Pro provider card");
+                        },
+                        errorMessage: "PRO badge not found — check mock data has subscription_plan='pro'"
+                    });
+                },
+
+                iSeeProviderList: function () {
+                    return this.waitFor({
+                        controlType: "sap.m.List",
+                        viewName: DASHBOARD_VIEW,
+                        matchers: new AggregationFilled({ name: "items" }),
+                        success: function () { Opa5.assert.ok(true, "Provider list has items"); },
+                        errorMessage: "Provider list is empty"
+                    });
+                }
+            }
+        }
+    });
+});

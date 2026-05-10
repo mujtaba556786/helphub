@@ -1,0 +1,811 @@
+sap.ui.define([
+    "helphub/controller/BaseController",
+    "sap/m/MessageToast",
+    "sap/m/MessageBox",
+    "sap/ui/core/Fragment",
+    "helphub/model/countryStates",
+    "helphub/controller/mixins/NotificationMixin",
+    "helphub/controller/mixins/MapMixin",
+    "helphub/controller/mixins/FilterMixin",
+    "helphub/controller/mixins/BookingMixin",
+    "helphub/controller/mixins/AiChatMixin",
+    "helphub/controller/mixins/DmMixin",
+    "helphub/controller/mixins/OnboardingFavoritesMixin",
+    "helphub/controller/mixins/ProfileMixin",
+    "helphub/controller/mixins/TaskMixin",
+    "helphub/controller/mixins/TrustSafetyMixin",
+    "helphub/config"
+], function(
+    BaseController, MessageToast, MessageBox, Fragment, CountryStates,
+    NotificationMixin, MapMixin, FilterMixin, BookingMixin, AiChatMixin,
+    DmMixin, OnboardingFavoritesMixin, ProfileMixin, TaskMixin, TrustSafetyMixin,
+    Config
+) {
+    "use strict";
+
+    var API_BASE = Config.API_BASE;
+
+    var DashboardController = BaseController.extend("helphub.controller.Dashboard", {
+
+        onInit: function() {
+            var oRouter = this.getRouter();
+            if (oRouter) {
+                oRouter.getRoute("dashboard").attachPatternMatched(this._onRouteMatched, this);
+            }
+
+            this.getView().addEventDelegate({
+                onAfterRendering: function() {
+                    var aTiles = document.querySelectorAll(".customServiceTile");
+                    aTiles.forEach((el) => {
+                        el.onclick = (e) => {
+                            var oTile = sap.ui.getCore().byId(el.id);
+                            if (oTile) {
+                                this.onServicePress({ tile: oTile });
+                            }
+                        };
+                    });
+
+                    // Apply service tile colors — small delay so list items are in DOM
+                    setTimeout(this._applyTileColors.bind(this), 100);
+
+                    // Map is initialized lazily on first navigate to searchPage
+                }.bind(this)
+            }, this);
+        },
+
+        _onRouteMatched: function() {
+            this._oModel = this.getModel("appData");
+            // Default to Find Help tab on every route match
+            if (!this._oModel.getProperty("/currentTab")) {
+                this._oModel.setProperty("/currentTab", "findHelp");
+            }
+            // Ensure user id is in model (may only be in storage after page reload)
+            if (!this._oModel.getProperty("/user/id")) {
+                window.HelpmateStorage.get("helpmate_user_id", function(sSid) {
+                    if (sSid) { this._oModel.setProperty("/user/id", sSid); }
+                }.bind(this));
+            }
+            this._loadProvidersFromApi();
+            this._loadServicesFromApi();
+            this._loadSchedule();
+            this._loadFavorites();
+            this._loadUnreadDmCount();
+            this._loadTasksFeed();
+            this._loadHomeActivity();
+            this._loadSubscriptionStatus();
+            if (!this._notifInterval) {
+                this._startNotificationPolling();
+            }
+            // Pre-warm all fragment dialogs so chains are instant on first interaction
+            this._getProfileDialog();
+            this._getBookingDialog();
+            this._getAiChatDialog();
+            this._getDmChatDialog();
+            this._getPostTaskDialog();
+            this._getTaskDetailDialog();
+            this._getNotificationsDialog();
+            this._getOnboardingDialog();
+            this._getTermsDialog(); // pre-warm so it shows instantly if needed
+            // Terms checked first — onboarding only runs after terms are confirmed
+            // (see TrustSafetyMixin._checkTermsAccepted and onAcceptTerms)
+            setTimeout(this._checkTermsAccepted.bind(this), 350);
+        },
+
+        // ── FRAGMENT DIALOG FACTORIES ────────────────────────────────────────────
+        _getProfileDialog: function() {
+            if (!this._pProfileDialog) {
+                this._pProfileDialog = Fragment.load({
+                    id: this.getView().getId(),
+                    name: "helphub.view.fragments.ProfileDialog",
+                    controller: this
+                }).then(function(oDialog) {
+                    this.getView().addDependent(oDialog);
+                    return oDialog;
+                }.bind(this));
+            }
+            return this._pProfileDialog;
+        },
+
+        _getBookingDialog: function() {
+            if (!this._pBookingDialog) {
+                this._pBookingDialog = Fragment.load({
+                    id: this.getView().getId(),
+                    name: "helphub.view.fragments.BookingDialog",
+                    controller: this
+                }).then(function(oDialog) {
+                    this.getView().addDependent(oDialog);
+                    return oDialog;
+                }.bind(this));
+            }
+            return this._pBookingDialog;
+        },
+
+        _getAiChatDialog: function() {
+            if (!this._pAiChatDialog) {
+                this._pAiChatDialog = Fragment.load({
+                    id: this.getView().getId(),
+                    name: "helphub.view.fragments.AiChatDialog",
+                    controller: this
+                }).then(function(oDialog) {
+                    this.getView().addDependent(oDialog);
+                    return oDialog;
+                }.bind(this));
+            }
+            return this._pAiChatDialog;
+        },
+
+        _getDmChatDialog: function() {
+            if (!this._pDmChatDialog) {
+                this._pDmChatDialog = Fragment.load({
+                    id: this.getView().getId(),
+                    name: "helphub.view.fragments.DmChatDialog",
+                    controller: this
+                }).then(function(oDialog) {
+                    this.getView().addDependent(oDialog);
+                    return oDialog;
+                }.bind(this));
+            }
+            return this._pDmChatDialog;
+        },
+
+        _getPostTaskDialog: function() {
+            if (!this._pPostTaskDialog) {
+                this._pPostTaskDialog = Fragment.load({
+                    id: this.getView().getId(),
+                    name: "helphub.view.fragments.PostTaskDialog",
+                    controller: this
+                }).then(function(oDialog) {
+                    this.getView().addDependent(oDialog);
+                    return oDialog;
+                }.bind(this));
+            }
+            return this._pPostTaskDialog;
+        },
+
+        _getTaskDetailDialog: function() {
+            if (!this._pTaskDetailDialog) {
+                this._pTaskDetailDialog = Fragment.load({
+                    id: this.getView().getId(),
+                    name: "helphub.view.fragments.TaskDetailDialog",
+                    controller: this
+                }).then(function(oDialog) {
+                    this.getView().addDependent(oDialog);
+                    return oDialog;
+                }.bind(this));
+            }
+            return this._pTaskDetailDialog;
+        },
+
+        _getNotificationsDialog: function() {
+            if (!this._pNotificationsDialog) {
+                this._pNotificationsDialog = Fragment.load({
+                    id: this.getView().getId(),
+                    name: "helphub.view.fragments.NotificationsDialogV2",
+                    controller: this
+                }).then(function(oDialog) {
+                    this.getView().addDependent(oDialog);
+                    return oDialog;
+                }.bind(this));
+            }
+            return this._pNotificationsDialog;
+        },
+
+        _getOnboardingDialog: function() {
+            if (!this._pOnboardingDialog) {
+                this._pOnboardingDialog = Fragment.load({
+                    id: this.getView().getId(),
+                    name: "helphub.view.fragments.OnboardingDialog",
+                    controller: this
+                }).then(function(oDialog) {
+                    this.getView().addDependent(oDialog);
+                    return oDialog;
+                }.bind(this));
+            }
+            return this._pOnboardingDialog;
+        },
+
+        onBottomNavSelect: function(oEvent) {
+            var sKey = oEvent.getSource().data("tab");
+            this.getModel("appData").setProperty("/currentTab", sKey);
+            if (sKey === "mySchedule") {
+                this._markBookingsSeen();
+            } else if (sKey === "messages") {
+                this._loadConversations();
+            } else if (sKey === "tasks") {
+                this._loadTasksFeed();
+                this._loadMyTasks();
+                if (!this._taskMapInitialized) {
+                    setTimeout(function() {
+                        this._initTaskMap();
+                        this._taskMapInitialized = true;
+                    }.bind(this), 400);
+                }
+            }
+        },
+
+        onTabSelect: function(oEvent) {
+            this.onBottomNavSelect(oEvent);
+        },
+
+        _applyTileColors: function() {
+            var aServices = this.getModel("appData").getProperty("/services") || [];
+
+            var oStyle = document.getElementById("__hh-tile-colors");
+            if (!oStyle) {
+                oStyle = document.createElement("style");
+                oStyle.id = "__hh-tile-colors";
+                document.head.appendChild(oStyle);
+            }
+            var sCss = "";
+            aServices.forEach(function(svc, i) {
+                if (svc && svc.color) {
+                    sCss += ".serviceTilesContainer > *:nth-child(" + (i + 1) + ") .circleButton {" +
+                            "background-color: " + svc.color + " !important; }\n";
+                }
+            });
+            oStyle.textContent = sCss;
+        },
+
+        /** Toggle the small orange dot above the bell icon */
+        _setNotifDot: function(bShow) {
+            var oBtn = this.byId("notifBtn");
+            if (!oBtn) return;
+            var apply = function() {
+                var oDom = oBtn.getDomRef();
+                if (oDom) {
+                    oDom.classList.toggle("notifDot", !!bShow);
+                } else {
+                    setTimeout(apply, 150);
+                }
+            };
+            apply();
+        },
+
+        _loadHomeActivity: function() {
+            var oModel = this.getModel("appData");
+            fetch(API_BASE + "/api/home/activity")
+                .then(function(r) { return r.json(); })
+                .then(function(oData) {
+                    if (oData.success) {
+                        oModel.setProperty("/homeActivity", {
+                            helpers: oData.helpers || 0,
+                            requests: oData.requests || 0,
+                            recent: oData.recent || []
+                        });
+                    }
+                })
+                .catch(function() { /* non-critical — stay silent */ });
+        },
+
+        _loadSubscriptionStatus: function() {
+            var oModel = this.getModel("appData");
+            var sRole = oModel.getProperty("/user/role");
+            if (sRole !== "provider") { return; }
+            this.apiFetch(API_BASE + "/api/subscription/status")
+                .then(function(oData) {
+                    if (oData.success) {
+                        oModel.setProperty("/subscriptionStatus", oData);
+                    }
+                })
+                .catch(function() { /* non-critical */ });
+        },
+
+        _loadProvidersFromApi: function() {
+            var oModel = this.getModel("appData");
+            fetch(API_BASE + "/api/providers")
+                .then(function(r) { return r.json(); })
+                .then(function(oData) {
+                    if (oData.success && oData.providers.length) {
+                        oModel.setProperty("/providers", oData.providers);
+                    }
+                })
+                .catch(function() { /* keep mock data on network error */ });
+        },
+
+        /**
+         * Fetch the service catalogue from the backend and update the tile grid.
+         * Falls back to the hardcoded list in models.js if the API is unreachable.
+         * Maps backend fields:  id, name, icon, category, description, status
+         *           → model fields: id, name, icon, sector, color, description
+         */
+        _loadServicesFromApi: function() {
+            var oModel = this.getModel("appData");
+
+            // Colour lookup by sector — keeps the palette consistent even for
+            // services added later via the admin panel.
+            var mSectorColors = {
+                "Home":      "#a7f3d0",
+                "Care":      "#fde68a",
+                "Transport": "#bfdbfe",
+                "Wellness":  "#e9d5ff",
+                "Skills":    "#e0e7ff"
+            };
+
+            // Per-service overrides so existing tiles keep their original shade.
+            var mServiceColors = {
+                "Gardening":    "#bbf7d0",
+                "Cleaning":     "#a7f3d0",
+                "Handyman":     "#e2e8f0",
+                "Babysitting":  "#fecdd3",
+                "Elder Care":   "#fde68a",
+                "Pet Care":     "#fbcfe8",
+                "Transport":    "#bfdbfe",
+                "Groceries":    "#ddd6fe",
+                "Cooking":      "#fed7aa",
+                "Massage":      "#e9d5ff",
+                "Math Tuition": "#fef9c3",
+                "IT Support":   "#e0e7ff"
+            };
+
+            fetch(API_BASE + "/api/services")
+                .then(function(r) { return r.json(); })
+                .then(function(aRows) {
+                    // Backend returns a plain array (not wrapped in {success, ...})
+                    if (!Array.isArray(aRows) || aRows.length === 0) return;
+
+                    var aServices = aRows
+                        .filter(function(row) { return row.status === "Active"; })
+                        .map(function(row) {
+                            return {
+                                id:          String(row.id),
+                                name:        row.name,
+                                icon:        row.icon  || "📦",
+                                sector:      row.category || "Home",
+                                color:       mServiceColors[row.name] ||
+                                             mSectorColors[row.category] ||
+                                             "#e2e8f0",
+                                description: row.description || ""
+                            };
+                        });
+
+                    oModel.setProperty("/services", aServices);
+                    // Re-apply tile colours after the list re-renders
+                    setTimeout(this._applyTileColors.bind(this), 150);
+                }.bind(this))
+                .catch(function() { /* keep hardcoded list on network error */ });
+        },
+
+        // ── Service emoji HTML formatter ─────────────────────────────────────────
+        formatSvcEmoji: function(sIcon) {
+            return '<span class="fiSvcEmoji">' + (sIcon || "⚙️") + "</span>";
+        },
+
+        // ── Service card formatters ──────────────────────────────────────────────
+        formatServiceIcon: function(sName) {
+            var mIcons = {
+                "Cleaning":     "sap-icon://home-share",
+                "Gardening":    "sap-icon://tree",
+                "Handyman":     "sap-icon://wrench",
+                "Babysitting":  "sap-icon://group",
+                "Elder Care":   "sap-icon://heart",
+                "Pet Care":     "sap-icon://customer",
+                "Transport":    "sap-icon://car-rental",
+                "Groceries":    "sap-icon://basket",
+                "Cooking":      "sap-icon://meal",
+                "Massage":      "sap-icon://physical-activity",
+                "Math Tuition": "sap-icon://education",
+                "IT Support":   "sap-icon://laptop",
+                "Driver":       "sap-icon://car-rental",
+                "Plumbing":     "sap-icon://wrench",
+                "Electrician":  "sap-icon://flash"
+            };
+            return mIcons[sName] || "sap-icon://activities";
+        },
+
+        formatServiceDesc: function(sName) {
+            var mDesc = {
+                "Babysitting":  "Trusted caregivers for your children",
+                "Elder Care":   "Experienced care for the elderly",
+                "Pet Care":     "Pet sitting, dog walking, and more",
+                "Cleaning":     "Professional home cleaning",
+                "Gardening":    "Lawn, plant care, and landscaping",
+                "Handyman":     "Repairs, maintenance, and fixes",
+                "IT Support":   "Technical help for computers",
+                "Math Tuition": "Tutoring for various math levels",
+                "Groceries":    "Grocery shopping and delivery",
+                "Transport":    "Rides and delivery services",
+                "Cooking":      "Personal chefs and meal prep",
+                "Massage":      "Relaxing at-home massage therapy",
+                "Driver":       "Professional driving services",
+                "Plumbing":     "Pipe repairs and installations",
+                "Electrician":  "Electrical repairs and wiring"
+            };
+            return mDesc[sName] || "Professional service near you";
+        },
+
+        onHeaderAvatarMenu: function(oEvent) {
+            var oSheet = this.byId("headerAvatarSheet");
+            oSheet.openBy(oEvent.getSource());
+        },
+
+        onNavToAdmin: function() {
+            this.navTo("admin");
+        },
+
+        onLanguageMenu: function() {
+            var that = this;
+            if (!this._oLangDialog) {
+                this._oLangDialog = new sap.m.Dialog({
+                    title: "{i18n>changeLanguage}",
+                    contentWidth: "280px",
+                    content: [
+                        new sap.m.List({
+                            showSeparators: "None",
+                            items: [
+                                new sap.m.StandardListItem({ title: "🇬🇧  English",  type: "Active", press: that._applyLanguage.bind(that, "en") }),
+                                new sap.m.StandardListItem({ title: "🇩🇪  Deutsch",  type: "Active", press: that._applyLanguage.bind(that, "de") }),
+                                new sap.m.StandardListItem({ title: "🇹🇷  Türkçe",   type: "Active", press: that._applyLanguage.bind(that, "tr") }),
+                                new sap.m.StandardListItem({ title: "🇸🇦  العربية",  type: "Active", press: that._applyLanguage.bind(that, "ar") })
+                            ]
+                        })
+                    ],
+                    endButton: new sap.m.Button({
+                        text: "{i18n>cancel}",
+                        type: "Transparent",
+                        press: function() { that._oLangDialog.close(); }
+                    })
+                });
+                this.getView().addDependent(this._oLangDialog);
+            }
+            this._oLangDialog.open();
+        },
+
+        _applyLanguage: function(sLang) {
+            localStorage.setItem("helpmate_lang", sLang);
+            window.location.reload();
+        },
+
+        onLogout: function() {
+            var that = this;
+            var sEmail = this.getModel("appData").getProperty("/user/email") || "";
+
+            // Revoke refresh token on backend, then show logout dialog
+            window.HelpmateStorage.get("helpmate_refresh_token", function(sRefresh) {
+                var fnShowDialog = function() {
+                    window.HelpmateStorage.clear();
+                    that._showLogoutDialog(sEmail);
+                };
+                if (sRefresh) {
+                    window.HelpmateStorage.get("helpmate_token", function(sToken) {
+                        fetch(API_BASE + "/api/auth/logout", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "Authorization": "Bearer " + (sToken || "")
+                            },
+                            body: JSON.stringify({ refreshToken: sRefresh })
+                        })
+                        .catch(function() {}) // silent — still clear locally
+                        .then(fnShowDialog);
+                    });
+                } else {
+                    fnShowDialog();
+                }
+            });
+        },
+
+        _showLogoutDialog: function(sEmail) {
+            var that = this;
+            if (!this._pLogoutDialog) {
+                this._pLogoutDialog = Fragment.load({
+                    id: this.getView().getId() + "-logout",
+                    name: "helphub.view.fragments.LogoutDialog",
+                    controller: this
+                }).then(function(oDialog) {
+                    oDialog.setModel(
+                        new sap.ui.model.json.JSONModel({ email: "", linkSent: false }),
+                        "logoutData"
+                    );
+                    that.getView().addDependent(oDialog);
+                    return oDialog;
+                });
+            }
+            this._pLogoutDialog.then(function(oDialog) {
+                oDialog.getModel("logoutData").setProperty("/email", sEmail);
+                oDialog.getModel("logoutData").setProperty("/linkSent", false);
+                oDialog.open();
+            });
+        },
+
+        onLogoutSendLink: function() {
+            if (!this._pLogoutDialog) { return; }
+            this._pLogoutDialog.then(function(oDialog) {
+                var oModel = oDialog.getModel("logoutData");
+                var sEmail = oModel.getProperty("/email");
+                if (!sEmail) { return; }
+
+                fetch(API_BASE + "/api/auth/send-magic-link", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email: sEmail })
+                })
+                .then(function(r) { return r.json(); })
+                .then(function(oData) {
+                    if (oData.success) {
+                        oModel.setProperty("/linkSent", true);
+                    } else {
+                        sap.m.MessageToast.show(oData.error || "Could not send link.");
+                    }
+                })
+                .catch(function() {
+                    sap.m.MessageToast.show("Could not reach the server.");
+                });
+            });
+        },
+
+        onLogoutClose: function() {
+            if (this._pLogoutDialog) {
+                this._pLogoutDialog.then(function(oDialog) { oDialog.close(); });
+            }
+            this.navTo("login", {}, true);
+        },
+
+        onServicePress: function(oEvent) {
+            var oTile = oEvent.getSource();
+            var oContext = oTile.getBindingContext("appData");
+            if (!oContext) return;
+
+            var oService = oContext.getObject();
+
+            var $circle = oTile.$().find(".circleButton");
+            $circle.addClass("circleActive");
+
+            setTimeout(() => {
+                $circle.removeClass("circleActive");
+                this._navigateToResults(oService);
+            }, 450);
+        },
+
+        _navigateToResults: function(oService) {
+            var oModel = this.getModel("appData");
+            if (!oModel) { return; }
+
+            oModel.setProperty("/selectedCategoryName", oService.name);
+
+            var aFiltered = this._applyFiltersForService(oService.name);
+            oModel.setProperty("/filteredProviders", aFiltered);
+
+            var oNav = this.byId("navContainer");
+            if (oNav) {
+                oNav.to(this.byId("searchPage"));
+                if (!this._mapInitialized) {
+                    setTimeout(function() {
+                        this._initMap();
+                        this._mapInitialized = true;
+                        this._updateProviderMarkers(aFiltered);
+                        if (this._oMap) {
+                            setTimeout(function() {
+                                this._oMap.invalidateSize();
+                            }.bind(this), 200);
+                        }
+                    }.bind(this), 400);
+                } else {
+                    this._updateProviderMarkers(aFiltered);
+                }
+            }
+        },
+
+        // ── PROFILE EDITING ───────────────────────────────────────────────────
+        onEditProfile: function() {
+            var oModel = this.getModel("appData");
+
+            if (!oModel.getProperty("/countries").length) {
+                oModel.setProperty("/countries", CountryStates.getCountries());
+            }
+
+            var sCountry = oModel.getProperty("/user/address/country");
+            if (!sCountry) {
+                sCountry = CountryStates.detectCountryCode();
+                oModel.setProperty("/user/address/country", sCountry);
+            }
+
+            oModel.setProperty("/stateOptions", CountryStates.getStates(sCountry));
+
+            this.byId("navContainer").to(this.byId("editPage"));
+        },
+
+        onAvailabilityToggle: function(oEvent) {
+            var oModel = this.getModel("appData");
+            var sKey   = oEvent.getSource().data("availKey");
+            var oFlags = Object.assign({}, oModel.getProperty("/user/availabilityFlags"));
+
+            if (sKey === "all_day") {
+                var bOn = !oFlags.all_day;
+                oFlags.all_day = oFlags.weekdays = oFlags.weekends =
+                    oFlags.morning = oFlags.afternoon = oFlags.evening = oFlags.night = bOn;
+            } else {
+                oFlags[sKey] = !oFlags[sKey];
+                oFlags.all_day = oFlags.weekdays && oFlags.weekends &&
+                    oFlags.morning && oFlags.afternoon && oFlags.evening && oFlags.night;
+            }
+
+            oModel.setProperty("/user/availabilityFlags", oFlags);
+
+            var aKeys = ["weekdays","weekends","morning","afternoon","evening","night"]
+                .filter(function(k) { return oFlags[k]; });
+            if (oFlags.all_day) aKeys.unshift("all_day");
+            oModel.setProperty("/user/availability", aKeys);
+        },
+
+        onCountryChange: function(oEvent) {
+            var sCode  = oEvent.getParameter("selectedItem").getKey();
+            var oModel = this.getModel("appData");
+            oModel.setProperty("/user/address/country", sCode);
+            oModel.setProperty("/stateOptions", CountryStates.getStates(sCode));
+            oModel.setProperty("/user/address/state", "");
+        },
+
+        onChangePhoto: function() {
+            var oUploader = this.byId("avatarFileUploader");
+            if (!oUploader) { MessageToast.show("File uploader not ready."); return; }
+            oUploader.getDomRef("fu").click();
+        },
+
+        onAvatarFileSelected: function(oEvent) {
+            var that   = this;
+            var oFiles = oEvent.getParameter("files");
+            var oFile  = oFiles && oFiles[0];
+            if (!oFile) return;
+
+            if (oFile.size > 5 * 1024 * 1024) {
+                MessageToast.show("Image must be smaller than 5 MB.");
+                return;
+            }
+
+            var oReader = new FileReader();
+            oReader.onload = function(e) {
+                that.getModel("appData").setProperty("/user/photo", e.target.result);
+            };
+            oReader.readAsDataURL(oFile);
+
+            var sUserId = that.getModel("appData").getProperty("/user/id");
+            if (!sUserId) { MessageToast.show("Please log in again to upload a photo."); return; }
+
+            var oForm = new FormData();
+            oForm.append("avatar", oFile);
+
+            fetch(API_BASE + "/api/users/" + encodeURIComponent(sUserId) + "/avatar", {
+                method: "POST",
+                body: oForm
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(oData) {
+                if (oData.success) {
+                    that.getModel("appData").setProperty("/user/photo", API_BASE + oData.avatarUrl);
+                    MessageToast.show("Profile photo updated.");
+                } else {
+                    MessageToast.show("Upload failed: " + (oData.error || "Unknown error"));
+                }
+            })
+            .catch(function() { MessageToast.show("Could not reach the server."); });
+        },
+
+        onTabToTasks: function() {
+            var oNav = this.byId("navContainer");
+            if (oNav) { oNav.back(); }
+            this.getModel("appData").setProperty("/currentTab", "tasks");
+            this._loadTasksFeed();
+            this._loadMyTasks();
+        },
+
+        onToggleMap: function() {
+            var oModel = this.getModel("appData");
+            var bExpanded = oModel.getProperty("/mapExpanded");
+            oModel.setProperty("/mapExpanded", !bExpanded);
+        },
+
+        onNavBack: function() {
+            var oNavContainer  = this.byId("navContainer");
+            var sCurrentPageId = oNavContainer.getCurrentPage().getId();
+
+            if (!sCurrentPageId.includes("dashboardPage")) {
+                oNavContainer.back();
+            } else {
+                BaseController.prototype.onNavBack.apply(this);
+            }
+        },
+
+        onSaveProfile: function() {
+            var oModel = this.getModel("appData");
+            var oUser  = oModel.getProperty("/user");
+            var oAddr  = oUser.address || {};
+
+            var oVal = { name: "None", street: "None", houseNumber: "None", city: "None", state: "None", postalCode: "None", country: "None" };
+            var bValid = true;
+
+            if (!oUser.name || !oUser.name.trim()) { oVal.name = "Error"; bValid = false; }
+            if (!oAddr.street || !oAddr.street.trim()) { oVal.street = "Error"; bValid = false; }
+            if (!oAddr.houseNumber || !oAddr.houseNumber.trim()) { oVal.houseNumber = "Error"; bValid = false; }
+            if (!oAddr.city || !oAddr.city.trim()) { oVal.city = "Error"; bValid = false; }
+            if (!oAddr.state || !oAddr.state.trim()) { oVal.state = "Error"; bValid = false; }
+            if (!oAddr.country || !oAddr.country.trim()) { oVal.country = "Error"; bValid = false; }
+
+            var sPostal = (oAddr.postalCode || "").trim();
+            if (!sPostal || !/^[A-Za-z0-9\s\-]{3,10}$/.test(sPostal)) { oVal.postalCode = "Error"; bValid = false; }
+
+            oModel.setProperty("/validation", oVal);
+
+            if (!bValid) {
+                MessageToast.show("Please fill in all required fields correctly.");
+                return;
+            }
+
+            var sUserId = oUser.id;
+            if (!sUserId) {
+                window.HelpmateStorage.get("helpmate_user_id", function(sid) {
+                    if (sid) { oModel.setProperty("/user/id", sid); }
+                });
+                MessageToast.show("Session expired. Please log in again."); return;
+            }
+
+            this.apiFetch(API_BASE + "/api/users/" + encodeURIComponent(sUserId), {
+                method: "PUT",
+                body: JSON.stringify({
+                    name:              oUser.name,
+                    bio:               oUser.bio,
+                    languages:         oUser.languages,
+                    years:             oUser.years,
+                    phone:             oUser.phone,
+                    rate:              oUser.rate,
+                    availability:      oUser.availability,
+                    serviceCategories: oUser.serviceCategories,
+                    street_name:       oAddr.street,
+                    street_number:     oAddr.houseNumber,
+                    city:              oAddr.city,
+                    state:             oAddr.state,
+                    country:           oAddr.country,
+                    pincode:           oAddr.postalCode
+                })
+            })
+            .then(function(oData) {
+                if (oData.success) {
+                    MessageToast.show("Profile saved successfully.");
+
+                    var sUserId    = oUser.id;
+                    var aProviders = (oModel.getProperty("/providers") || []).slice();
+                    var iIdx = -1;
+                    for (var i = 0; i < aProviders.length; i++) {
+                        if (aProviders[i].id === sUserId) { iIdx = i; break; }
+                    }
+                    if (iIdx >= 0) {
+                        aProviders[iIdx] = Object.assign({}, aProviders[iIdx], {
+                            name:         oUser.name,
+                            languages:    oUser.languages || "",
+                            years:        oUser.years || 0,
+                            rate:         oUser.rate || 0,
+                            availability: Array.isArray(oUser.availability)
+                                ? oUser.availability.join(",")
+                                : (oUser.availability || ""),
+                            address: [oAddr.street, oAddr.houseNumber, oAddr.city]
+                                .filter(Boolean).join(", ")
+                        });
+                        oModel.setProperty("/providers", aProviders);
+                        this._refreshCurrentFilters();
+                    }
+
+                    this.onNavBack();
+                } else {
+                    MessageToast.show("Save failed: " + (oData.error || "Unknown error"));
+                }
+            }.bind(this))
+            .catch(function() { MessageToast.show("Could not reach the server."); });
+        }
+
+    });
+
+    // ── MIXIN MERGE ──────────────────────────────────────────────────────────────
+    Object.assign(DashboardController.prototype,
+        NotificationMixin,
+        MapMixin,
+        FilterMixin,
+        BookingMixin,
+        AiChatMixin,
+        DmMixin,
+        OnboardingFavoritesMixin,
+        ProfileMixin,
+        TaskMixin,
+        TrustSafetyMixin
+    );
+
+    return DashboardController;
+});

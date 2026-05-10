@@ -1,0 +1,25 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core">
+
+    <Dialog id="bookingDialog" title="{i18n>bookAHelper}" contentWidth="90%" stretch="{device>/system/phone}">
+        <VBox class="sapUiMediumMargin">
+            <Title text="{= 'Book ' + ${appData>/selectedProfile/name}}" level="H4" class="sapUiSmallMarginBottom"/>
+            <Label text="{i18n>service}" required="true"/>
+            <Text text="{appData>/selectedProfile/serviceType}" class="sapUiTinyMarginBottom fontBold"/>
+            <Label text="{i18n>preferredDate}" required="true"/>
+            <DatePicker id="bookingDate" value="{appData>/bookingForm/date}" valueFormat="yyyy-MM-dd" displayFormat="MMM dd, yyyy" width="100%" class="sapUiTinyMarginBottom"/>
+            <Label text="{i18n>preferredTime}"/>
+            <Input id="bookingTime" value="{appData>/bookingForm/time}" placeholder="{i18n>timePlaceholder}" width="100%" class="sapUiTinyMarginBottom"/>
+            <Label text="{i18n>messageToHelper}"/>
+            <TextArea value="{appData>/bookingForm/message}" rows="3" width="100%" placeholder="{i18n>describeNeedPlaceholder}" class="sapUiTinyMarginBottom"/>
+        </VBox>
+        <beginButton>
+            <Button text="{i18n>sendBookingRequest}" type="Emphasized" press="onConfirmBooking"/>
+        </beginButton>
+        <endButton>
+            <Button text="{i18n>cancel}" press="onCloseBooking"/>
+        </endButton>
+    </Dialog>
+
+</core:FragmentDefinition>

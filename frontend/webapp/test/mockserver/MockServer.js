@@ -2,13 +2,6 @@
  * MockServer — stubs window.fetch so all /api/* calls return mock data.
  * Used by OPA5 integration tests and any unit test that triggers a fetch.
  * The real backend does NOT need to be running.
- *
- * Key fixes vs the original:
- *  - /api/services now returns a plain Array (matching what
- *    Dashboard.controller._loadServicesFromApi expects via Array.isArray check).
- *  - Notification unread-count uses MockData.NOTIFICATIONS_UNREAD_COUNT.
- *  - Individual provider GET /api/providers/:id is handled.
- *  - DELETE /api/tasks/:id is handled.
  */
 sap.ui.define([
     "helphub/test/mockdata/data"
@@ -62,27 +55,16 @@ sap.ui.define([
         if (matchUrl(sUrl, "/api/subscription/status")) {
             return makeResponse(MockData.SUBSCRIPTION_STATUS);
         }
-        if (matchUrl(sUrl, "/api/subscription") && sMethod !== "GET") {
+        if (matchUrl(sUrl, "/api/subscription")) {
             return makeResponse({ success: true });
         }
 
         // ── Providers ─────────────────────────────────────────────────────────
-        // Individual provider profile (must be checked before the broader match)
-        if (matchUrl(sUrl, "/api/providers/") && sUrl.indexOf("/ratings") < 0) {
-            // Extract the id segment so we can look up the right provider
-            var sProviderId = decodeURIComponent(sUrl.split("/api/providers/")[1].split("?")[0].split("/")[0]);
-            var oFound = MockData.PROVIDERS.filter(function (p) { return p.id === sProviderId; })[0];
-            if (oFound) {
-                return makeResponse({ success: true, provider: oFound });
-            }
-            return makeResponse({ success: false, error: "Provider not found" }, 404);
-        }
-        // Provider ratings
-        if (matchUrl(sUrl, "/api/providers") && matchUrl(sUrl, "/ratings")) {
+        if (matchUrl(sUrl, "/api/providers") && sUrl.indexOf("/ratings") >= 0) {
             return makeResponse({ success: true, ratings: MockData.RATINGS });
         }
-        // Provider list — honour ?category= filter so hero-category tests work
         if (matchUrl(sUrl, "/api/providers")) {
+            // honour ?category= filter so OPA5 hero-category tests work
             var sCategory = sUrl.indexOf("category=") >= 0
                 ? decodeURIComponent(sUrl.split("category=")[1].split("&")[0])
                 : null;
@@ -95,10 +77,8 @@ sap.ui.define([
         }
 
         // ── Services ──────────────────────────────────────────────────────────
-        // NOTE: Dashboard.controller._loadServicesFromApi expects a *plain array*
-        // (it checks Array.isArray on the parsed body).  Return the array directly.
         if (matchUrl(sUrl, "/api/services")) {
-            return makeResponse(MockData.SERVICES);
+            return makeResponse({ success: true, services: MockData.SERVICES });
         }
 
         // ── Bookings ──────────────────────────────────────────────────────────
@@ -112,17 +92,14 @@ sap.ui.define([
             return makeResponse({ success: true });
         }
         if (matchUrl(sUrl, "/api/bookings")) {
-            return makeResponse({ success: true, bookings: MockData.BOOKINGS, newCount: MockData.BOOKINGS.filter(function (b) { return !b.is_seen; }).length });
+            return makeResponse({ success: true, bookings: MockData.BOOKINGS, newCount: 1 });
         }
 
         // ── Notifications ─────────────────────────────────────────────────────
         if (matchUrl(sUrl, "/unread-count") && matchUrl(sUrl, "/api/notifications")) {
-            return makeResponse({ success: true, count: MockData.NOTIFICATIONS_UNREAD_COUNT });
+            return makeResponse({ success: true, count: 1 });
         }
-        if (matchUrl(sUrl, "/read-all")) {
-            return makeResponse({ success: true });
-        }
-        if (matchUrl(sUrl, "/api/notifications") && matchUrl(sUrl, "/read") && sMethod === "PUT") {
+        if (matchUrl(sUrl, "/read-all") || (matchUrl(sUrl, "/api/notifications") && matchUrl(sUrl, "/read"))) {
             return makeResponse({ success: true });
         }
         if (matchUrl(sUrl, "/api/notifications")) {
@@ -139,17 +116,12 @@ sap.ui.define([
         if (matchUrl(sUrl, "/api/tasks") && matchUrl(sUrl, "/assign")) {
             return makeResponse({ success: true });
         }
-        if (matchUrl(sUrl, "/api/tasks") && matchUrl(sUrl, "/status") && sMethod === "PUT") {
+        if (matchUrl(sUrl, "/api/tasks") && matchUrl(sUrl, "/status")) {
             return makeResponse({ success: true });
         }
-        if (matchUrl(sUrl, "/api/tasks") && sMethod === "DELETE") {
-            return makeResponse({ success: true });
-        }
-        // Single task detail
         if (matchUrl(sUrl, "/api/tasks/")) {
             return makeResponse({ success: true, task: MockData.TASKS[0], applications: [] });
         }
-        // Task list
         if (matchUrl(sUrl, "/api/tasks")) {
             return makeResponse({ success: true, tasks: MockData.TASKS });
         }
@@ -159,13 +131,13 @@ sap.ui.define([
             return makeResponse({ success: true, conversation: { id: "CONV_MOCK", participant_1: MockData.USER.id, participant_2: "p1" }, created: true });
         }
         if (matchUrl(sUrl, "/api/conversations")) {
-            return makeResponse({ success: true, conversations: MockData.CONVERSATIONS, totalUnread: MockData.DM_UNREAD_COUNT });
+            return makeResponse({ success: true, conversations: MockData.CONVERSATIONS, totalUnread: 1 });
         }
         if (matchUrl(sUrl, "/api/messages") && matchUrl(sUrl, "/read")) {
             return makeResponse({ success: true });
         }
         if (matchUrl(sUrl, "/api/messages") && matchUrl(sUrl, "unread-count")) {
-            return makeResponse({ success: true, count: MockData.DM_UNREAD_COUNT });
+            return makeResponse({ success: true, count: 1 });
         }
         if (matchUrl(sUrl, "/api/messages") && sMethod === "POST") {
             return makeResponse({ success: true, messageId: "DM_MOCK_" + Date.now() });
@@ -180,10 +152,7 @@ sap.ui.define([
         }
 
         // ── Reports / Blocks ──────────────────────────────────────────────────
-        if (matchUrl(sUrl, "/api/reports")) {
-            return makeResponse({ success: true });
-        }
-        if (matchUrl(sUrl, "/api/users") && matchUrl(sUrl, "/block")) {
+        if (matchUrl(sUrl, "/api/reports") || matchUrl(sUrl, "/api/users") && matchUrl(sUrl, "/block")) {
             return makeResponse({ success: true });
         }
 
@@ -201,7 +170,7 @@ sap.ui.define([
             return makeResponse({ success: true, status: "Active" });
         }
 
-        // ── Chat (SSE / AI) ───────────────────────────────────────────────────
+        // ── Chat (SSE) ────────────────────────────────────────────────────────
         if (matchUrl(sUrl, "/api/chat")) {
             return makeResponse({ success: true, reply: "This is a mock AI response." });
         }
@@ -240,7 +209,7 @@ sap.ui.define([
                 return handleFetch(url, options);
             };
             _started = true;
-            jQuery && jQuery.sap && jQuery.sap.log
+            jQuery.sap && jQuery.sap.log
                 ? jQuery.sap.log.info("[MockServer] Started — all /api/* calls mocked")
                 : console.info("[MockServer] Started — all /api/* calls mocked");
         },

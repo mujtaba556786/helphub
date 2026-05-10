@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+platforms/
+plugins/
+
+# Environment secrets — NEVER commit these
+.env
+.env.*
+!.env.example
+google-services.json
+
+# Build output
+dist/
+www/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+.claude/worktrees/

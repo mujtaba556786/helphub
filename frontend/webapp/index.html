@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>HelpMate</title>
+
+    <!-- ── PWA / App Icon ─────────────────────────────────────────── -->
+    <meta name="theme-color" content="#f97316" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#0f172a"  media="(prefers-color-scheme: dark)">
+    <meta name="application-name" content="HelpMate">
+    <meta name="description" content="Get everyday tasks done by trusted neighbors.">
+
+    <!-- iOS Web App -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="HelpMate">
+
+    <!-- App Icon (SVG inline as data URI – replace with real PNG when available) -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23f97316'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-size='36'>🤝%3C/text%3E%3C/svg%3E">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%23f97316'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-size='100'>🤝%3C/text%3E%3C/svg%3E">
+
+
+    <style>
+        html, body, body > div, #container, #container-uiarea {
+            height: 100%;
+        }
+    </style>
+    <!-- App stylesheet — bump ?v= whenever style.css changes to bust browser cache -->
+    <link rel="stylesheet" href="css/style.css?v=2.15">
+
+    <!-- Cache-bust helphub app JS modules — SAP UI5 loads controller/mixin files via
+         <script> tags, so we intercept the HTMLScriptElement src setter before UI5
+         boots. Bump _HH_BUILD whenever JS files change to force a fresh fetch. -->
+    <script>
+        (function () {
+            var _HH_BUILD = '2.15';
+            var _desc = Object.getOwnPropertyDescriptor(HTMLScriptElement.prototype, 'src');
+            Object.defineProperty(HTMLScriptElement.prototype, 'src', {
+                get: _desc.get,
+                set: function (val) {
+                    if (typeof val === 'string' && val.indexOf('?') === -1 &&
+                        (val.indexOf('/controller/') !== -1 ||
+                         val.indexOf('/model/')      !== -1 ||
+                         val.indexOf('Component.js') !== -1)) {
+                        val = val + '?v=' + _HH_BUILD;
+                    }
+                    _desc.set.call(this, val);
+                },
+                configurable: true
+            });
+
+            // Bust XHR + fetch for all app JS/XML files
+            var _HH_RE = /\/(controller|model|view|fragments|Base)\//;
+            var _origOpen = XMLHttpRequest.prototype.open;
+            XMLHttpRequest.prototype.open = function(method, url) {
+                if (typeof url === 'string' && url.indexOf('?') === -1 &&
+                    (_HH_RE.test(url) || url.indexOf('Component.js') !== -1)) {
+                    url = url + '?v=' + _HH_BUILD;
+                }
+                return _origOpen.apply(this, arguments);
+            };
+            var _origFetch = window.fetch;
+            window.fetch = function(input, init) {
+                if (typeof input === 'string' && input.indexOf('?') === -1 &&
+                    (_HH_RE.test(input) || input.indexOf('Component.js') !== -1)) {
+                    input = input + '?v=' + _HH_BUILD;
+                }
+                return _origFetch.call(this, input, init);
+            };
+        })();
+    </script>
+
+    <!-- Apply saved language before UI5 boots (also activates RTL for Arabic) -->
+    <script>
+        window['sap-ui-config'] = {
+            language: localStorage.getItem('helpmate_lang') || ''
+        };
+    </script>
+    <script>
+        (function () {
+            var local = 'resources/sap-ui-core.js';
+            var cdn   = 'https://ui5.sap.com/1.120/resources/sap-ui-core.js';
+            var src   = cdn;
+            try {
+                var x = new XMLHttpRequest();
+                x.open('HEAD', local, false);
+                x.send();
+                if (x.status === 200) src = local;
+            } catch (e) {}
+            var s = document.createElement('script');
+            s.id = 'sap-ui-bootstrap';
+            s.setAttribute('data-sap-ui-theme', 'helpmate');
+            s.setAttribute('data-sap-ui-theme-roots', '{"helpmate":"./themes/"}');
+            s.setAttribute('data-sap-ui-resource-roots', '{"helphub":""}');
+            s.setAttribute('data-sap-ui-on-init', 'module:sap/ui/core/ComponentSupport');
+            s.setAttribute('data-sap-ui-compat-version', 'edge');
+            s.setAttribute('data-sap-ui-async', 'true');
+            s.setAttribute('data-sap-ui-frame-options', 'trusted');
+            s.src = src;
+            document.head.appendChild(s);
+        })();
+    </script>
+
+    <!-- ── Leaflet Maps (OpenStreetMap, no API key needed) ── -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- ── Google AdSense ── -->
+    <!-- Add your AdSense script here once you have a Publisher ID from https://adsense.google.com -->
+    <!-- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-REPLACE_WITH_YOUR_ID" crossorigin="anonymous"></script> -->
+</head>
+<body class="sapUiBody sapUiSizeCompact" id="content">
+    <div
+        data-sap-ui-component
+        data-name="helphub"
+        data-id="container"
+        data-settings='{"id" : "helphub"}'
+        data-handle-validation="true"
+    ></div>
+</body>
+</html>

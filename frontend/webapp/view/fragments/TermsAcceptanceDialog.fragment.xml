@@ -1,0 +1,117 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core">
+
+    <Dialog id="termsAcceptanceDialog"
+            title="{= ${appData>/user/termsUpdateRequired} ? ${i18n>termsUpdatedTitle} : ${i18n>termsWelcome}}"
+            contentWidth="480px"
+            stretch="{device>/system/phone}"
+            verticalScrolling="true"
+            escapeHandler=".onTermsEscapeHandler"
+            class="hhTermsDialog">
+
+        <beginButton>
+            <Button text="{i18n>termsAgree}"
+                    type="Emphasized"
+                    enabled="{appData>/termsCheckbox}"
+                    press="onAcceptTerms"/>
+        </beginButton>
+        <endButton>
+            <Button text="{i18n>termsDecline}"
+                    type="Transparent"
+                    press="onDeclineTerms"/>
+        </endButton>
+
+        <content>
+
+            <!-- Warning banner — only shown on re-acceptance -->
+            <VBox visible="{appData>/user/termsUpdateRequired}"
+                  class="sapUiSmallMarginBegin sapUiSmallMarginEnd sapUiTinyMarginTop">
+                <ObjectStatus text="{i18n>termsUpdatedBanner}"
+                              state="Warning" icon="sap-icon://alert"/>
+            </VBox>
+
+            <!-- Intro -->
+            <Text text="{i18n>termsIntro}" wrapping="true"
+                  class="sapUiSmallMarginBegin sapUiSmallMarginEnd sapUiSmallMarginTop sapUiTinyMarginBottom grayText"/>
+
+            <!-- Terms sections — CustomListItem so height grows with content -->
+            <List showSeparators="Inner" backgroundDesign="Transparent">
+
+                <CustomListItem type="Inactive">
+                    <HBox alignItems="Start" class="hhTermsItem">
+                        <core:Icon src="sap-icon://group" class="hhTermsIcon"/>
+                        <VBox class="sapUiTinyMarginBegin">
+                            <Text text="{i18n>termsPeerTitle}" class="fontBold"/>
+                            <Text text="{i18n>termsPeerDesc}" wrapping="true" class="grayText"/>
+                        </VBox>
+                    </HBox>
+                </CustomListItem>
+
+                <CustomListItem type="Inactive">
+                    <HBox alignItems="Start" class="hhTermsItem">
+                        <core:Icon src="sap-icon://warning2" class="hhTermsIcon"/>
+                        <VBox class="sapUiTinyMarginBegin">
+                            <Text text="{i18n>termsResponsibilityTitle}" class="fontBold"/>
+                            <Text text="{i18n>termsResponsibilityDesc}" wrapping="true" class="grayText"/>
+                        </VBox>
+                    </HBox>
+                </CustomListItem>
+
+                <CustomListItem type="Inactive">
+                    <HBox alignItems="Start" class="hhTermsItem">
+                        <core:Icon src="sap-icon://shield" class="hhTermsIcon"/>
+                        <VBox class="sapUiTinyMarginBegin">
+                            <Text text="{i18n>termsSafetyTitle}" class="fontBold"/>
+                            <Text text="{i18n>termsSafetyDesc}" wrapping="true" class="grayText"/>
+                        </VBox>
+                    </HBox>
+                </CustomListItem>
+
+                <CustomListItem type="Inactive">
+                    <HBox alignItems="Start" class="hhTermsItem">
+                        <core:Icon src="sap-icon://document-text" class="hhTermsIcon"/>
+                        <VBox class="sapUiTinyMarginBegin">
+                            <Text text="{i18n>termsGuidelinesTitle}" class="fontBold"/>
+                            <Text text="{i18n>termsGuidelinesDesc}" wrapping="true" class="grayText"/>
+                        </VBox>
+                    </HBox>
+                </CustomListItem>
+
+                <CustomListItem type="Inactive">
+                    <HBox alignItems="Start" class="hhTermsItem">
+                        <core:Icon src="sap-icon://customer" class="hhTermsIcon"/>
+                        <VBox class="sapUiTinyMarginBegin">
+                            <Text text="{i18n>termsEligibilityTitle}" class="fontBold"/>
+                            <Text text="{i18n>termsEligibilityDesc}" wrapping="true" class="grayText"/>
+                        </VBox>
+                    </HBox>
+                </CustomListItem>
+
+                <CustomListItem type="Inactive">
+                    <HBox alignItems="Start" class="hhTermsItem">
+                        <core:Icon src="sap-icon://chain-link" class="hhTermsIcon"/>
+                        <VBox class="sapUiTinyMarginBegin">
+                            <Text text="{i18n>termsFullTitle}" class="fontBold"/>
+                            <Text text="{i18n>termsFullDesc}" wrapping="true" class="grayText"/>
+                        </VBox>
+                    </HBox>
+                </CustomListItem>
+
+            </List>
+
+            <!-- Checkbox row -->
+            <HBox alignItems="Center" wrap="Wrap"
+                  class="hhTermsCheckboxRow sapUiSmallMarginBegin sapUiSmallMarginEnd sapUiSmallMarginTop sapUiSmallMarginBottom">
+                <CheckBox id="termsCheckbox" selected="{appData>/termsCheckbox}"/>
+                <Text text="{i18n>termsCheckboxPrefix}" class="smallText"/>
+                <Link text="{i18n>viewTerms}"   press="onViewTermsInline"   class="smallText sapUiTinyMarginBegin sapUiTinyMarginEnd"/>
+                <Text text="{i18n>termsCheckboxAnd}" class="smallText"/>
+                <Link text="{i18n>viewPrivacy}" press="onViewPrivacyInline" class="smallText sapUiTinyMarginBegin"/>
+            </HBox>
+
+        </content>
+
+    </Dialog>
+
+</core:FragmentDefinition>

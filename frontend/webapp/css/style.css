@@ -1,0 +1,806 @@
+/* ══════════════════════════════════════════════════════════════
+   Helpmate — Custom stylesheet
+   Rule: Colors come from the SAP theme.
+         This file owns only: layout, spacing, shape, elevation.
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Utility ──────────────────────────────────────────────────── */
+.textCenter { text-align: center; }
+.fontBold   { font-weight: 700; }
+.smallText  { font-size: 0.9rem; }
+.errorText  { font-size: 0.8rem; }
+
+/* ══════════════════════════════════════════════════════════════
+   HEADER — collapsed to 2 items (bell + avatar)
+   ══════════════════════════════════════════════════════════════ */
+.hhHeaderRight {
+    gap: 4px;
+    align-items: center;
+    padding-right: 4px;
+}
+/* Bell button — enforce 44px touch target */
+.hhNotifBtnWrap .sapMBtn {
+    width: 44px !important;
+    height: 44px !important;
+    padding: 0 !important;
+}
+/* Avatar in header — 44px touch target via wrapper */
+.hhHeaderAvatar {
+    cursor: pointer;
+    margin-left: 2px;
+}
+.hhHeaderAvatar.sapFAvatar {
+    width: 32px !important;
+    height: 32px !important;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SAFE AREA — notch + home indicator
+   ══════════════════════════════════════════════════════════════ */
+.sapMPage > header,
+.sapMPageHeader {
+    padding-top: env(safe-area-inset-top) !important;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   BOTTOM NAVIGATION BAR — Page footer aggregation
+   SAP Page footer renders below content automatically — no
+   position:fixed hacks needed.
+   ══════════════════════════════════════════════════════════════ */
+/* ── Bottom navigation bar ────────────────────────────────────── */
+.hhBottomNav.sapMBar {
+    height: auto !important;
+    min-height: 64px !important;
+    padding: 0 0 env(safe-area-inset-bottom) 0 !important;
+    border-top: 1px solid var(--sapContent_ForegroundBorderColor) !important;
+    box-shadow: 0 -2px 12px rgba(15,23,42,0.08) !important;
+    display: flex !important;
+    align-items: stretch !important;
+}
+.hhBottomNav .sapMBarMiddle,
+.hhBottomNav .sapMBarPH {
+    display: flex !important;
+    align-items: center !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 64px !important;
+}
+.hhBottomNavRow {
+    width: 100% !important;
+    padding: 6px 4px !important;
+}
+/* Equal-width cells */
+.hhBottomNavRow > .sapMFlexItem {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    display: flex !important;
+    justify-content: center !important;
+}
+/* Nav button outer — fills cell, no side effects */
+.hhNavBtn.sapMBtn {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    height: auto !important;
+    min-width: 0 !important;
+    padding: 6px 4px !important;
+    border-radius: 12px !important;
+    gap: 0;
+    transition: background 0.15s ease !important;
+}
+/* SAP inner span — layout only, let SAP handle hover/focus visuals */
+.hhNavBtn .sapMBtnInner {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    height: auto !important;
+    gap: 3px !important;
+    padding: 0 !important;
+    min-width: 0 !important;
+    width: 100% !important;
+}
+.hhNavBtn .sapMBtnIcon.sapUiIcon {
+    font-size: 1.35rem !important;
+    margin: 0 !important;
+    line-height: 1 !important;
+    display: block !important;
+}
+.hhNavBtn .sapMBtnContent {
+    font-size: 0.65rem !important;
+    line-height: 1.1 !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    letter-spacing: 0.01em;
+    display: block !important;
+}
+/* Higher specificity to beat SAP Bar theme hiding labels */
+.hhBottomNav .hhNavBtn .sapMBtnContent { display: block !important; }
+/* Active/inactive coloring handled entirely by SAP UI5 Emphasized/Transparent types */
+/* Badge on Tasks / Messages */
+.hhNavBtnWrap {
+    position: relative;
+    flex: 1 1 0;
+    display: flex;
+    justify-content: center;
+}
+.hhNavBadge {
+    position: absolute;
+    top: 4px; right: 6px;
+    background: #ef4444; color: #fff;
+    font-size: 0.58rem; font-weight: 700;
+    min-width: 16px; height: 16px;
+    border-radius: 10px; padding: 0 4px;
+    display: inline-flex; align-items: center; justify-content: center;
+    line-height: 1; pointer-events: none;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+/* Small phones — tighten slightly */
+@media (max-width: 380px) {
+    .hhNavBtn.sapMBtn { padding: 5px 2px !important; }
+    .hhNavBtn .sapMBtnIcon.sapUiIcon { font-size: 1.2rem !important; }
+    .hhNavBtn .sapMBtnContent { font-size: 0.6rem !important; }
+}
+/* Very narrow — hide labels */
+@media (max-width: 320px) {
+    .hhNavBtn .sapMBtnContent { display: none !important; }
+}
+
+/* ── Login ────────────────────────────────────────────────────── */
+.loginCard {
+    border-radius: 18px;
+    box-shadow: 0 14px 40px rgba(15,23,42,0.12);
+    padding: 24px 20px;
+}
+.maxWidth400 { max-width: 420px; }
+
+@media (max-width: 480px) {
+    .loginCard { padding: 16px 14px; border-radius: 14px; }
+}
+
+/* ── Expert / helper cards ────────────────────────────────────── */
+.expertCard   { border-radius: 14px; }
+.helperCardActions { min-width: 90px; }
+.helperCardBtn { width: 100%; }
+
+@media (max-width: 480px) {
+    .helperCardActions {
+        min-width: unset;
+        width: 100%;
+        flex-direction: row !important;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 8px;
+        align-items: center !important;
+    }
+    .helperCardActions .sapMBtn { width: auto !important; min-width: 0; }
+    .helperCardBtn { width: auto !important; }
+}
+
+/* ── Map ──────────────────────────────────────────────────────── */
+.mapDiv   { height: 260px; width: 100%; z-index: 0; }
+#googleMap { width: 100%; }
+
+@media (max-width: 480px) { .mapDiv { height: 180px; } }
+
+/* ── Chat dialog ──────────────────────────────────────────────── */
+.hhChatLayout    { height: 100%; display: flex; flex-direction: column; }
+.hhChatMessages  { flex: 1; min-height: 0; }
+.hhChatInputBar  { flex-shrink: 0; padding: 8px 12px; border-top: 1px solid; }
+#chatBubbles     { display: flex; flex-direction: column; gap: 8px; padding: 12px; }
+
+/* ── Booking list ─────────────────────────────────────────────── */
+.bookingInfoBox   { flex: 1 1 auto; min-width: 0; }
+.bookingActionsBox { flex: 0 0 auto; min-width: 100px; }
+
+@media (max-width: 480px) {
+    .bookingActionsBox { min-width: unset; width: 100%; align-items: flex-start !important; margin-top: 6px; }
+}
+
+/* ── Notification badge (bell) ────────────────────────────────── */
+.hhNotifBtnWrap { position: relative; display: inline-flex !important; align-items: center; }
+.hhNotifBadge {
+    position: absolute;
+    top: -4px; right: -4px;
+    background: #ef4444; color: #fff;
+    font-size: 0.65rem; font-weight: 700;
+    min-width: 16px; height: 16px;
+    border-radius: 10px; padding: 0 4px;
+    display: inline-flex; align-items: center; justify-content: center;
+    line-height: 1; pointer-events: none;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+
+/* ── Notifications dialog ─────────────────────────────────────── */
+.hhNotifWrap { padding: 0; }
+
+.hhNotifFilterRow {
+    gap: 6px; padding: 10px 16px 8px;
+    flex-wrap: nowrap; overflow-x: auto;
+}
+
+.hhNotifChip.sapMBtn {
+    border-radius: 20px !important;
+    height: 28px !important;
+    padding: 0 12px !important;
+    font-size: 0.78rem !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    min-width: 0 !important;
+}
+
+.hhNotifRow   { padding: 12px 16px; gap: 12px; align-items: flex-start; }
+
+.hhNotifIconWrap {
+    width: 38px; height: 38px; min-width: 38px;
+    border-radius: 50%;
+    background: rgba(100,116,139,0.08);
+    display: flex !important; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+
+.hhNotifContent { flex: 1; gap: 2px; min-width: 0; }
+
+.hhNotifTitle.sapMText { font-size: 0.875rem !important; font-weight: 600 !important; line-height: 1.3 !important; }
+.hhNotifMsg.sapMText   { font-size: 0.8rem !important; line-height: 1.4 !important; }
+.hhNotifTime.sapMText  { font-size: 0.72rem !important; margin-top: 3px !important; opacity: 0.8; }
+
+.hhNotifUnreadDot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #3b82f6;
+    display: inline-block; flex-shrink: 0;
+    margin-top: 4px; margin-left: 6px;
+}
+
+.hhNotifReadBtn.sapMBtn {
+    width: 28px !important; height: 28px !important;
+    padding: 0 !important; border-radius: 50% !important;
+    border: none !important; background: transparent !important;
+    flex-shrink: 0; align-self: center;
+}
+
+/* ── In-app toast ─────────────────────────────────────────────── */
+.hhInAppToast {
+    position: fixed; top: 16px; left: 50%;
+    transform: translateX(-50%) translateY(-80px);
+    z-index: 9999;
+    border-radius: 12px; padding: 12px 16px;
+    display: flex; align-items: flex-start; gap: 10px;
+    min-width: 260px; max-width: 92vw;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    opacity: 0;
+    transition: transform 0.35s cubic-bezier(.175,.885,.32,1.275), opacity 0.3s ease;
+}
+.hhInAppToastSlide { transform: translateX(-50%) translateY(0); opacity: 1; }
+.hhToastIcon  { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
+.hhToastBody  { flex: 1; min-width: 0; }
+.hhToastBody strong { display: block; font-size: 14px; margin-bottom: 2px; }
+.hhToastBody div    { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hhToastClose { background: none; border: none; font-size: 16px; cursor: pointer; padding: 0; flex-shrink: 0; margin-top: 2px; }
+
+/* ── Quick reply chips ────────────────────────────────────────── */
+.hhQuickReplies { padding: 4px 8px; border-top: 1px solid; flex-shrink: 0; }
+.hhQRChip       { border-radius: 16px; font-size: 12px; padding: 2px 10px; height: auto; }
+
+@media (max-width: 480px) { .hhQRChip { font-size: 11px; padding: 1px 8px; } }
+
+/* ── Terms dialog ─────────────────────────────────────────────── */
+.hhTermsItem      { padding: 10px 16px; }
+.hhTermsIcon      { font-size: 18px !important; margin-top: 2px; flex-shrink: 0; }
+.hhTermsCheckboxRow { gap: 0; }
+.hhTermsCheckboxRow .sapMCbBg { flex-shrink: 0; }
+
+/* ── Onboarding dialog ────────────────────────────────────────── */
+.hhOnboardStep  { min-height: 220px; }
+.hhOnboardCard  { border-radius: 12px; padding: 12px 16px; }
+.hhOnboardNum   {
+    width: 32px; height: 32px; min-width: 32px;
+    border-radius: 50%; font-weight: 700; font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    margin-right: 12px; flex-shrink: 0;
+}
+.hhInterestBtn  { border-radius: 20px; }
+.hhOnboardHeroIcon  { color: #334155 !important; margin-bottom: 12px; }
+.hhOnboardFeatureIcon { color: #475569 !important; flex-shrink: 0; margin-right: 8px !important; }
+
+/* ── Messages tab ─────────────────────────────────────────────── */
+.hhMsgSearchWrap  { padding: 12px 16px 10px; position: sticky; top: 0; z-index: 10; }
+.hhMsgSectionHdr  { padding: 16px 18px 6px; gap: 6px; }
+.hhMsgSectionLabel { font-size: 11px !important; font-weight: 700 !important; text-transform: uppercase; letter-spacing: 0.06em; }
+.hhMsgSectionLabelSpaced { padding: 16px 18px 6px; display: block; }
+
+.hhMsgItem        { margin: 3px 12px; border-radius: 16px; overflow: hidden; transition: box-shadow 0.15s, transform 0.1s; }
+.hhMsgItem:active { transform: scale(0.99); }
+.hhMsgItemInner   { padding: 12px 14px; gap: 12px; min-width: 0; }
+.hhMsgAvatar      { flex-shrink: 0; }
+.hhMsgContent     { flex: 1; min-width: 0; gap: 2px; }
+.hhMsgName.sapMText    { font-size: 15px !important; font-weight: 500 !important; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
+.hhMsgNameBold.sapMText { font-weight: 700 !important; }
+.hhMsgTime.sapMText    { font-size: 11px !important; flex-shrink: 0; white-space: nowrap; }
+.hhMsgPreview.sapMText { font-size: 13px !important; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 190px; line-height: 1.4; }
+
+.hhUnreadBadge.sapMText {
+    background: #ef4444 !important; color: #fff !important;
+    border-radius: 10px !important; font-size: 11px !important;
+    font-weight: 700 !important; padding: 2px 7px !important;
+    min-width: 20px; text-align: center; flex-shrink: 0; line-height: 1.6;
+}
+
+.hhMsgEmpty     { padding: 56px 32px 32px; text-align: center; }
+.hhMsgEmptyIcon { font-size: 52px; margin-bottom: 12px; opacity: 0.55; }
+
+/* ── Filter pills ─────────────────────────────────────────────── */
+.hhFilterPill   { border-radius: 20px; font-size: 13px; }
+.hhTaskToggle   { border-radius: 20px; }
+@media (max-width: 480px) { .hhTaskToggle { font-size: 13px; } }
+
+/* ── Tasks tab ────────────────────────────────────────────────── */
+.hhTasksTab     { padding: 0; display: flex; flex-direction: column; overflow: hidden; }
+.hhTasksTopBar  { padding: 10px 16px 0; flex-shrink: 0; border-bottom: 1.5px solid; }
+.hhUnderlineTabs { gap: 0; }
+
+.hhUTab.sapMBtn {
+    height: 40px !important; min-width: 0 !important;
+    padding: 0 16px !important; font-size: 0.9rem !important; font-weight: 600 !important;
+    border: none !important; border-radius: 0 !important; box-shadow: none !important;
+    background: transparent !important; position: relative;
+}
+.hhUTab.sapMBtn.sapMBtnEmphasized {
+    background: transparent !important; box-shadow: none !important;
+}
+
+.hhPostTaskBtn.sapMBtn {
+    border-radius: 10px !important; font-weight: 700 !important;
+    font-size: 0.85rem !important; height: 36px !important; padding: 0 14px !important;
+}
+
+.hhTasksSearchWrap { padding: 0 16px 10px; flex-shrink: 0; }
+.hhTasksSearchField.sapMSF { border-radius: 12px !important; box-shadow: none !important; height: 42px !important; }
+
+.hhCatDropWrap  { padding: 8px 16px 10px; flex-shrink: 0; }
+.hhCatDropBtn.sapMBtn {
+    border-radius: 10px !important; height: 36px !important;
+    padding: 0 14px !important; font-size: 0.85rem !important; font-weight: 500 !important;
+}
+
+.hhTaskListScroll { flex: 1; }
+.hhTaskListScroll .sapMScrollCont { height: calc(100dvh - 56px - 64px - 48px - 44px - 44px) !important; overflow-y: auto !important; }
+.hhTaskList.sapMList { background: transparent !important; padding-bottom: 80px; }
+.hhTaskList .sapMLIBBorderTop,
+.hhTaskList .sapMLIBBorderBottom { display: none !important; }
+
+.hhTaskCardItem.sapMLIB {
+    background: transparent !important; border: none !important;
+    box-shadow: none !important; padding: 4px 16px !important; margin: 0 !important;
+}
+.hhTaskCardItem.sapMLIB:hover,
+.hhTaskCardItem.sapMLIB:focus { background: transparent !important; }
+
+.hhTaskCard {
+    border-radius: 14px;
+    box-shadow: 0 2px 10px rgba(15,23,42,0.07);
+    border: 1px solid;
+    padding: 14px 16px;
+    transition: box-shadow 0.2s ease, transform 0.18s ease;
+    cursor: pointer; margin-bottom: 4px;
+}
+.hhTaskCardItem:hover .hhTaskCard {
+    box-shadow: 0 8px 28px rgba(15,23,42,0.13);
+    transform: translateY(-2px);
+}
+
+.hhTaskCardTop  { margin-bottom: 8px; gap: 8px; align-items: flex-start; }
+.hhTaskTitle .sapMTitle { font-size: 0.97rem !important; font-weight: 700 !important; line-height: 1.35 !important; }
+.hhTaskStatusBadge { flex-shrink: 0; }
+.hhTaskStatusBadge .sapMObjStatusText { font-size: 0.68rem !important; font-weight: 700 !important; letter-spacing: 0.5px; text-transform: uppercase; }
+
+.hhTaskBudgetRow { gap: 5px; margin-bottom: 6px; align-items: center; flex-wrap: nowrap; }
+.hhBudgetIcon.sapUiIcon { font-size: 0.8rem !important; flex-shrink: 0; }
+.hhBudgetText.sapMText  { font-weight: 700 !important; font-size: 0.85rem !important; white-space: nowrap; }
+.hhMetaDot.sapMText     { font-size: 0.8rem !important; }
+.hhTimeIcon.sapUiIcon   { font-size: 0.78rem !important; flex-shrink: 0; }
+.hhTimeText.sapMText    { font-size: 0.8rem !important; white-space: nowrap; }
+.hhDueText.sapMText     { font-weight: 600 !important; font-size: 0.8rem !important; white-space: nowrap; }
+
+.hhTaskLocRow  { gap: 5px; margin-bottom: 8px; }
+.hhLocIcon.sapUiIcon { font-size: 0.78rem !important; flex-shrink: 0; }
+.hhLocText.sapMText  { font-size: 0.8rem !important; }
+
+.hhTaskDivider { height: 1px; margin: 4px 0 10px; }
+.hhTaskFooter  { align-items: center; }
+.hhTaskPosterRow { gap: 5px; align-items: center; }
+.hhPosterIcon.sapUiIcon   { font-size: 0.85rem !important; flex-shrink: 0; }
+.hhTaskPosterName.sapMText { font-size: 0.8rem !important; font-weight: 500 !important; }
+
+.hhApplicantPill {
+    gap: 4px; border-radius: 20px;
+    padding: 3px 10px; align-items: center;
+}
+.hhApplicantIcon.sapUiIcon { font-size: 0.75rem !important; }
+.hhApplicantText.sapMText  { font-size: 0.75rem !important; font-weight: 600 !important; white-space: nowrap; }
+
+/* ── Find Help tab ────────────────────────────────────────────── */
+.fiTabContent   { padding: 24px 16px 0; }
+.fiPageTitle    { font-size: 22px; font-weight: 700; letter-spacing: -0.025em; margin: 0 0 6px; line-height: 1.2; }
+.fiPageSubtitle { font-size: 14px; margin: 0 0 24px; line-height: 1.5; }
+
+.fiServicesGrid {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 12px; padding-bottom: 80px;
+    flex-wrap: unset !important; flex-direction: unset !important; align-items: unset !important;
+    width: 100%;
+}
+@media (max-width: 480px) { .fiServicesGrid { grid-template-columns: repeat(2, 1fr) !important; } }
+
+.fiSvcCard {
+    border-radius: 16px !important;
+    box-shadow: 0 2px 10px rgba(15,23,42,0.07) !important;
+    border: 1px solid !important;
+    transition: box-shadow 0.2s, transform 0.18s !important;
+    cursor: pointer !important;
+}
+.fiSvcCard:hover {
+    box-shadow: 0 6px 24px rgba(15,23,42,0.13) !important;
+    transform: translateY(-3px) !important;
+}
+.fiSvcCard:hover .fiSvcIconWrap {
+    background: #10b981 !important;
+}
+.fiSvcCard:hover .fiSvcIcon { color: #fff !important; }
+
+.fiSvcCardInner {
+    padding: 22px 12px 18px !important;
+    gap: 10px !important; min-height: 100px;
+}
+.fiSvcIconWrap {
+    width: 48px !important;
+    height: 48px !important;
+    min-width: 48px !important;
+    border-radius: 12px !important;
+    background: rgba(16,185,129,0.12) !important;
+    transition: background 0.2s ease !important;
+    margin-bottom: 4px !important;
+}
+.fiSvcIcon.sapUiIcon {
+    color: #10b981 !important;
+    font-size: 1.25rem !important;
+    transition: color 0.2s ease !important;
+}
+.fiSvcName {
+    font-size: 13px !important; font-weight: 600 !important;
+    text-align: center !important; line-height: 1.3 !important; white-space: normal !important;
+}
+
+/* ── My Schedule tab ──────────────────────────────────────────── */
+.fiScheduleTab      { padding: 0; }
+.fiScheduleTitle.sapMTitle { padding: 16px 16px 0 !important; }
+
+/* Filter row — same pattern as notification chips */
+.fiScheduleFilters  {
+    gap: 6px; padding: 10px 16px 8px;
+    flex-wrap: nowrap; overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+.fiScheduleFilters::-webkit-scrollbar { display: none; }
+
+/* Booking list — no default SAP separators / backgrounds */
+.fiCardList.sapMList { background: transparent !important; padding: 0 0 80px !important; }
+.fiCardList .sapMLIBBorderTop,
+.fiCardList .sapMLIBBorderBottom { display: none !important; }
+
+/* Card item */
+.fiBookingCard.sapMLIB {
+    padding: 0 !important;
+    margin: 0 12px 8px !important;
+    border-radius: 12px !important;
+    background: var(--sapTile_Background, #fff) !important;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.07) !important;
+    overflow: hidden;
+}
+.fiBookingCardInner { padding: 14px 16px; gap: 8px; display: flex; flex-direction: column; }
+.fiBookingActions   { gap: 6px; flex-wrap: wrap; }
+
+/* ── Saved tab ────────────────────────────────────────────────── */
+.fiSavedTab       { padding: 16px; }
+.fiPersonCardInner { padding: 12px 14px; }
+
+/* ══════════════════════════════════════════════════════════════
+   Local Experts page
+   ══════════════════════════════════════════════════════════════ */
+
+/* Map */
+.hhMapWrap      { position: relative; }
+.hhMapBox       { height: 26vh; width: 100%; overflow: hidden; }
+.hhMapToggleBtn.sapMBtn {
+    width: 100% !important; border-radius: 0 !important;
+    height: 32px !important; font-size: 0.78rem !important;
+    border-top: 1px solid !important; border-bottom: 1px solid !important;
+}
+
+/* Filter bar */
+.hhExpertFilters  { padding: 12px 14px 4px; gap: 8px; }
+.hhExpertSearch.sapMSF { border-radius: 10px !important; }
+.hhExpertPills    { gap: 6px; flex-wrap: wrap; padding-bottom: 4px; }
+.hhFilterPill.sapMBtn { border-radius: 20px !important; height: 30px !important; padding: 0 12px !important; font-size: 0.8rem !important; }
+
+.hhExpertSliderRow { gap: 8px; align-items: center; padding: 4px 0; }
+.hhDistanceSlider  { flex: 1 !important; }
+.hhSliderIcon      { font-size: 1rem !important; flex-shrink: 0; }
+.hhSliderLabel     { font-size: 0.8rem !important; min-width: 80px; text-align: right; flex-shrink: 0; }
+
+.hhExpertLangRow  { gap: 8px; align-items: center; padding: 2px 0 8px; }
+.hhLangInput.sapMInput { border-radius: 8px !important; height: 34px !important; }
+.hhResetBtn.sapMBtn    { font-size: 0.78rem !important; }
+
+/* Heading */
+.hhExpertHeading { padding: 8px 14px 4px; }
+
+/* Ad slot */
+.hhAdSlot  { margin: 6px 14px; border-radius: 8px; overflow: hidden; min-height: 52px; background: #f8f8f8; display: flex; align-items: center; justify-content: center; position: relative; }
+.hhAdLabel { position: absolute; font-size: 10px; opacity: 0.4; font-family: sans-serif; }
+
+/* Empty state */
+.hhExpertEmpty { padding: 40px 20px; }
+
+/* List */
+.hhExpertList { background: transparent !important; }
+
+/* Card item wrapper */
+.hhExpertCardItem.sapMLIB {
+    background: transparent !important;
+    border: none !important;
+    padding: 4px 14px !important;
+}
+
+/* Card */
+.hhExpertCard {
+    border-radius: 14px;
+    border: 1px solid;
+    box-shadow: 0 2px 10px rgba(15,23,42,0.07);
+    padding: 14px;
+    gap: 10px;
+    transition: box-shadow 0.18s, transform 0.15s;
+}
+.hhExpertCard:hover {
+    box-shadow: 0 6px 20px rgba(15,23,42,0.12);
+    transform: translateY(-2px);
+}
+
+/* Card top row */
+.hhExpertCardTop  { gap: 10px; }
+.hhExpertCardLeft { gap: 10px; flex: 1; min-width: 0; }
+.hhExpertAvatar   { flex-shrink: 0; }
+.hhExpertNameBox  { flex: 1; min-width: 0; gap: 2px; }
+.hhExpertName     { font-size: 1rem !important; }
+.hhExpertMeta     { gap: 6px; margin-top: 2px; }
+.hhExpertDist     { font-weight: 600 !important; }
+.hhExpertPriceBox { flex-shrink: 0; align-items: flex-end; gap: 2px; }
+.hhExpertPrice    { font-size: 0.9rem !important; }
+
+/* Tags row */
+.hhExpertTags     { gap: 6px; flex-wrap: wrap; }
+.hhExpertTag      { font-size: 0.75rem !important; }
+.hhExpertTagPlain { opacity: 0.65; }
+
+/* Actions row */
+.hhExpertActions  { gap: 6px; align-items: center; flex-wrap: wrap; padding-top: 4px; border-top: 1px solid; }
+.hhExpertIconBtn.sapMBtn   { width: 40px !important; height: 40px !important; padding: 0 !important; border-radius: 50% !important; }
+.hhExpertProfileBtn.sapMBtn { font-size: 0.82rem !important; padding: 0 8px !important; }
+.hhExpertBookBtn.sapMBtn    { border-radius: 8px !important; height: 34px !important; font-size: 0.82rem !important; font-weight: 600 !important; }
+.hhExpertMsgBtn.sapMBtn     { border-radius: 8px !important; height: 34px !important; font-size: 0.82rem !important; }
+
+/* ── iOS scroll ───────────────────────────────────────────────── */
+section { -webkit-overflow-scrolling: touch; }
+.mainContent { padding-bottom: 40px; }
+.flexBasis65 { padding-bottom: 60px; }
+
+/* ══════════════════════════════════════════════════════════════
+   Helper Profile Dialog
+   ══════════════════════════════════════════════════════════════ */
+
+/* Outer wrapper — no extra margin */
+.hhProfWrap { height: 100%; }
+
+/* Hero section */
+.hhProfHero    { padding: 16px 16px 12px; gap: 14px; }
+.hhProfAvatar  { flex-shrink: 0; }
+.hhProfHeroText { flex: 1; min-width: 0; gap: 4px; }
+.hhProfRatingRow { gap: 6px; margin-top: 2px; }
+
+/* 3-button action bar */
+.hhProfActions {
+    padding: 0 16px 12px;
+    gap: 8px;
+    border-bottom: 1px solid;
+}
+.hhProfActionBtn.sapMBtn {
+    flex: 1 !important;
+    border-radius: 10px !important;
+    height: 42px !important;
+    font-size: 0.82rem !important;
+    font-weight: 600 !important;
+}
+
+/* Tabs */
+.hhProfTabs { flex: 1; }
+
+/* Tab content sections */
+.hhProfSection  { padding: 14px 16px; gap: 10px; }
+.hhProfStats    { gap: 6px; flex-wrap: wrap; }
+.hhStatPill     { font-size: 0.78rem !important; }
+.hhProfLocation { gap: 6px; }
+.hhProfSectionTitle { margin-top: 6px !important; margin-bottom: 2px !important; }
+.hhProfBio      { line-height: 1.6; }
+
+/* Reviews */
+.hhReviewItem   { padding: 0 !important; border: none !important; }
+.hhReviewRow    { padding: 8px 0; gap: 10px; }
+.hhReviewContent { flex: 1; min-width: 0; gap: 2px; }
+
+/* Rate box */
+.hhRateBox { border-radius: 12px; border: 1px solid; padding: 14px; gap: 8px; margin-top: 6px; }
+
+/* Info card (overview rows) */
+.hhInfoCard     { border-radius: 12px; border: 1px solid; overflow: hidden; margin-bottom: 12px; }
+
+.hhInfoRow {
+    padding: 11px 14px;
+    gap: 10px;
+    border-bottom: 1px solid;
+}
+.hhInfoRowLast  { border-bottom: none !important; }
+
+.hhInfoIcon     { font-size: 1rem !important; flex-shrink: 0; width: 18px; }
+.hhInfoLabel    { font-size: 0.82rem !important; color: inherit; opacity: 0.6; min-width: 80px; flex-shrink: 0; }
+.hhInfoValue    { font-size: 0.88rem !important; font-weight: 600 !important; flex: 1; }
+
+/* Safety tab */
+.hhSafetyNote   { opacity: 0.65; margin-bottom: 16px !important; line-height: 1.5; }
+
+/* Action buttons */
+.hhActionBtn.sapMBtn {
+    border-radius: 10px !important;
+    height: 44px !important;
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+    margin-bottom: 8px !important;
+}
+
+/* ── Profile Settings tab ─────────────────────────────────────────── */
+.hhSettingsGroup {
+    background: var(--sapBaseColor, #f5f5f5);
+    border-radius: 12px;
+    padding: 12px 14px 6px;
+    margin-bottom: 12px;
+    gap: 0;
+}
+
+.hhSettingsGroupHeader {
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.hhSettingsGroupIcon.sapUiIcon {
+    font-size: 1rem;
+    color: var(--sapContent_IconColor, #0070f2);
+    width: 18px;
+    text-align: center;
+}
+
+.hhSettingsGroupHint {
+    opacity: 0.65;
+    margin-bottom: 8px !important;
+    padding-left: 26px;
+    line-height: 1.4;
+}
+
+.hhSettingsBtn.sapMBtn {
+    border-radius: 8px !important;
+    height: 40px !important;
+    font-size: 0.88rem !important;
+    font-weight: 500 !important;
+    margin-bottom: 4px !important;
+    justify-content: flex-start !important;
+}
+
+.hhSettingsBtn.sapMBtn .sapMBtnContent {
+    justify-content: flex-start !important;
+}
+
+.hhSettingsInfoRow {
+    min-height: 32px;
+    padding: 0 4px;
+    border-bottom: 1px solid var(--sapContent_ForegroundBorderColor, #e0e0e0);
+}
+
+.hhSettingsInfoRow:last-child {
+    border-bottom: none;
+}
+
+/* ── Activity strip ──────────────────────────────────────────────────────── */
+.fiActivityStrip {
+    background: var(--sapList_HeaderBackground, #f5f5f5);
+    border-radius: 10px;
+    padding: 8px 12px;
+    margin-bottom: 10px;
+    gap: 4px;
+}
+
+.fiActivityItem {
+    gap: 4px;
+}
+
+.fiActivityIcon.sapUiIcon {
+    font-size: 0.85rem;
+    color: var(--sapBrandColor, #0070f3);
+}
+
+.fiActivityText.sapMText {
+    font-size: 0.78rem;
+    color: var(--sapContent_LabelColor, #6a6d70);
+    white-space: nowrap;
+}
+
+/* ── Primary CTA ─────────────────────────────────────────────────────────── */
+.fiPrimaryCta {
+    margin-bottom: 14px;
+}
+
+.fiCtaBtn.sapMBtn {
+    border-radius: 10px !important;
+    height: 44px !important;
+    font-size: 0.95rem !important;
+    font-weight: 600 !important;
+}
+
+/* ── Hero badge on service tile ──────────────────────────────────────────── */
+.fiHeroBadge .sapMObjStatusText {
+    font-size: 0.65rem !important;
+    font-weight: 700 !important;
+}
+
+.fiHeroBadge.sapMObjStatus {
+    margin-top: 2px;
+    padding: 1px 5px !important;
+    border-radius: 6px !important;
+    background: rgba(48, 164, 108, 0.12) !important;
+}
+
+/* ── Sponsored badge ─────────────────────────────────────────────────────── */
+.fiSponsoredBadge .sapMObjStatusText {
+    font-size: 0.7rem !important;
+    font-weight: 600 !important;
+}
+
+/* ── Pro badge ───────────────────────────────────────────────────────────── */
+.fiProBadge .sapMObjStatusText {
+    font-size: 0.7rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.5px;
+}
+
+/* ── Native inline ad slot ───────────────────────────────────────────────── */
+.fiAdNative {
+    padding: 10px 16px;
+    border-radius: 10px;
+    background: var(--sapList_HeaderBackground, #f5f5f5);
+    border: 1px dashed var(--sapContent_ForegroundBorderColor, #e0e0e0);
+    min-height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+/* ── Earnings chip ───────────────────────────────────────────────────────── */
+.fiEarningsChip.sapMObjStatus {
+    font-size: 0.78rem !important;
+    padding: 2px 8px !important;
+    border-radius: 10px !important;
+    background: rgba(0, 112, 243, 0.08) !important;
+}
