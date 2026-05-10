@@ -354,7 +354,8 @@ sap.ui.define([
                                 color:       mServiceColors[row.name] ||
                                              mSectorColors[row.category] ||
                                              "#e2e8f0",
-                                description: row.description || ""
+                                description: row.description || "",
+                                is_hero:     !!row.is_hero
                             };
                         });
 

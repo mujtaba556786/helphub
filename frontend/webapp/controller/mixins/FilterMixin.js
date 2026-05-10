@@ -65,7 +65,7 @@ sap.ui.define([], function () {
 
         _updateActiveFilterCount: function () {
             var oModel = this.getModel("appData");
-            var oFilters = oModel.getProperty("/filters");
+            var oFilters = oModel.getProperty("/filters") || {};
             var iCount = 0;
             if (oFilters.priceCategory !== "all") iCount++;
             if (oFilters.availableNow) iCount++;
@@ -88,7 +88,7 @@ sap.ui.define([], function () {
         _applyFiltersForService: function (sServiceName) {
             var oModel = this.getModel("appData");
             var aAll = oModel.getProperty("/providers") || [];
-            var oFilters = oModel.getProperty("/filters");
+            var oFilters = oModel.getProperty("/filters") || {};
             var oUserLoc = oModel.getProperty("/user/location");
             var that = this;
 

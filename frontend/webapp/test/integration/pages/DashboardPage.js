@@ -11,13 +11,25 @@ sap.ui.define([
     Opa5.createPageObjects({
         onTheDashboard: {
             actions: {
+                /**
+                 * Find a service-tile CustomListItem by matching the sap.m.Text child
+                 * whose text equals sServiceName — uses the UI5 control API (no jQuery
+                 * DOM traversal) so it works even before the browser has painted.
+                 */
                 iPressServiceTile: function (sServiceName) {
                     return this.waitFor({
                         controlType: "sap.m.CustomListItem",
                         viewName: DASHBOARD_VIEW,
                         matchers: function (oItem) {
-                            var oIcon = oItem.$().find(".fiSvcName");
-                            return oIcon.length && oIcon.text() === sServiceName;
+                            var bFound = false;
+                            oItem.findAggregatedObjects(true, function (oChild) {
+                                if (oChild.isA("sap.m.Text") &&
+                                    oChild.hasStyleClass("fiSvcName") &&
+                                    oChild.getText() === sServiceName) {
+                                    bFound = true;
+                                }
+                            });
+                            return bFound;
                         },
                         actions: new Press(),
                         errorMessage: "Could not find service tile: " + sServiceName
@@ -30,7 +42,9 @@ sap.ui.define([
                         viewName: DASHBOARD_VIEW,
                         matchers: function (oBtn) {
                             var aData = oBtn.getCustomData();
-                            return aData.some(function (d) { return d.getKey() === "tab" && d.getValue() === sTabKey; });
+                            return aData.some(function (d) {
+                                return d.getKey() === "tab" && d.getValue() === sTabKey;
+                            });
                         },
                         actions: new Press(),
                         errorMessage: "Could not find nav tab: " + sTabKey

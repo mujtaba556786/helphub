@@ -76,7 +76,7 @@
                                         </VBox>
                                         <Text text="{appData>name}" class="fiSvcName"/>
                                         <ObjectStatus text="Popular" state="Success"
-                                            visible="{= ${appData>name} === 'Cleaning'}"
+                                            visible="{appData>is_hero}"
                                             class="fiHeroBadge"/>
                                     </VBox>
                                 </CustomListItem>

@@ -128,8 +128,9 @@ const createConversation = z.object({
 });
 
 const sendMessage = z.object({
-    sender_id: userId,
-    content:   z.string().trim().min(1, 'Message cannot be empty').max(5000)
+    conversation_id: z.string().trim().min(1, 'conversation_id is required').max(50),
+    sender_id:       userId,
+    content:         z.string().trim().min(1, 'Message cannot be empty').max(5000)
 });
 
 const markMessagesRead = z.object({

@@ -78,8 +78,8 @@ sap.ui.define([
         When.onTheDashboard.iPressNavTab("mySchedule");
 
         Then.waitFor({
-            controlType: "sap.m.List",
-            id: /bookingsList/,
+            id: "bookingsList",
+            viewName: "helphub.view.Dashboard",
             success: function () { Opa5.assert.ok(true, "Bookings list is rendered on My Schedule tab"); },
             errorMessage: "Bookings list not found on My Schedule tab"
         });

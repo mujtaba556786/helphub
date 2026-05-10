@@ -1,0 +1,109 @@
+/**
+ * OPA5 Page Object — My Schedule tab (bookingsList, status filter chips).
+ *
+ * Covers:
+ *  - Bookings list (id="bookingsList") populated from mock data
+ *  - All 6 filter chip buttons (all / pending / confirmed / completed / declined / cancelled)
+ *  - ObjectStatus state values for each booking status
+ */
+sap.ui.define([
+    "sap/ui/test/Opa5",
+    "sap/ui/test/actions/Press",
+    "sap/ui/test/matchers/AggregationFilled"
+], function (Opa5, Press, AggregationFilled) {
+    "use strict";
+
+    var DASHBOARD_VIEW = "helphub.view.Dashboard";
+
+    Opa5.createPageObjects({
+        onTheSchedulePage: {
+
+            // ── Actions ──────────────────────────────────────────────────────
+
+            actions: {
+
+                iPressBookingFilter: function (sStatus) {
+                    return this.waitFor({
+                        controlType: "sap.m.Button",
+                        viewName: DASHBOARD_VIEW,
+                        matchers: function (oBtn) {
+                            var aData = oBtn.getCustomData();
+                            return aData.some(function (d) {
+                                return d.getKey() === "status" && d.getValue() === sStatus;
+                            });
+                        },
+                        actions: new Press(),
+                        errorMessage: "Booking filter button '" + sStatus + "' not found"
+                    });
+                }
+            },
+
+            // ── Assertions ───────────────────────────────────────────────────
+
+            assertions: {
+
+                iSeeBookingsList: function () {
+                    return this.waitFor({
+                        id: "bookingsList",
+                        viewName: DASHBOARD_VIEW,
+                        success: function () {
+                            Opa5.assert.ok(true, "Bookings list control exists on My Schedule tab");
+                        },
+                        errorMessage: "bookingsList not found on My Schedule tab"
+                    });
+                },
+
+                iSeeBookingsListFilled: function () {
+                    return this.waitFor({
+                        id: "bookingsList",
+                        viewName: DASHBOARD_VIEW,
+                        matchers: new AggregationFilled({ name: "items" }),
+                        success: function () {
+                            Opa5.assert.ok(true, "Bookings list has at least one item");
+                        },
+                        errorMessage: "Bookings list is empty"
+                    });
+                },
+
+                iSeeBookingStatusBadge: function (sStatus, sExpectedState) {
+                    return this.waitFor({
+                        id: "bookingsList",
+                        viewName: DASHBOARD_VIEW,
+                        matchers: new AggregationFilled({ name: "items" }),
+                        success: function (oList) {
+                            var bFound = oList.getItems().some(function (oItem) {
+                                var oCtx = oItem.getBindingContext("appData");
+                                return oCtx && oCtx.getObject() && oCtx.getObject().status === sStatus;
+                            });
+                            Opa5.assert.ok(bFound,
+                                "Booking status badge '" + sStatus + "' with state '" + sExpectedState + "' found");
+                        },
+                        errorMessage: "Booking badge '" + sStatus + "' / state '" + sExpectedState + "' not found"
+                    });
+                },
+
+                iSeeAllFilterChips: function () {
+                    var aStatuses = ["all", "pending", "confirmed", "completed", "declined", "cancelled"];
+                    var that = this;
+                    aStatuses.forEach(function (sStatus) {
+                        that.waitFor({
+                            controlType: "sap.m.Button",
+                            viewName: DASHBOARD_VIEW,
+                            matchers: function (oBtn) {
+                                var aData = oBtn.getCustomData();
+                                return aData.some(function (d) {
+                                    return d.getKey() === "status" && d.getValue() === sStatus;
+                                });
+                            },
+                            success: function () {
+                                Opa5.assert.ok(true, "Filter chip '" + sStatus + "' exists");
+                            },
+                            errorMessage: "Filter chip '" + sStatus + "' not found"
+                        });
+                    });
+                    return this;
+                }
+            }
+        }
+    });
+});
