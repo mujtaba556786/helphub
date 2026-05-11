@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
-  root: '/Users/mujtaba/Documents/myProj/helphub/backend',
+  root: '.',
   server: {
     port: 5173,
     strictPort: true,

@@ -425,13 +425,28 @@ app.use((err, req, res, next) => {
     res.status(status).json({ success: false, error: err.message });
 });
 
+// ── Serve SAPUI5 frontend (dynamic config.js + static files) ─────────────────
+app.get('/config.js', (req, res) => {
+    const apiBase = process.env.API_BASE_URL ||
+        `${req.protocol}://${req.get('host')}`;
+    res.type('application/javascript');
+    res.send(`sap.ui.define([], function () {\n    "use strict";\n    return { API_BASE: "${apiBase}" };\n});`);
+});
+app.use('/', express.static(path.join(__dirname, '../frontend/webapp')));
+
+// ── Serve React admin panel (built) ──────────────────────────────────────────
+app.use('/admin', express.static(path.join(__dirname, 'dist')));
+app.get('/admin/*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+});
+
 // ── Start ─────────────────────────────────────────────────────────────────────
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 initDb().then(success => {
     if (success) {
         app.listen(PORT, '0.0.0.0', () => {
-            console.log(`🚀 ServiceLink API Gateway Online at http://localhost:${PORT}`);
+            console.log(`🚀 HelpHub API online → http://localhost:${PORT}`);
         });
     } else {
         console.error('⛔ Database connection failed. Server not started.');
