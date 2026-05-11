@@ -22,6 +22,22 @@ sap.ui.define([
 
             actions: {
 
+                iPressViewProfileButton: function () {
+                    return this.waitFor({
+                        controlType: "sap.m.Button",
+                        viewName: DASHBOARD_VIEW,
+                        matchers: function (oBtn) {
+                            // hhNotifChip is the CSS class used exclusively on booking-card Profile buttons
+                            return oBtn.hasStyleClass("hhNotifChip");
+                        },
+                        actions: new Press(),
+                        success: function () {
+                            Opa5.assert.ok(true, "Profile button pressed in booking card");
+                        },
+                        errorMessage: "Booking-card Profile button (class hhNotifChip) not found on My Schedule tab"
+                    });
+                },
+
                 iPressBookingFilter: function (sStatus) {
                     return this.waitFor({
                         controlType: "sap.m.Button",
@@ -41,6 +57,23 @@ sap.ui.define([
             // ── Assertions ───────────────────────────────────────────────────
 
             assertions: {
+
+                iSeeProfileDialogWithRating: function () {
+                    // The profile dialog header has a displayOnly RatingIndicator bound to
+                    // /selectedProfile/rating. A value > 0 confirms the rating was set.
+                    // Using RatingIndicator (not Text) avoids expression-binding timing issues.
+                    return this.waitFor({
+                        controlType: "sap.m.RatingIndicator",
+                        matchers: function (oRI) {
+                            return oRI.getDisplayOnly() === true && oRI.getValue() > 0;
+                        },
+                        success: function () {
+                            Opa5.assert.ok(true,
+                                "Profile dialog RatingIndicator shows a non-zero rating (not 'No rating')");
+                        },
+                        errorMessage: "Profile dialog RatingIndicator with value > 0 not found — rating is still 0/null"
+                    });
+                },
 
                 iSeeBookingsList: function () {
                     return this.waitFor({

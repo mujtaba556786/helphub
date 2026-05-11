@@ -9,7 +9,7 @@
  *  DashboardJourney     — original smoke tests (activity strip, CTA, hero badge, badges, tab)
  *  ServiceTilesJourney  — service grid render, hero badge, header controls, tile spot-checks
  *  SearchJourney        — tile press → results page, Sponsored/PRO badges, map toggle, search field
- *  ScheduleJourney      — bookings list, all 5 status badges, 6 filter chips, filter interactions
+ *  ScheduleJourney      — bookings list, all 5 status badges, 6 filter chips, profile dialog rating, filter interactions
  *  TasksJourney         — Browse/My Tasks toggle, feed list, OPEN badge, search, category filter, dialog
  *  MessagesJourney      — conversations list, unread badge, DM chat dialog
  *  NotificationsJourney — bell, dialog, items, Mark-all-read, filter chips

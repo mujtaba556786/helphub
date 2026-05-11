@@ -8,7 +8,15 @@ sap.ui.define([
 
     return {
 
-        // Fetch ratings for a provider and update both the reviews list and header rating
+        // Compute average rating (rounded to 1 dp) from a reviews array; returns null for empty input.
+        _computeAvgRating: function(aReviews) {
+            if (!aReviews || !aReviews.length) { return null; }
+            var fSum = aReviews.reduce(function(s, r) { return s + (r.stars || 0); }, 0);
+            return Math.round((fSum / aReviews.length) * 10) / 10;
+        },
+
+        // Fetch ratings for a provider and update both the reviews list and header rating.
+        // Rating is set before reviews so the expression binding updates even if _formatReviews throws.
         _loadProfileRatings: function(sProviderId) {
             var oModel = this.getModel("appData");
             fetch(API_BASE + "/api/providers/" + encodeURIComponent(sProviderId) + "/ratings")
@@ -16,11 +24,11 @@ sap.ui.define([
                 .then(function(oData) {
                     if (!oData.success) return;
                     var aReviews = oData.ratings || [];
-                    oModel.setProperty("/selectedProfile/reviews", this._formatReviews(aReviews));
-                    if (aReviews.length > 0) {
-                        var fAvg = aReviews.reduce(function(s, r) { return s + (r.stars || 0); }, 0) / aReviews.length;
-                        oModel.setProperty("/selectedProfile/rating", Math.round(fAvg * 10) / 10);
+                    var fAvg = this._computeAvgRating(aReviews);
+                    if (fAvg !== null) {
+                        oModel.setProperty("/selectedProfile/rating", fAvg);
                     }
+                    oModel.setProperty("/selectedProfile/reviews", this._formatReviews(aReviews));
                 }.bind(this))
                 .catch(function() {});
         },
@@ -151,6 +159,7 @@ sap.ui.define([
                     .join("").substring(0, 2).toUpperCase();
             }
             oProfile.reviews = oProfile.reviews || [];
+            oProfile.rating  = oProfile.rating  || null;
             oModel.setProperty("/selectedProfile", oProfile);
 
             var oStars   = this.byId("newRatingStars");
@@ -181,10 +190,14 @@ sap.ui.define([
             if (!sProviderId) { MessageToast.show("Provider not found."); return; }
 
             var oModel = this.getModel("appData");
+            var aProviders = oModel.getProperty("/providers") || [];
+            var oKnown = aProviders.filter(function(p) { return p.id === sProviderId; })[0] || {};
+
             var oProfile = {
                 id:          sProviderId,
                 name:        oBooking.provider_name || "Provider",
                 serviceType: oBooking.service || "",
+                rating:      oKnown.rating || null,
                 reviews:     []
             };
             oProfile.initials = oProfile.name
