@@ -3,6 +3,65 @@ sap.ui.define([
 ], function (ProfileMixin) {
     "use strict";
 
+    // ── _computeAvgRating ─────────────────────────────────────────────────────
+
+    QUnit.module("ProfileMixin — _computeAvgRating");
+
+    QUnit.test("returns null for null input", function (assert) {
+        assert.strictEqual(ProfileMixin._computeAvgRating(null), null, "null → null");
+    });
+
+    QUnit.test("returns null for undefined input", function (assert) {
+        assert.strictEqual(ProfileMixin._computeAvgRating(undefined), null, "undefined → null");
+    });
+
+    QUnit.test("returns null for empty array", function (assert) {
+        assert.strictEqual(ProfileMixin._computeAvgRating([]), null, "[] → null");
+    });
+
+    QUnit.test("single 5-star review returns 5", function (assert) {
+        assert.strictEqual(ProfileMixin._computeAvgRating([{ stars: 5 }]), 5, "one 5-star → 5");
+    });
+
+    QUnit.test("single 3-star review returns 3", function (assert) {
+        assert.strictEqual(ProfileMixin._computeAvgRating([{ stars: 3 }]), 3, "one 3-star → 3");
+    });
+
+    QUnit.test("two 5-star reviews return 5", function (assert) {
+        assert.strictEqual(
+            ProfileMixin._computeAvgRating([{ stars: 5 }, { stars: 5 }]),
+            5, "5+5 / 2 → 5"
+        );
+    });
+
+    QUnit.test("4-star + 5-star returns 4.5", function (assert) {
+        assert.strictEqual(
+            ProfileMixin._computeAvgRating([{ stars: 4 }, { stars: 5 }]),
+            4.5, "(4+5)/2 → 4.5"
+        );
+    });
+
+    QUnit.test("rounds to 1 decimal place", function (assert) {
+        // (4+5+4) / 3 = 4.333... → rounds to 4.3
+        assert.strictEqual(
+            ProfileMixin._computeAvgRating([{ stars: 4 }, { stars: 5 }, { stars: 4 }]),
+            4.3, "(4+5+4)/3 = 4.333 → 4.3"
+        );
+    });
+
+    QUnit.test("missing stars field treated as 0", function (assert) {
+        // ({stars: 4} + {no stars}) / 2 = 2.0
+        assert.strictEqual(
+            ProfileMixin._computeAvgRating([{ stars: 4 }, {}]),
+            2, "missing stars defaults to 0"
+        );
+    });
+
+    QUnit.test("result is always between 0 and 5", function (assert) {
+        var fAvg = ProfileMixin._computeAvgRating([{ stars: 1 }, { stars: 5 }, { stars: 3 }]);
+        assert.ok(fAvg >= 0 && fAvg <= 5, "average is within [0, 5] range (got: " + fAvg + ")");
+    });
+
     // ── _formatReviews ────────────────────────────────────────────────────────
 
     QUnit.module("ProfileMixin — _formatReviews");

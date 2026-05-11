@@ -9,9 +9,10 @@
  *  5. Pending booking shows a "Warning" state badge
  *  6. Completed booking shows a "None" state badge (grey/neutral)
  *  7. Declined booking shows an "Error" state badge
- *  8. Pressing "confirmed" filter chip limits list to confirmed bookings only
- *  9. Pressing "pending" filter chip limits list to pending bookings only
- * 10. Pressing "all" filter chip restores the full list (excluding cancelled)
+ *  5. Opening the provider profile dialog shows a numeric rating (not 'No rating')
+ *  6. Pressing "confirmed" filter chip limits list to confirmed bookings only
+ *  7. Pressing "pending" filter chip limits list to pending bookings only
+ *  8. Pressing "all" filter chip restores the full list (excluding cancelled)
  */
 sap.ui.define([
     "sap/ui/test/opaQunit",
@@ -96,7 +97,19 @@ sap.ui.define([
         Then.iTeardownMyUIComponent();
     });
 
-    // ── 5. Filter interactions ────────────────────────────────────────────
+    // ── 5. Provider profile dialog shows a rating ─────────────────────────
+
+    opaTest("Pressing Profile on a booking card opens profile dialog with a numeric rating", function (Given, When, Then) {
+        Given.iStartMyUIComponent({ componentConfig: { name: "helphub", manifest: true } });
+
+        When.onTheDashboard.iPressNavTab("mySchedule");
+        When.onTheSchedulePage.iPressViewProfileButton();
+
+        Then.onTheSchedulePage.iSeeProfileDialogWithRating();
+        Then.iTeardownMyUIComponent();
+    });
+
+    // ── 6. Filter interactions ────────────────────────────────────────────
 
     opaTest("Pressing 'confirmed' filter chip shows only confirmed bookings", function (Given, When, Then) {
         Given.iStartMyUIComponent({ componentConfig: { name: "helphub", manifest: true } });
