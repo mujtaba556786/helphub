@@ -33,6 +33,10 @@ if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 
 const app = express();
 
+// Railway terminates SSL at the proxy — trust the X-Forwarded-Proto header
+// so req.protocol returns 'https' and config.js generates the correct API_BASE
+app.set('trust proxy', 1);
+
 app.use(helmet({
     contentSecurityPolicy: {
         directives: {
@@ -457,6 +461,15 @@ app.get('/config.js', (req, res) => {
     res.send(`sap.ui.define([], function () {\n    "use strict";\n    return { API_BASE: "${apiBase}" };\n});`);
 });
 app.use('/', express.static(path.join(__dirname, '../frontend/webapp')));
+
+// Return proper JS 404 for missing files (e.g. Component-preload.js)
+// Without this Express sends HTML which the browser refuses to execute as JS
+app.use((req, res, next) => {
+    if (req.path.endsWith('.js') || req.path.endsWith('.css')) {
+        return res.status(404).type(req.path.endsWith('.js') ? 'application/javascript' : 'text/css').send('');
+    }
+    next();
+});
 
 // ── Serve React admin panel (built) ──────────────────────────────────────────
 app.use('/admin', express.static(path.join(__dirname, 'dist')));
