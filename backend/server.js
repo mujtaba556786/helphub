@@ -33,14 +33,35 @@ if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 
 const app = express();
 
-app.use(helmet());
-// Allow /uploads images to be loaded cross-origin (helmet v4 doesn't have CORP built-in)
-app.use('/uploads', (req, res, next) => { res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin'); next(); });
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc:  ["'self'"],
+            scriptSrc:   ["'self'", "'unsafe-inline'", "'unsafe-eval'",
+                          "https://sapui5.hana.ondemand.com",
+                          "https://unpkg.com",
+                          "https://cdn.jsdelivr.net"],
+            styleSrc:    ["'self'", "'unsafe-inline'",
+                          "https://sapui5.hana.ondemand.com",
+                          "https://unpkg.com"],
+            imgSrc:      ["'self'", "data:", "blob:", "https:"],
+            fontSrc:     ["'self'", "data:",
+                          "https://sapui5.hana.ondemand.com"],
+            connectSrc:  ["'self'", "https://sapui5.hana.ondemand.com", "https:"],
+            workerSrc:   ["'self'", "blob:"],
+            frameSrc:    ["'none'"],
+        }
+    },
+    crossOriginResourcePolicy: false,
+}));
 
 app.use(cors({
     origin: function(origin, callback) {
-        // allow server-to-server (no origin) and whitelisted origins
-        if (!origin || ALLOWED_ORIGINS.includes(origin)) return callback(null, true);
+        // allow server-to-server (no origin), whitelisted origins, and Railway/HTTPS origins
+        if (!origin) return callback(null, true);
+        if (ALLOWED_ORIGINS.includes(origin)) return callback(null, true);
+        // allow any HTTPS origin in production (Railway URL, mobile apps, etc.)
+        if (process.env.NODE_ENV === 'production' && origin.startsWith('https://')) return callback(null, true);
         callback(new Error('Not allowed by CORS'));
     },
     credentials: true,
