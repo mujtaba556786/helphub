@@ -97,10 +97,22 @@ sap.ui.define([
             function applyUser(u) {
                 var sAvatar = u.avatar || "";
                 if (sAvatar && sAvatar.startsWith("/uploads/")) sAvatar = API_BASE + sAvatar;
+
+                // Derive initials from the user's display name so the header
+                // Avatar always shows something meaningful when no photo is set.
+                var sName     = u.name || "";
+                var sInitials = sName
+                    .split(" ")
+                    .filter(Boolean)
+                    .map(function(p) { return p[0].toUpperCase(); })
+                    .join("")
+                    .substring(0, 2) || "?";
+
                 oAppData.setProperty("/user/id",       u.id || "");
-                oAppData.setProperty("/user/name",     u.name  || "");
+                oAppData.setProperty("/user/name",     sName);
                 oAppData.setProperty("/user/email",    u.email || "");
                 oAppData.setProperty("/user/photo",    sAvatar);
+                oAppData.setProperty("/user/initials", sInitials);
                 oAppData.setProperty("/user/bio",      u.bio       || "");
                 oAppData.setProperty("/user/phone",    u.phone     || "");
                 oAppData.setProperty("/user/languages", u.languages || "");

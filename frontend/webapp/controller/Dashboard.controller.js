@@ -61,7 +61,7 @@ sap.ui.define([
             }
             // Ensure user id is in model (may only be in storage after page reload)
             if (!this._oModel.getProperty("/user/id")) {
-                window.HelpmateStorage.get("helpmate_user_id", function(sSid) {
+                window.HelpHubStorage.get("helpmate_user_id", function(sSid) {
                     if (sSid) { this._oModel.setProperty("/user/id", sSid); }
                 }.bind(this));
             }
@@ -461,13 +461,13 @@ sap.ui.define([
             var sEmail = this.getModel("appData").getProperty("/user/email") || "";
 
             // Revoke refresh token on backend, then show logout dialog
-            window.HelpmateStorage.get("helpmate_refresh_token", function(sRefresh) {
+            window.HelpHubStorage.get("helpmate_refresh_token", function(sRefresh) {
                 var fnShowDialog = function() {
-                    window.HelpmateStorage.clear();
+                    window.HelpHubStorage.clear();
                     that._showLogoutDialog(sEmail);
                 };
                 if (sRefresh) {
-                    window.HelpmateStorage.get("helpmate_token", function(sToken) {
+                    window.HelpHubStorage.get("helpmate_token", function(sToken) {
                         fetch(API_BASE + "/api/auth/logout", {
                             method: "POST",
                             headers: {
@@ -733,7 +733,7 @@ sap.ui.define([
 
             var sUserId = oUser.id;
             if (!sUserId) {
-                window.HelpmateStorage.get("helpmate_user_id", function(sid) {
+                window.HelpHubStorage.get("helpmate_user_id", function(sid) {
                     if (sid) { oModel.setProperty("/user/id", sid); }
                 });
                 MessageToast.show("Session expired. Please log in again."); return;
