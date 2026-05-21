@@ -423,12 +423,14 @@ sap.ui.define([
             this.navTo("admin");
         },
 
-        onLanguageMenu: function() {
-            var that = this;
-            if (!this._oLangDialog) {
-                this._oLangDialog = new sap.m.Dialog({
-                    title: "{i18n>changeLanguage}",
-                    contentWidth: "280px",
+        onLanguageMenu: function(oEvent) {
+            var that    = this;
+            var oSource = oEvent.getSource();   // globe button — used to anchor the popover
+
+            if (!this._oLangPopover) {
+                this._oLangPopover = new sap.m.Popover({
+                    showHeader: false,
+                    placement: "Bottom",
                     content: [
                         new sap.m.List({
                             showSeparators: "None",
@@ -439,16 +441,11 @@ sap.ui.define([
                                 new sap.m.StandardListItem({ title: "🇸🇦  العربية",  type: "Active", press: that._applyLanguage.bind(that, "ar") })
                             ]
                         })
-                    ],
-                    endButton: new sap.m.Button({
-                        text: "{i18n>cancel}",
-                        type: "Transparent",
-                        press: function() { that._oLangDialog.close(); }
-                    })
+                    ]
                 });
-                this.getView().addDependent(this._oLangDialog);
+                this.getView().addDependent(this._oLangPopover);
             }
-            this._oLangDialog.open();
+            this._oLangPopover.openBy(oSource);
         },
 
         _applyLanguage: function(sLang) {
