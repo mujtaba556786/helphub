@@ -11,14 +11,21 @@ async function createMailTransporter() {
         const testAccount = await nodemailer.createTestAccount();
         const transporter = nodemailer.createTransport({
             host: 'smtp.ethereal.email', port: 587, secure: false,
+            connectionTimeout: 8000, greetingTimeout: 5000, socketTimeout: 10000,
             auth: { user: testAccount.user, pass: testAccount.pass }
         });
         return { transporter, isEthereal: true };
+    }
+    if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+        const err = new Error('SMTP credentials not configured (set SMTP_USER and SMTP_PASS in Railway env vars)');
+        err.code = 'SMTP_NOT_CONFIGURED';
+        throw err;
     }
     const host = process.env.SMTP_HOST || 'smtp.gmail.com';
     const transporter = nodemailer.createTransport({
         host, port: parseInt(process.env.SMTP_PORT || '587'),
         secure: process.env.SMTP_SECURE === 'true',
+        connectionTimeout: 8000, greetingTimeout: 5000, socketTimeout: 10000,
         auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
     });
     return { transporter, isEthereal: host.includes('ethereal.email') };
