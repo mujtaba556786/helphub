@@ -167,6 +167,56 @@ sap.ui.define([
         Then.iTeardownMyUIComponent();
     });
 
+    opaTest("Pressing the language button opens a Popover (not a modal Dialog)", function (Given, When, Then) {
+        Given.iStartMyUIComponent({ componentConfig: { name: "helphub", manifest: true } });
+
+        When.waitFor({
+            id: "langBtn",
+            viewName: "helphub.view.Dashboard",
+            actions: new (sap.ui.require("sap/ui/test/actions/Press"))(),
+            errorMessage: "Could not press the language button"
+        });
+
+        // A Popover must be open — no sap.m.Dialog should appear
+        Then.waitFor({
+            controlType: "sap.m.Popover",
+            matchers: function (oPopover) { return oPopover.isOpen(); },
+            success: function () {
+                Opa5.assert.ok(true, "Language selector opens as a Popover anchored to the globe button");
+            },
+            errorMessage: "Language Popover did not open after pressing the lang button"
+        });
+
+        Then.iTeardownMyUIComponent();
+    });
+
+    opaTest("Language Popover contains all four language options including English", function (Given, When, Then) {
+        Given.iStartMyUIComponent({ componentConfig: { name: "helphub", manifest: true } });
+
+        When.waitFor({
+            id: "langBtn",
+            viewName: "helphub.view.Dashboard",
+            actions: new (sap.ui.require("sap/ui/test/actions/Press"))(),
+            errorMessage: "Could not press the language button"
+        });
+
+        var aExpectedLangs = ["English", "Deutsch", "Türkçe", "العربية"];
+        aExpectedLangs.forEach(function (sLang) {
+            Then.waitFor({
+                controlType: "sap.m.StandardListItem",
+                matchers: function (oItem) {
+                    return (oItem.getTitle() || "").indexOf(sLang) >= 0;
+                },
+                success: function () {
+                    Opa5.assert.ok(true, "Language option '" + sLang + "' is present in the Popover");
+                },
+                errorMessage: "Language option '" + sLang + "' is MISSING from the language selector"
+            });
+        });
+
+        Then.iTeardownMyUIComponent();
+    });
+
     // ── 6. Spot-check specific service categories ─────────────────────────
 
     var aCategorySpotChecks = ["Cleaning", "Gardening", "Handyman", "Babysitting", "Cooking"];
