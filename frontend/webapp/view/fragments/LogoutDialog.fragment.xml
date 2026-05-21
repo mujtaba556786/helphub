@@ -10,27 +10,23 @@
         draggable="false">
 
         <content>
-            <VBox class="sapUiMediumMargin" width="100%">
+            <!-- Default state: prompt to request a new login link -->
+            <VBox visible="{= !${logoutData>/linkSent} }" class="sapUiSmallMarginBeginEnd sapUiSmallMarginTopBottom">
+                <Text
+                    text="To sign in again, we'll send a secure link to your email."
+                    wrapping="true"
+                    class="sapUiSmallMarginBottom" />
+                <Text
+                    text="{logoutData>/email}"
+                    wrapping="true" />
+            </VBox>
 
-                <!-- Default state: prompt to request a new login link -->
-                <VBox visible="{= !${logoutData>/linkSent} }">
-                    <Text
-                        text="To sign in again, we'll send a secure link to your email."
-                        class="sapUiSmallMarginBottom" />
-                    <Text
-                        text="{logoutData>/email}"
-                        class="sapUiSmallMarginBottom"
-                        wrapping="true" />
-                </VBox>
-
-                <!-- After link is sent -->
-                <VBox visible="{= !!${logoutData>/linkSent} }">
-                    <Title text="📧 Check your inbox" level="H4" class="sapUiSmallMarginBottom" />
-                    <Text
-                        text="A sign-in link has been sent to {logoutData>/email}. Tap the link in the email to sign back in."
-                        wrapping="true" />
-                </VBox>
-
+            <!-- After link is sent -->
+            <VBox visible="{= !!${logoutData>/linkSent} }" class="sapUiSmallMarginBeginEnd sapUiSmallMarginTopBottom">
+                <Title text="📧 Check your inbox" level="H4" class="sapUiSmallMarginBottom" />
+                <Text
+                    text="A sign-in link has been sent to {logoutData>/email}. Tap the link in the email to sign back in."
+                    wrapping="true" />
             </VBox>
         </content>
 
