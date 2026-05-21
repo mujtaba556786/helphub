@@ -5,8 +5,6 @@ const AuthService  = require('../services/AuthService');
 
 const GOOGLE_CLIENT_ID  = process.env.GOOGLE_CLIENT_ID;
 const googleClient      = new OAuth2Client(GOOGLE_CLIENT_ID);
-const BACKEND_URL       = process.env.BACKEND_URL  || 'http://localhost:3000';
-const FRONTEND_URL      = process.env.FRONTEND_URL || 'http://localhost:8080';
 
 async function createMailTransporter() {
     if (process.env.USE_ETHEREAL === 'true') {
@@ -80,15 +78,16 @@ async function sendMagicLink(req, res) {
     const { email } = req.body;
     if (!email) return res.status(400).json({ success: false, error: 'email is required' });
 
-    const rawToken  = crypto.randomBytes(32).toString('hex');
-    const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
-    const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
-    const pool      = require('../db/pool');
+    const rawToken   = crypto.randomBytes(32).toString('hex');
+    const tokenHash  = crypto.createHash('sha256').update(rawToken).digest('hex');
+    const expiresAt  = new Date(Date.now() + 15 * 60 * 1000);
+    const pool       = require('../db/pool');
+    const backendBase = process.env.BACKEND_URL || `${req.protocol}://${req.get('host')}`;
 
     await pool.execute('DELETE FROM magic_link_tokens WHERE email = ?', [email]);
     await pool.execute('INSERT INTO magic_link_tokens (token_hash, email, expires_at) VALUES (?, ?, ?)', [tokenHash, email, expiresAt]);
 
-    const magicUrl = `${BACKEND_URL}/api/auth/magic?token=${rawToken}`;
+    const magicUrl = `${backendBase}/api/auth/magic?token=${rawToken}`;
     const { transporter, isEthereal } = await createMailTransporter();
     try {
         const info = await transporter.sendMail({
@@ -108,28 +107,30 @@ async function sendMagicLink(req, res) {
             return res.json({ success: true, message: 'Sign-in link sent — check your inbox.', previewUrl });
         }
         console.log(`[AUTH] Magic link sent to ${email}`);
+        res.json({ success: true, message: 'Sign-in link sent — check your inbox.' });
     } catch (err) {
         console.error('[AUTH] Failed to send magic link email:', err.message);
         console.log(`[DEV] Magic link for ${email}: ${magicUrl}`);
+        res.status(500).json({ success: false, error: 'Could not send sign-in email. Please try again.' });
     }
-    res.json({ success: true, message: 'Sign-in link sent — check your inbox.' });
 }
 
 async function magicLinkCallback(req, res) {
     const { token } = req.query;
     if (!token) return res.status(400).send('Missing token.');
 
-    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+    const frontendBase = process.env.FRONTEND_URL || process.env.BACKEND_URL || `${req.protocol}://${req.get('host')}`;
+    const tokenHash    = crypto.createHash('sha256').update(token).digest('hex');
     try {
         const { accessToken, refreshToken } = await AuthService.consumeMagicToken(tokenHash);
-        return res.redirect(`${FRONTEND_URL}/?accessToken=${encodeURIComponent(accessToken)}&refreshToken=${encodeURIComponent(refreshToken)}`);
+        return res.redirect(`${frontendBase}/?accessToken=${encodeURIComponent(accessToken)}&refreshToken=${encodeURIComponent(refreshToken)}`);
     } catch (err) {
         const msg = err.message === 'expired'
             ? 'This sign-in link has expired. Links are valid for 15 minutes.'
             : 'This sign-in link is invalid or has already been used.';
         return res.status(400).send(`<html><body style="font-family:sans-serif;text-align:center;padding:40px">
             <h2 style="color:#f97316">Helpmate</h2><p>${msg}</p>
-            <p><a href="${FRONTEND_URL}">Request a new link</a></p>
+            <p><a href="${frontendBase}">Request a new link</a></p>
             </body></html>`);
     }
 }
