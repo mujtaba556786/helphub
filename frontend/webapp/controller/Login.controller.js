@@ -79,12 +79,18 @@ sap.ui.define([
             var that = this;
             this._oBusyDialog.open();
 
+            // 20-second hard timeout — prevents BusyDialog getting stuck if
+            // SMTP is misconfigured on the server and nodemailer hangs.
+            var oAbort   = new AbortController();
+            var oTimeout = setTimeout(function() { oAbort.abort(); }, 20000);
+
             fetch(API_BASE + "/api/auth/send-magic-link", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email: sEmail })
+                body: JSON.stringify({ email: sEmail }),
+                signal: oAbort.signal
             })
-            .then(function(r) { return r.json(); })
+            .then(function(r) { clearTimeout(oTimeout); return r.json(); })
             .then(function(oData) {
                 that._oBusyDialog.close();
                 if (oData.success) {
@@ -96,9 +102,13 @@ sap.ui.define([
                     MessageToast.show(oData.error || "Could not send link. Try again.");
                 }
             })
-            .catch(function() {
+            .catch(function(err) {
+                clearTimeout(oTimeout);
                 that._oBusyDialog.close();
-                MessageToast.show("Could not reach the server. Please try again.");
+                var sMsg = (err && err.name === "AbortError")
+                    ? "Request timed out — please try again."
+                    : "Could not reach the server. Please try again.";
+                MessageToast.show(sMsg);
             });
         },
 
