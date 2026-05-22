@@ -6,30 +6,67 @@ const AuthService  = require('../services/AuthService');
 const GOOGLE_CLIENT_ID  = process.env.GOOGLE_CLIENT_ID;
 const googleClient      = new OAuth2Client(GOOGLE_CLIENT_ID);
 
-async function createMailTransporter() {
+// ── Email sending ─────────────────────────────────────────────────────────────
+// Priority: Resend API (HTTPS, works on Railway) → SMTP (local dev fallback)
+//
+// To enable on Railway: add RESEND_API_KEY in the Variables tab.
+// Sign up free at https://resend.com — 3,000 emails/month free.
+
+const EMAIL_HTML = (magicUrl) =>
+    `<div style="font-family:sans-serif;max-width:420px;margin:auto">
+        <h2 style="color:#f97316">Helpmate</h2>
+        <p>Click the button below to sign in. This link expires in <strong>15 minutes</strong> and can only be used once.</p>
+        <a href="${magicUrl}" style="display:inline-block;padding:12px 28px;background:#f97316;color:#fff;border-radius:8px;text-decoration:none;font-weight:bold;font-size:16px;margin:16px 0">Sign in to Helpmate</a>
+        <p style="color:#888;font-size:12px">If you didn't request this, you can safely ignore this email.</p>
+     </div>`;
+
+async function sendEmail({ to, subject, html }) {
+    // ── Resend (HTTPS API — no port 587 needed, works on Railway) ────────────
+    if (process.env.RESEND_API_KEY) {
+        const from = process.env.SMTP_FROM || 'Helpmate <onboarding@resend.dev>';
+        const res = await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ from, to, subject, html })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error('Resend error: ' + (data.message || JSON.stringify(data)));
+        console.log(`[AUTH] Email sent via Resend to ${to} (id: ${data.id})`);
+        return;
+    }
+
+    // ── Ethereal (dev preview — set USE_ETHEREAL=true) ───────────────────────
     if (process.env.USE_ETHEREAL === 'true') {
         const testAccount = await nodemailer.createTestAccount();
-        const transporter = nodemailer.createTransport({
+        const t = nodemailer.createTransport({
             host: 'smtp.ethereal.email', port: 587, secure: false,
-            connectionTimeout: 8000, greetingTimeout: 5000, socketTimeout: 10000,
             auth: { user: testAccount.user, pass: testAccount.pass }
         });
-        return { transporter, isEthereal: true };
+        const info = await t.sendMail({ from: 'Helpmate <noreply@helphub.local>', to, subject, html });
+        console.log(`\n📧 Ethereal preview: ${nodemailer.getTestMessageUrl(info)}\n`);
+        return;
     }
+
+    // ── SMTP fallback (local dev with Gmail app-password) ────────────────────
     if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-        const err = new Error('SMTP credentials not configured (set SMTP_USER and SMTP_PASS in Railway env vars)');
-        err.code = 'SMTP_NOT_CONFIGURED';
-        throw err;
+        throw new Error('No email provider configured. Set RESEND_API_KEY in Railway env vars.');
     }
     const host = process.env.SMTP_HOST || 'smtp.gmail.com';
-    const transporter = nodemailer.createTransport({
+    const t = nodemailer.createTransport({
         host, port: parseInt(process.env.SMTP_PORT || '587'),
         secure: process.env.SMTP_SECURE === 'true',
-        family: 4,   // force IPv4 — Railway's IPv6 routing can't reach Gmail SMTP
+        family: 4,
         connectionTimeout: 8000, greetingTimeout: 5000, socketTimeout: 10000,
         auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
     });
-    return { transporter, isEthereal: host.includes('ethereal.email') };
+    await t.sendMail({
+        from: process.env.SMTP_FROM || '"Helpmate" <noreply@helphub.local>',
+        to, subject, html
+    });
+    console.log(`[AUTH] Email sent via SMTP to ${to}`);
 }
 
 async function googleLogin(req, res) {
@@ -96,25 +133,8 @@ async function sendMagicLink(req, res) {
     await pool.execute('INSERT INTO magic_link_tokens (token_hash, email, expires_at) VALUES (?, ?, ?)', [tokenHash, email, expiresAt]);
 
     const magicUrl = `${backendBase}/api/auth/magic?token=${rawToken}`;
-    const { transporter, isEthereal } = await createMailTransporter();
     try {
-        const info = await transporter.sendMail({
-            from: process.env.SMTP_FROM || `"Helpmate" <noreply@helphub.local>`,
-            to: email,
-            subject: 'Sign in to Helpmate',
-            html: `<div style="font-family:sans-serif;max-width:420px;margin:auto">
-                    <h2 style="color:#f97316">Helpmate</h2>
-                    <p>Click the button below to sign in. This link expires in <strong>15 minutes</strong> and can only be used once.</p>
-                    <a href="${magicUrl}" style="display:inline-block;padding:12px 28px;background:#f97316;color:#fff;border-radius:8px;text-decoration:none;font-weight:bold;font-size:16px;margin:16px 0">Sign in to Helpmate</a>
-                    <p style="color:#888;font-size:12px">If you didn't request this, you can safely ignore this email.</p>
-                   </div>`
-        });
-        if (isEthereal) {
-            const previewUrl = nodemailer.getTestMessageUrl(info);
-            console.log(`\n📧 Magic link email preview (Ethereal): ${previewUrl}\n`);
-            return res.json({ success: true, message: 'Sign-in link sent — check your inbox.', previewUrl });
-        }
-        console.log(`[AUTH] Magic link sent to ${email}`);
+        await sendEmail({ to: email, subject: 'Sign in to Helpmate', html: EMAIL_HTML(magicUrl) });
         res.json({ success: true, message: 'Sign-in link sent — check your inbox.' });
     } catch (err) {
         console.error('[AUTH] Failed to send magic link email:', err.message);
