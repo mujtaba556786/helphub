@@ -52,8 +52,9 @@ sap.ui.define([
             UIComponent.prototype.init.apply(this, arguments);
 
             this.setModel(models.createDeviceModel(), "device");
-            this.getRouter().initialize();
 
+            // Create appData BEFORE router so the magic-link flag is readable
+            // by Login.view the moment the router renders it.
             const oAppData = models.createAppDataModel();
             this.setModel(oAppData, "appData");
 
@@ -81,15 +82,23 @@ sap.ui.define([
             // Expose StorageHelper globally so all controllers can use it
             window.HelpHubStorage = StorageHelper;
 
-            // Pick up tokens injected by magic link redirect (?accessToken=...&refreshToken=...)
-            var oUrlParams = new URLSearchParams(window.location.search);
+            // ── Magic-link token pick-up (BEFORE router.initialize) ───────────
+            // When the user clicks the email link, the backend redirects here with
+            // ?accessToken=...&refreshToken=...  The router would flash the Login
+            // page while we process the tokens.  Setting magicLinkProcessing=true
+            // BEFORE the router starts means Login.view shows a "Signing you in…"
+            // screen instead of the email form.
+            var oUrlParams    = new URLSearchParams(window.location.search);
             var sMagicAccess  = oUrlParams.get("accessToken");
             var sMagicRefresh = oUrlParams.get("refreshToken");
             if (sMagicAccess) {
                 StorageHelper.set("helpmate_token", sMagicAccess);
                 if (sMagicRefresh) StorageHelper.set("helphub_refresh_token", sMagicRefresh);
                 window.history.replaceState({}, "", window.location.pathname);
+                oAppData.setProperty("/magicLinkProcessing", true);
             }
+
+            this.getRouter().initialize();
 
             var oRouter = this.getRouter();
 
@@ -129,7 +138,8 @@ sap.ui.define([
                 oAppData.setProperty("/user/role",           u.role          || "Customer");
                 oAppData.setProperty("/user/terms_accepted_at", u.terms_accepted_at || "");
                 oAppData.setProperty("/user/terms_version",     u.terms_version     || "");
-                oAppData.setProperty("/isLoggedIn",    true);
+                oAppData.setProperty("/isLoggedIn",           true);
+                oAppData.setProperty("/magicLinkProcessing", false);
                 oRouter.navTo("dashboard", {}, true);
             }
 
@@ -157,13 +167,19 @@ sap.ui.define([
                         }
                         StorageHelper.clear();
                     })
-                    .catch(function() { StorageHelper.clear(); });
+                    .catch(function() {
+                        StorageHelper.clear();
+                        oAppData.setProperty("/magicLinkProcessing", false);
+                    });
                 });
             }
 
             // ── Auto-login on app open ─────────────────────────────────────────
             StorageHelper.get("helpmate_token", function(sToken) {
-                if (!sToken) return; // no session — stay on login
+                if (!sToken) {
+                    oAppData.setProperty("/magicLinkProcessing", false);
+                    return; // no session — stay on login
+                }
                 fetch(API_BASE + "/api/auth/me", {
                     headers: { "Authorization": "Bearer " + sToken }
                 })

@@ -2,6 +2,7 @@
     controllerName="helphub.controller.Login"
     xmlns:mvc="sap.ui.core.mvc"
     xmlns="sap.m"
+    xmlns:core="sap.ui.core"
     displayBlock="true">
 
     <Page showHeader="false">
@@ -12,16 +13,21 @@
                     <Title text="{i18n>loginTitle}" level="H1" class="sapUiTinyMarginBottom"/>
                     <Text text="{i18n>loginNeighborhoodNetwork}" class="grayText"/>
                     <Text text="{i18n>loginTagline}" class="grayText textCenter"/>
-                    <HBox class="sapUiTinyMarginTop" justifyContent="Center">
-                    </HBox>
                 </VBox>
 
-                <!-- Step 1: Enter Email -->
-                <VBox id="stepEmail" class="sapUiMediumMargin">
+                <!-- Step 0: Magic link processing — shown while auto-login runs after clicking email link -->
+                <VBox id="stepProcessing" visible="{appData>/magicLinkProcessing}" alignItems="Center" class="sapUiMediumMargin">
+                    <core:Icon src="sap-icon://locked" size="3rem" color="#f97316" class="sapUiSmallMarginBottom"/>
+                    <Title text="Signing you in…" level="H3" class="sapUiSmallMarginBottom"/>
+                    <Text text="Verifying your link, please wait." class="grayText textCenter sapUiSmallMarginBottom"/>
+                    <BusyIndicator active="true" size="2rem"/>
+                </VBox>
+
+                <!-- Step 1: Enter Email — hidden while processing magic link -->
+                <VBox id="stepEmail" class="sapUiMediumMargin" visible="{= !${appData>/magicLinkProcessing} }">
                     <Label text="{i18n>loginEmailLabel}"/>
                     <Input id="emailInput" type="Email" placeholder="{i18n>loginEmailPlaceholder}" class="sapUiSmallMarginBottom"/>
                     <Button text="{i18n>loginSendLink}" type="Emphasized" width="100%" press="onSendMagicLink"/>
-                    <!-- Demo login -->
                     <Button text="{i18n>loginDemoLogin}" icon="sap-icon://person-placeholder" width="100%" type="Ghost" class="sapUiSmallMarginTop" press="onDemoLogin"/>
                 </VBox>
 
