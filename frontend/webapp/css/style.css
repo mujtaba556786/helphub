@@ -673,39 +673,13 @@ section { -webkit-overflow-scrolling: touch; }
 
 /* ── About page hero card ─────────────────────────────────────────── */
 .hhAboutHero {
-    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
-    border-radius: 16px;
-    padding: 22px 16px 18px;
-    margin-bottom: 16px;
+    background: #fff;
+    border-radius: 12px;
+    border-top: 3px solid #f97316;
+    padding: 20px 16px 16px;
+    margin-bottom: 12px;
     text-align: center;
-}
-.hhAboutHero .sapMTitle,
-.hhAboutHero .sapMText,
-.hhAboutHero .sapMObjectStatus {
-    color: #fff !important;
-}
-.hhAboutHero .sapMText {
-    opacity: 0.88;
-}
-.hhAboutHero .sapMObjectStatusText {
-    color: rgba(255,255,255,0.75) !important;
-    font-size: 0.78rem !important;
-}
-.hhAboutHero .sapUiIcon {
-    color: rgba(255,255,255,0.75) !important;
-}
-
-/* ── Settings list items (StandardListItem inside hhSettingsGroup) ── */
-.hhSettingsGroup .sapMList {
-    background: transparent !important;
-    border: none !important;
-}
-.hhSettingsGroup .sapMLIB {
-    background: transparent !important;
-    border-radius: 8px !important;
-}
-.hhSettingsGroup .sapMLIB:hover {
-    background: var(--sapList_HoverBackground, rgba(0,0,0,0.04)) !important;
+    box-shadow: 0 1px 4px rgba(15,23,42,.07);
 }
 
 /* ── Profile Settings tab ─────────────────────────────────────────── */
