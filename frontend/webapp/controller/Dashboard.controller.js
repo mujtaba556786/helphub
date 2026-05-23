@@ -454,15 +454,9 @@ sap.ui.define([
         },
 
         onLogout: function() {
-            var that = this;
-            var sEmail = this.getModel("appData").getProperty("/user/email") || "";
-
-            // Revoke refresh token on backend, then show logout dialog
+            var oModel = this.getModel("appData");
+            // Revoke refresh token on backend (fire-and-forget — clear locally regardless)
             window.HelpHubStorage.get("helpmate_refresh_token", function(sRefresh) {
-                var fnShowDialog = function() {
-                    window.HelpHubStorage.clear();
-                    that._showLogoutDialog(sEmail);
-                };
                 if (sRefresh) {
                     window.HelpHubStorage.get("helpmate_token", function(sToken) {
                         fetch(API_BASE + "/api/auth/logout", {
@@ -472,70 +466,13 @@ sap.ui.define([
                                 "Authorization": "Bearer " + (sToken || "")
                             },
                             body: JSON.stringify({ refreshToken: sRefresh })
-                        })
-                        .catch(function() {}) // silent — still clear locally
-                        .then(fnShowDialog);
+                        }).catch(function() {});
                     });
-                } else {
-                    fnShowDialog();
                 }
             });
-        },
-
-        _showLogoutDialog: function(sEmail) {
-            var that = this;
-            if (!this._pLogoutDialog) {
-                this._pLogoutDialog = Fragment.load({
-                    id: this.getView().getId() + "-logout",
-                    name: "helphub.view.fragments.LogoutDialog",
-                    controller: this
-                }).then(function(oDialog) {
-                    oDialog.setModel(
-                        new sap.ui.model.json.JSONModel({ email: "", linkSent: false }),
-                        "logoutData"
-                    );
-                    that.getView().addDependent(oDialog);
-                    return oDialog;
-                });
-            }
-            this._pLogoutDialog.then(function(oDialog) {
-                oDialog.getModel("logoutData").setProperty("/email", sEmail);
-                oDialog.getModel("logoutData").setProperty("/linkSent", false);
-                oDialog.open();
-            });
-        },
-
-        onLogoutSendLink: function() {
-            if (!this._pLogoutDialog) { return; }
-            this._pLogoutDialog.then(function(oDialog) {
-                var oModel = oDialog.getModel("logoutData");
-                var sEmail = oModel.getProperty("/email");
-                if (!sEmail) { return; }
-
-                fetch(API_BASE + "/api/auth/send-magic-link", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ email: sEmail })
-                })
-                .then(function(r) { return r.json(); })
-                .then(function(oData) {
-                    if (oData.success) {
-                        oModel.setProperty("/linkSent", true);
-                    } else {
-                        sap.m.MessageToast.show(oData.error || "Could not send link.");
-                    }
-                })
-                .catch(function() {
-                    sap.m.MessageToast.show("Could not reach the server.");
-                });
-            });
-        },
-
-        onLogoutClose: function() {
-            if (this._pLogoutDialog) {
-                this._pLogoutDialog.then(function(oDialog) { oDialog.close(); });
-            }
-            this.navTo("login", {}, true);
+            window.HelpHubStorage.clear();
+            oModel.setProperty("/isLoggedIn", false);
+            this.getOwnerComponent().getRouter().navTo("login", {}, true);
         },
 
         onServicePress: function(oEvent) {
@@ -587,7 +524,7 @@ sap.ui.define([
         onEditProfile: function() {
             var oModel = this.getModel("appData");
 
-            if (!oModel.getProperty("/countries").length) {
+            if (!(oModel.getProperty("/countries") || []).length) {
                 oModel.setProperty("/countries", CountryStates.getCountries());
             }
 
