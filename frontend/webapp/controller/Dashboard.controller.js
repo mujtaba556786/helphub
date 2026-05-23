@@ -596,18 +596,8 @@ sap.ui.define([
             oModel.setProperty("/user/address/state", "");
         },
 
-        onChangePhoto: function() {
-            var oUploader = this.byId("avatarFileUploader");
-            if (!oUploader) { MessageToast.show("File uploader not ready."); return; }
-            // getDomRef("fu") was removed in UI5 1.120 — query the input directly
-            var oDom   = oUploader.getDomRef();
-            var oInput = oDom && oDom.querySelector("input[type='file']");
-            if (oInput) {
-                oInput.click();
-            } else {
-                MessageToast.show("File uploader not ready.");
-            }
-        },
+        // onChangePhoto removed — the FileUploader itself is now the button
+        // (buttonOnly="true", buttonText bound to i18n>changePhoto in the view)
 
         onAvatarFileSelected: function(oEvent) {
             var that   = this;

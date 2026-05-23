@@ -697,8 +697,15 @@
                                     <!-- PROFILE PHOTO -->
                                     <VBox alignItems="Center" class="sapUiMediumMarginBottom">
                                         <Avatar id="profileAvatar" src="{appData>/user/photo}" displaySize="XL" backgroundColor="Accent6" initials="{appData>/user/avatar}" class="sapUiSmallMarginBottom"/>
-                                        <Button text="{i18n>changePhoto}" icon="sap-icon://camera" press="onChangePhoto" type="Transparent"/>
-                                        <u:FileUploader id="avatarFileUploader" fileType="jpg,jpeg,png,gif,webp" maximumFileSize="5" visible="false" change="onAvatarFileSelected" uploadOnChange="false" buttonOnly="true" buttonText=""/>
+                                        <u:FileUploader
+                                            id="avatarFileUploader"
+                                            fileType="jpg,jpeg,png,gif,webp"
+                                            maximumFileSize="5"
+                                            buttonOnly="true"
+                                            buttonText="{i18n>changePhoto}"
+                                            change="onAvatarFileSelected"
+                                            uploadOnChange="false"
+                                            style="sap-icon://camera"/>
                                         <Text id="photoError" text="" class="errorText" visible="false"/>
                                     </VBox>
 
