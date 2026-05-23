@@ -425,20 +425,20 @@ sap.ui.define([
 
         // ── LEGAL & SUPPORT ───────────────────────────────────────────────────
         onViewTerms: function() {
-            window.open("legal/terms.html", "_blank");
+            window.open(window.location.origin + "/legal/terms.html", "_blank");
         },
 
         onViewPrivacy: function() {
-            window.open("legal/privacy.html", "_blank");
+            window.open(window.location.origin + "/legal/privacy.html", "_blank");
         },
 
         // Called from TermsAcceptanceDialog inline buttons
         onViewTermsInline: function() {
-            window.open("legal/terms.html", "_blank");
+            window.open(window.location.origin + "/legal/terms.html", "_blank");
         },
 
         onViewPrivacyInline: function() {
-            window.open("legal/privacy.html", "_blank");
+            window.open(window.location.origin + "/legal/privacy.html", "_blank");
         },
 
         onOpenHelp: function() {

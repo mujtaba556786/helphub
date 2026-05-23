@@ -151,7 +151,7 @@ sap.ui.define([
 
     // ── 7. App version row ────────────────────────────────────────────────────
 
-    opaTest("Settings tab About section shows app version '2.21'", function (Given, When, Then) {
+    opaTest("Settings tab About section shows app version '2.25'", function (Given, When, Then) {
         Given.iStartMyUIComponent({ componentConfig: { name: "helphub", manifest: true } });
 
         iNavigateToSettingsTab(When);
@@ -159,11 +159,11 @@ sap.ui.define([
         Then.waitFor({
             controlType: "sap.m.Text",
             viewName: "helphub.view.Dashboard",
-            matchers: new PropertyStrictEquals({ name: "text", value: "2.21" }),
+            matchers: new PropertyStrictEquals({ name: "text", value: "2.25" }),
             success: function () {
-                Opa5.assert.ok(true, "App version '2.21' found in Settings tab About section");
+                Opa5.assert.ok(true, "App version '2.25' found in Settings tab About section");
             },
-            errorMessage: "App version text '2.21' not found"
+            errorMessage: "App version text '2.25' not found"
         });
 
         Then.iTeardownMyUIComponent();

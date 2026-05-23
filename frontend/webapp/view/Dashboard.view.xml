@@ -822,7 +822,7 @@
                                 <VBox alignItems="Center" class="hhAboutHero">
                                     <Title text="HelpMate" level="H2" class="sapUiTinyMarginBottom"/>
                                     <Text text="{i18n>aboutTagline}" wrapping="true" class="grayText textCenter"/>
-                                    <ObjectStatus text="Version 2.21" state="None" class="sapUiTinyMarginTop"/>
+                                    <ObjectStatus text="Version 2.25" state="None" class="sapUiTinyMarginTop"/>
                                 </VBox>
 
                                 <!-- ── Legal Documents ── -->
@@ -884,7 +884,7 @@
                                     </HBox>
                                     <HBox justifyContent="SpaceBetween" alignItems="Center" class="hhSettingsInfoRow">
                                         <Text text="{i18n>settingsAppVersion}" class="smallText grayText"/>
-                                        <Text text="2.21" class="smallText fontBold"/>
+                                        <Text text="2.25" class="smallText fontBold"/>
                                     </HBox>
                                     <HBox justifyContent="SpaceBetween" alignItems="Center" class="hhSettingsInfoRow">
                                         <Text text="{i18n>settingsTermsVersion}" class="smallText grayText"/>
