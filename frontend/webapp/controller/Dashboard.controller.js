@@ -423,6 +423,32 @@ sap.ui.define([
             this.navTo("admin");
         },
 
+        // ── LEGAL & SUPPORT ───────────────────────────────────────────────────
+        onViewTerms: function() {
+            window.open("legal/terms.html", "_blank");
+        },
+
+        onViewPrivacy: function() {
+            window.open("legal/privacy.html", "_blank");
+        },
+
+        // Called from TermsAcceptanceDialog inline buttons
+        onViewTermsInline: function() {
+            window.open("legal/terms.html", "_blank");
+        },
+
+        onViewPrivacyInline: function() {
+            window.open("legal/privacy.html", "_blank");
+        },
+
+        onOpenHelp: function() {
+            window.open("mailto:mujtabaahmed556@gmail.com?subject=HelpHub%20Help%20%26%20FAQ", "_blank");
+        },
+
+        onContactSupport: function() {
+            window.open("mailto:mujtabaahmed556@gmail.com?subject=HelpHub%20Support%20Request", "_blank");
+        },
+
         onLanguageMenu: function(oEvent) {
             var that    = this;
             var oSource = oEvent.getSource();   // globe button — used to anchor the popover
