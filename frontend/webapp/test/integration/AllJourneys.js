@@ -14,6 +14,7 @@
  *  MessagesJourney      — conversations list, unread badge, DM chat dialog
  *  NotificationsJourney — bell, dialog, items, Mark-all-read, filter chips
  *  NavigationJourney    — tab cycle, tile→search, back-nav, NavContainer page existence
+ *  AboutJourney         — Settings tab hero, legal/support list items, version, made-in text
  */
 sap.ui.define([
     "helphub/test/integration/journeys/DashboardJourney",
@@ -23,7 +24,8 @@ sap.ui.define([
     "helphub/test/integration/journeys/TasksJourney",
     "helphub/test/integration/journeys/MessagesJourney",
     "helphub/test/integration/journeys/NotificationsJourney",
-    "helphub/test/integration/journeys/NavigationJourney"
+    "helphub/test/integration/journeys/NavigationJourney",
+    "helphub/test/integration/journeys/AboutJourney"
 ], function () {
     "use strict";
     QUnit.start();

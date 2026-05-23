@@ -131,73 +131,83 @@
                         <!-- ── Settings tab — only shown on own profile ── -->
                         <IconTabFilter text="{i18n>settingsTab}" icon="sap-icon://action-settings" key="settings"
                             visible="{= String(${appData>/selectedProfile/id}) === String(${appData>/user/id})}">
-                            <ScrollContainer vertical="true" horizontal="false" height="340px">
+                            <ScrollContainer vertical="true" horizontal="false" height="420px">
                                 <VBox class="hhProfSection">
 
-                                    <!-- ── Legal ──────────────────────────────── -->
+                                    <!-- ── App Hero ── -->
+                                    <VBox alignItems="Center" class="hhAboutHero">
+                                        <Avatar displaySize="M" backgroundColor="Accent6" initials="HM"
+                                                class="sapUiSmallMarginBottom"/>
+                                        <Title text="HelpMate" level="H4" class="sapUiTinyMarginBottom"/>
+                                        <Text text="{i18n>aboutTagline}" wrapping="true" class="textCenter"/>
+                                        <ObjectStatus text="v2.20" icon="sap-icon://tag" class="sapUiTinyMarginTop"/>
+                                    </VBox>
+
+                                    <!-- ── Legal ── -->
                                     <VBox class="hhSettingsGroup">
                                         <HBox alignItems="Center" class="hhSettingsGroupHeader">
                                             <core:Icon src="sap-icon://document-text" class="hhSettingsGroupIcon"/>
                                             <Text text="{i18n>settingsLegalSection}" class="fontBold smallText"/>
                                         </HBox>
-                                        <Text text="{i18n>settingsLegalHint}" wrapping="true" class="smallText grayText hhSettingsGroupHint"/>
-
-                                        <Button
-                                            text="{i18n>viewTerms}"
-                                            icon="sap-icon://document-text"
-                                            type="Ghost"
-                                            width="100%"
-                                            press="onViewTerms"
-                                            class="hhSettingsBtn"/>
-
-                                        <Button
-                                            text="{i18n>viewPrivacy}"
-                                            icon="sap-icon://privacy"
-                                            type="Ghost"
-                                            width="100%"
-                                            press="onViewPrivacy"
-                                            class="hhSettingsBtn"/>
+                                        <List showSeparators="Inner" mode="None">
+                                            <StandardListItem
+                                                title="{i18n>viewTerms}"
+                                                description="{i18n>aboutTermsDesc}"
+                                                icon="sap-icon://document-text"
+                                                iconDensityAware="false"
+                                                type="Active"
+                                                press="onViewTerms"/>
+                                            <StandardListItem
+                                                title="{i18n>viewPrivacy}"
+                                                description="{i18n>aboutPrivacyDesc}"
+                                                icon="sap-icon://privacy"
+                                                iconDensityAware="false"
+                                                type="Active"
+                                                press="onViewPrivacy"/>
+                                        </List>
+                                        <Text text="{i18n>termsVersionHint}" class="smallText grayText sapUiTinyMarginTop" wrapping="true"/>
                                     </VBox>
 
-                                    <!-- ── Support ─────────────────────────────── -->
+                                    <!-- ── Support ── -->
                                     <VBox class="hhSettingsGroup">
                                         <HBox alignItems="Center" class="hhSettingsGroupHeader">
                                             <core:Icon src="sap-icon://sys-help" class="hhSettingsGroupIcon"/>
                                             <Text text="{i18n>settingsSupportSection}" class="fontBold smallText"/>
                                         </HBox>
-                                        <Text text="{i18n>settingsSupportHint}" wrapping="true" class="smallText grayText hhSettingsGroupHint"/>
-
-                                        <Button
-                                            text="{i18n>settingsHelpFaq}"
-                                            icon="sap-icon://sys-help-2"
-                                            type="Ghost"
-                                            width="100%"
-                                            press="onOpenHelp"
-                                            class="hhSettingsBtn"/>
-
-                                        <Button
-                                            text="{i18n>settingsContactSupport}"
-                                            icon="sap-icon://email"
-                                            type="Ghost"
-                                            width="100%"
-                                            press="onContactSupport"
-                                            class="hhSettingsBtn"/>
+                                        <List showSeparators="Inner" mode="None">
+                                            <StandardListItem
+                                                title="{i18n>settingsHelpFaq}"
+                                                description="{i18n>aboutHelpDesc}"
+                                                icon="sap-icon://sys-help-2"
+                                                iconDensityAware="false"
+                                                type="Active"
+                                                press="onOpenHelp"/>
+                                            <StandardListItem
+                                                title="{i18n>settingsContactSupport}"
+                                                description="{i18n>aboutContactDesc}"
+                                                icon="sap-icon://email"
+                                                iconDensityAware="false"
+                                                type="Active"
+                                                press="onContactSupport"/>
+                                        </List>
                                     </VBox>
 
-                                    <!-- ── About ───────────────────────────────── -->
+                                    <!-- ── App info ── -->
                                     <VBox class="hhSettingsGroup">
                                         <HBox alignItems="Center" class="hhSettingsGroupHeader">
                                             <core:Icon src="sap-icon://hint" class="hhSettingsGroupIcon"/>
                                             <Text text="{i18n>settingsAboutSection}" class="fontBold smallText"/>
                                         </HBox>
-
                                         <HBox justifyContent="SpaceBetween" alignItems="Center" class="hhSettingsInfoRow">
                                             <Text text="{i18n>settingsAppVersion}" class="smallText grayText"/>
-                                            <Text text="1.0.0" class="smallText"/>
+                                            <Text text="2.20" class="smallText fontBold"/>
                                         </HBox>
                                         <HBox justifyContent="SpaceBetween" alignItems="Center" class="hhSettingsInfoRow">
                                             <Text text="{i18n>settingsTermsVersion}" class="smallText grayText"/>
                                             <Text text="{appData>/user/terms_version}" class="smallText"/>
+                                        </HBox>
+                                        <HBox justifyContent="Center" class="sapUiSmallMarginTop sapUiSmallMarginBottom">
+                                            <Text text="{i18n>aboutMadeIn}" class="smallText grayText textCenter"/>
                                         </HBox>
                                     </VBox>
 
