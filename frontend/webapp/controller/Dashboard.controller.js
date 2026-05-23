@@ -442,11 +442,11 @@ sap.ui.define([
         },
 
         onOpenHelp: function() {
-            window.open("mailto:mujtabaahmed556@gmail.com?subject=HelpHub%20Help%20%26%20FAQ", "_blank");
+            window.open("mailto:mujtabaahmed556@gmail.com?subject=HelpMate%20Help%20%26%20FAQ", "_blank");
         },
 
         onContactSupport: function() {
-            window.open("mailto:mujtabaahmed556@gmail.com?subject=HelpHub%20Support%20Request", "_blank");
+            window.open("mailto:mujtabaahmed556@gmail.com?subject=HelpMate%20Support%20Request", "_blank");
         },
 
         onLanguageMenu: function(oEvent) {
