@@ -56,7 +56,7 @@ app.use(helmet({
                           "https://sapui5.hana.ondemand.com", "https://fonts.googleapis.com", "https://fonts.gstatic.com"],
             connectSrc:  ["'self'", "https://ui5.sap.com", "https://sapui5.hana.ondemand.com", "https:"],
             workerSrc:   ["'self'", "blob:"],
-            frameSrc:    ["'none'"],
+            frameSrc:    ["'self'"],
         }
     },
     crossOriginResourcePolicy: false,

@@ -424,29 +424,70 @@ sap.ui.define([
         },
 
         // ── LEGAL & SUPPORT ───────────────────────────────────────────────────
+
+        /**
+         * Opens a standalone legal HTML page inside an in-app Dialog using an
+         * iframe. This avoids window.open popup-blocker issues on mobile.
+         */
+        _openLegalPage: function(sTitle, sPath) {
+            var sUrl = window.location.origin + sPath;
+            var that = this;
+
+            if (this._oLegalDialog) {
+                // Reuse the existing dialog — swap the iframe src
+                this._oLegalDialog.setTitle(sTitle);
+                this._oLegalIframe.setContent(
+                    '<iframe src="' + sUrl + '" style="width:100%;height:100%;min-height:480px;border:none;display:block;"></iframe>'
+                );
+                this._oLegalDialog.open();
+                return;
+            }
+
+            this._oLegalIframe = new sap.ui.core.HTML({
+                content: '<iframe src="' + sUrl + '" style="width:100%;height:100%;min-height:480px;border:none;display:block;"></iframe>',
+                preferDOM: false
+            });
+
+            this._oLegalDialog = new sap.m.Dialog({
+                title: sTitle,
+                contentWidth: "92%",
+                contentHeight: "82%",
+                stretch: sap.ui.Device.system.phone,
+                verticalScrolling: false,
+                content: [that._oLegalIframe],
+                endButton: new sap.m.Button({
+                    text: "Close",
+                    press: function() { that._oLegalDialog.close(); }
+                })
+            });
+
+            this.getView().addDependent(this._oLegalDialog);
+            this._oLegalDialog.open();
+        },
+
         onViewTerms: function() {
-            window.open(window.location.origin + "/legal/terms.html", "_blank");
+            this._openLegalPage("Terms & Conditions", "/legal/terms.html");
         },
 
         onViewPrivacy: function() {
-            window.open(window.location.origin + "/legal/privacy.html", "_blank");
+            this._openLegalPage("Privacy Policy (GDPR)", "/legal/privacy.html");
         },
 
         // Called from TermsAcceptanceDialog inline buttons
         onViewTermsInline: function() {
-            window.open(window.location.origin + "/legal/terms.html", "_blank");
+            this._openLegalPage("Terms & Conditions", "/legal/terms.html");
         },
 
         onViewPrivacyInline: function() {
-            window.open(window.location.origin + "/legal/privacy.html", "_blank");
+            this._openLegalPage("Privacy Policy (GDPR)", "/legal/privacy.html");
         },
 
         onOpenHelp: function() {
-            window.open("mailto:mujtabaahmed556@gmail.com?subject=HelpMate%20Help%20%26%20FAQ", "_blank");
+            window.location.href = "mailto:mujtabaahmed556@gmail.com?subject=HelpMate%20Help%20%26%20FAQ";
         },
 
         onContactSupport: function() {
-            window.open("mailto:mujtabaahmed556@gmail.com?subject=HelpMate%20Support%20Request", "_blank");
+            window.location.href = "mailto:mujtabaahmed556@gmail.com?subject=HelpMate%20Support%20Request";
         },
 
         onLanguageMenu: function(oEvent) {
