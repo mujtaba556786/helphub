@@ -14,16 +14,16 @@ const googleClient      = new OAuth2Client(GOOGLE_CLIENT_ID);
 
 const EMAIL_HTML = (magicUrl) =>
     `<div style="font-family:sans-serif;max-width:420px;margin:auto">
-        <h2 style="color:#f97316">Helpmate</h2>
+        <h2 style="color:#f97316">HelpMate</h2>
         <p>Click the button below to sign in. This link expires in <strong>15 minutes</strong> and can only be used once.</p>
-        <a href="${magicUrl}" style="display:inline-block;padding:12px 28px;background:#f97316;color:#fff;border-radius:8px;text-decoration:none;font-weight:bold;font-size:16px;margin:16px 0">Sign in to Helpmate</a>
+        <a href="${magicUrl}" style="display:inline-block;padding:12px 28px;background:#f97316;color:#fff;border-radius:8px;text-decoration:none;font-weight:bold;font-size:16px;margin:16px 0">Sign in to HelpMate</a>
         <p style="color:#888;font-size:12px">If you didn't request this, you can safely ignore this email.</p>
      </div>`;
 
 async function sendEmail({ to, subject, html }) {
     // ── Resend (HTTPS API — no port 587 needed, works on Railway) ────────────
     if (process.env.RESEND_API_KEY) {
-        const from = process.env.SMTP_FROM || 'Helpmate <onboarding@resend.dev>';
+        const from = process.env.SMTP_FROM || 'HelpMate <onboarding@resend.dev>';
         const res = await fetch('https://api.resend.com/emails', {
             method: 'POST',
             headers: {
@@ -45,7 +45,7 @@ async function sendEmail({ to, subject, html }) {
             host: 'smtp.ethereal.email', port: 587, secure: false,
             auth: { user: testAccount.user, pass: testAccount.pass }
         });
-        const info = await t.sendMail({ from: 'Helpmate <noreply@helphub.local>', to, subject, html });
+        const info = await t.sendMail({ from: 'HelpMate <noreply@helphub.local>', to, subject, html });
         console.log(`\n📧 Ethereal preview: ${nodemailer.getTestMessageUrl(info)}\n`);
         return;
     }
@@ -63,7 +63,7 @@ async function sendEmail({ to, subject, html }) {
         auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
     });
     await t.sendMail({
-        from: process.env.SMTP_FROM || '"Helpmate" <noreply@helphub.local>',
+        from: process.env.SMTP_FROM || '"HelpMate" <noreply@helphub.local>',
         to, subject, html
     });
     console.log(`[AUTH] Email sent via SMTP to ${to}`);
@@ -134,7 +134,7 @@ async function sendMagicLink(req, res) {
 
     const magicUrl = `${backendBase}/api/auth/magic?token=${rawToken}`;
     try {
-        await sendEmail({ to: email, subject: 'Sign in to Helpmate', html: EMAIL_HTML(magicUrl) });
+        await sendEmail({ to: email, subject: 'Sign in to HelpMate', html: EMAIL_HTML(magicUrl) });
         res.json({ success: true, message: 'Sign-in link sent — check your inbox.' });
     } catch (err) {
         console.error('[AUTH] Failed to send magic link email:', err.message);
@@ -157,7 +157,7 @@ async function magicLinkCallback(req, res) {
             ? 'This sign-in link has expired. Links are valid for 15 minutes.'
             : 'This sign-in link is invalid or has already been used.';
         return res.status(400).send(`<html><body style="font-family:sans-serif;text-align:center;padding:40px">
-            <h2 style="color:#f97316">Helpmate</h2><p>${msg}</p>
+            <h2 style="color:#f97316">HelpMate</h2><p>${msg}</p>
             <p><a href="${frontendBase}">Request a new link</a></p>
             </body></html>`);
     }
