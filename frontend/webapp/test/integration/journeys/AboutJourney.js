@@ -9,7 +9,6 @@
  *  5. Settings tab contains Help & FAQ list item
  *  6. Settings tab contains Contact Support list item
  *  7. Settings tab contains the App version info row
- *  8. Settings tab contains "Made with ❤️ in Germany" text
  */
 sap.ui.define([
     "sap/ui/test/opaQunit",
@@ -152,7 +151,7 @@ sap.ui.define([
 
     // ── 7. App version row ────────────────────────────────────────────────────
 
-    opaTest("Settings tab About section shows app version '2.20'", function (Given, When, Then) {
+    opaTest("Settings tab About section shows app version '2.21'", function (Given, When, Then) {
         Given.iStartMyUIComponent({ componentConfig: { name: "helphub", manifest: true } });
 
         iNavigateToSettingsTab(When);
@@ -160,31 +159,11 @@ sap.ui.define([
         Then.waitFor({
             controlType: "sap.m.Text",
             viewName: "helphub.view.Dashboard",
-            matchers: new PropertyStrictEquals({ name: "text", value: "2.20" }),
+            matchers: new PropertyStrictEquals({ name: "text", value: "2.21" }),
             success: function () {
-                Opa5.assert.ok(true, "App version '2.20' found in Settings tab About section");
+                Opa5.assert.ok(true, "App version '2.21' found in Settings tab About section");
             },
-            errorMessage: "App version text '2.20' not found"
-        });
-
-        Then.iTeardownMyUIComponent();
-    });
-
-    // ── 8. Made in Germany text ───────────────────────────────────────────────
-
-    opaTest("Settings tab shows 'Made with ❤️ in Germany'", function (Given, When, Then) {
-        Given.iStartMyUIComponent({ componentConfig: { name: "helphub", manifest: true } });
-
-        iNavigateToSettingsTab(When);
-
-        Then.waitFor({
-            controlType: "sap.m.Text",
-            viewName: "helphub.view.Dashboard",
-            matchers: new PropertyStrictEquals({ name: "text", value: "Made with ❤️ in Germany" }),
-            success: function () {
-                Opa5.assert.ok(true, "'Made with ❤️ in Germany' text found");
-            },
-            errorMessage: "'Made with ❤️ in Germany' text not found"
+            errorMessage: "App version text '2.21' not found"
         });
 
         Then.iTeardownMyUIComponent();

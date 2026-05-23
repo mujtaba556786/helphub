@@ -812,21 +812,20 @@
                         <IconTabFilter text="{i18n>settingsTab}" icon="sap-icon://action-settings" key="settings">
                             <VBox class="sapUiSmallMargin hhSettingsPage">
 
-                                <!-- ── App Hero ── -->
+                                <!-- ── App Identity ── -->
                                 <VBox alignItems="Center" class="hhAboutHero">
-                                    <Avatar displaySize="L" backgroundColor="Accent6" initials="HM"
-                                            class="sapUiSmallMarginBottom"/>
-                                    <Title text="HelpMate" level="H3" class="sapUiTinyMarginBottom"/>
-                                    <Text text="{i18n>aboutTagline}" wrapping="true" class="textCenter"/>
-                                    <ObjectStatus text="v2.20" icon="sap-icon://tag" class="sapUiTinyMarginTop"/>
+                                    <Title text="HelpMate" level="H2" class="sapUiTinyMarginBottom"/>
+                                    <Text text="{i18n>aboutTagline}" wrapping="true" class="grayText textCenter"/>
+                                    <ObjectStatus text="Version 2.21" state="None" class="sapUiTinyMarginTop"/>
                                 </VBox>
 
-                                <!-- ── Legal ── -->
+                                <!-- ── Legal Documents ── -->
                                 <VBox class="hhSettingsGroup">
                                     <HBox alignItems="Center" class="hhSettingsGroupHeader">
                                         <core:Icon src="sap-icon://document-text" class="hhSettingsGroupIcon"/>
                                         <Text text="{i18n>settingsLegalSection}" class="fontBold smallText"/>
                                     </HBox>
+                                    <Text text="{i18n>settingsLegalHint}" wrapping="true" class="smallText grayText hhSettingsGroupHint"/>
                                     <List showSeparators="Inner" mode="None">
                                         <StandardListItem
                                             title="{i18n>viewTerms}"
@@ -843,7 +842,7 @@
                                             type="Active"
                                             press="onViewPrivacy"/>
                                     </List>
-                                    <Text text="{i18n>termsVersionHint}" class="smallText grayText sapUiTinyMarginTop" wrapping="true"/>
+                                    <Text text="{i18n>termsVersionHint}" class="smallText grayText sapUiTinyMarginTop sapUiTinyMarginBottom" wrapping="true"/>
                                 </VBox>
 
                                 <!-- ── Support ── -->
@@ -852,6 +851,7 @@
                                         <core:Icon src="sap-icon://sys-help" class="hhSettingsGroupIcon"/>
                                         <Text text="{i18n>settingsSupportSection}" class="fontBold smallText"/>
                                     </HBox>
+                                    <Text text="{i18n>settingsSupportHint}" wrapping="true" class="smallText grayText hhSettingsGroupHint"/>
                                     <List showSeparators="Inner" mode="None">
                                         <StandardListItem
                                             title="{i18n>settingsHelpFaq}"
@@ -870,7 +870,7 @@
                                     </List>
                                 </VBox>
 
-                                <!-- ── App info ── -->
+                                <!-- ── App Information ── -->
                                 <VBox class="hhSettingsGroup">
                                     <HBox alignItems="Center" class="hhSettingsGroupHeader">
                                         <core:Icon src="sap-icon://hint" class="hhSettingsGroupIcon"/>
@@ -878,14 +878,11 @@
                                     </HBox>
                                     <HBox justifyContent="SpaceBetween" alignItems="Center" class="hhSettingsInfoRow">
                                         <Text text="{i18n>settingsAppVersion}" class="smallText grayText"/>
-                                        <Text text="2.20" class="smallText fontBold"/>
+                                        <Text text="2.21" class="smallText fontBold"/>
                                     </HBox>
                                     <HBox justifyContent="SpaceBetween" alignItems="Center" class="hhSettingsInfoRow">
                                         <Text text="{i18n>settingsTermsVersion}" class="smallText grayText"/>
                                         <Text text="{appData>/user/terms_version}" class="smallText"/>
-                                    </HBox>
-                                    <HBox justifyContent="Center" class="sapUiSmallMarginTop sapUiSmallMarginBottom">
-                                        <Text text="{i18n>aboutMadeIn}" class="smallText grayText textCenter"/>
                                     </HBox>
                                 </VBox>
 
