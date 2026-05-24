@@ -38,7 +38,7 @@
          boots. Bump _HH_BUILD whenever JS files change to force a fresh fetch. -->
     <script>
         (function () {
-            var _HH_BUILD = '2.32';
+            var _HH_BUILD = '2.33';
             var _desc = Object.getOwnPropertyDescriptor(HTMLScriptElement.prototype, 'src');
             Object.defineProperty(HTMLScriptElement.prototype, 'src', {
                 get: _desc.get,
@@ -54,8 +54,8 @@
                 configurable: true
             });
 
-            // Bust XHR + fetch for all app JS/XML files
-            var _HH_RE = /\/(controller|model|view|fragments|Base)\//;
+            // Bust XHR + fetch for all app JS/XML/i18n files
+            var _HH_RE = /\/(controller|model|view|fragments|Base|i18n)\//;
             var _origOpen = XMLHttpRequest.prototype.open;
             XMLHttpRequest.prototype.open = function(method, url) {
                 if (typeof url === 'string' && url.indexOf('?') === -1 &&
