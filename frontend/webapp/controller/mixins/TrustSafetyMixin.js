@@ -54,41 +54,6 @@ sap.ui.define([
                 });
         },
 
-        onViewTerms: function() {
-            // Opens terms dialog in review mode (from profile/settings Legal section)
-            var oModel = this.getModel("appData");
-            oModel.setProperty("/user/termsUpdateRequired", false);
-            oModel.setProperty("/termsCheckbox", false);
-            this._getTermsDialog().then(function(oDialog) { oDialog.open(); });
-        },
-
-        onViewPrivacy: function() {
-            sap.m.MessageToast.show("Privacy Policy — coming soon.");
-        },
-
-        // Called from links INSIDE the terms dialog itself (can't re-open the same dialog)
-        onViewTermsInline: function() {
-            sap.m.MessageToast.show("Full Terms & Conditions available in Profile → Settings.");
-        },
-
-        onViewPrivacyInline: function() {
-            sap.m.MessageToast.show("Privacy Policy available in Profile → Settings.");
-        },
-
-        // ── Settings tab helpers ──────────────────────────────────────────────
-
-        onOpenHelp: function() {
-            var oModel = this.getModel("appData");
-            oModel.setProperty("/onboarding/step", 1);
-            oModel.setProperty("/onboarding/interests", []);
-            this._getOnboardingDialog().then(function(d) { d.open(); });
-        },
-
-        onContactSupport: function() {
-            // Future: open support email / ticket form
-            sap.m.MessageToast.show("Contact Support — coming soon.");
-        },
-
         onTermsEscapeHandler: function(oPromise) {
             // Prevent dismissal — user must accept before using the app
             oPromise.reject();
