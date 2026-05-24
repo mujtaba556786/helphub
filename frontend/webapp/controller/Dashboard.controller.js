@@ -663,20 +663,29 @@ sap.ui.define([
             oModel.setProperty("/user/address/state", "");
         },
 
-        // onChangePhoto removed — the FileUploader itself is now the button
-        // (buttonOnly="true", buttonText bound to i18n>changePhoto in the view)
-
-        onAvatarFileSelected: function(oEvent) {
+        // Opens a native file picker on button press — avoids sap.ui.unified.FileUploader
+        // whose internal button text is invisible in the custom helpmate theme.
+        onChangePhotoPress: function() {
             var that   = this;
-            var oFiles = oEvent.getParameter("files");
-            var oFile  = oFiles && oFiles[0];
-            if (!oFile) return;
+            var oInput = document.createElement("input");
+            oInput.type   = "file";
+            oInput.accept = "image/jpeg,image/png,image/gif,image/webp";
+            oInput.addEventListener("change", function() {
+                var oFile = oInput.files && oInput.files[0];
+                if (oFile) { that._uploadAvatarFile(oFile); }
+            });
+            oInput.click();
+        },
+
+        _uploadAvatarFile: function(oFile) {
+            var that = this;
 
             if (oFile.size > 5 * 1024 * 1024) {
                 MessageToast.show("Image must be smaller than 5 MB.");
                 return;
             }
 
+            // Show preview immediately via FileReader
             var oReader = new FileReader();
             oReader.onload = function(e) {
                 that.getModel("appData").setProperty("/user/photo", e.target.result);
