@@ -362,8 +362,46 @@ sap.ui.define([
         },
 
         onHeaderAvatarMenu: function(oEvent) {
-            var oSheet = this.byId("headerAvatarSheet");
-            oSheet.openBy(oEvent.getSource());
+            var oSource  = oEvent.getSource();
+            var oBundle  = this.getOwnerComponent().getModel("i18n").getResourceBundle();
+            var oModel   = this.getModel("appData");
+            var that     = this;
+
+            // Build fresh on first call (app reloads on language change so this
+            // is always constructed with the correct locale bundle).
+            if (!this._oAvatarSheet) {
+                var aButtons = [
+                    new sap.m.Button({
+                        text: oBundle.getText("editProfile"),
+                        icon: "sap-icon://person-placeholder",
+                        press: function() { that.onEditProfile(); }
+                    })
+                ];
+
+                if (oModel.getProperty("/user/role") === "admin") {
+                    aButtons.push(new sap.m.Button({
+                        text: oBundle.getText("adminPanel"),
+                        icon: "sap-icon://it-system",
+                        press: function() { that.onNavToAdmin(); }
+                    }));
+                }
+
+                aButtons.push(new sap.m.Button({
+                    text: oBundle.getText("signOut"),
+                    icon: "sap-icon://log",
+                    type: "Reject",
+                    press: function() { that.onLogout(); }
+                }));
+
+                this._oAvatarSheet = new sap.m.ActionSheet({
+                    showCancelButton: true,
+                    cancelButtonText: oBundle.getText("cancel"),
+                    buttons: aButtons
+                });
+                this.getView().addDependent(this._oAvatarSheet);
+            }
+
+            this._oAvatarSheet.openBy(oSource);
         },
 
         onNavToAdmin: function() {
