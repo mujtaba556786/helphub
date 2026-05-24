@@ -2,6 +2,7 @@ const crypto       = require('crypto');
 const nodemailer   = require('nodemailer');
 const { OAuth2Client } = require('google-auth-library');
 const AuthService  = require('../services/AuthService');
+const pool         = require('../db/pool');
 
 const GOOGLE_CLIENT_ID  = process.env.GOOGLE_CLIENT_ID;
 const googleClient      = new OAuth2Client(GOOGLE_CLIENT_ID);
@@ -123,19 +124,39 @@ async function sendMagicLink(req, res) {
     const { email } = req.body;
     if (!email) return res.status(400).json({ success: false, error: 'email is required' });
 
-    const rawToken   = crypto.randomBytes(32).toString('hex');
-    const tokenHash  = crypto.createHash('sha256').update(rawToken).digest('hex');
-    const expiresAt  = new Date(Date.now() + 15 * 60 * 1000);
-    const pool       = require('../db/pool');
+    // ── Existing verified user: skip email, issue tokens immediately ──────────
+    // A user is "verified" when they already exist in the DB with Active status.
+    // This covers everyone who previously completed a magic-link click or social
+    // login. Logout only deletes the refresh token — the user row stays intact,
+    // so the next login is frictionless.
+    const [existing] = await pool.query(
+        "SELECT * FROM users WHERE email = ? AND status = 'Active' LIMIT 1",
+        [email]
+    );
+    if (existing.length > 0) {
+        const user   = existing[0];
+        const tokens = await AuthService.issueTokens(user);
+        console.log(`[AUTH] Direct login (no email) for existing verified user: ${email}`);
+        return res.json({ success: true, directLogin: true, user, ...tokens });
+    }
+
+    // ── New user: send magic-link email ───────────────────────────────────────
+    const rawToken    = crypto.randomBytes(32).toString('hex');
+    const tokenHash   = crypto.createHash('sha256').update(rawToken).digest('hex');
+    const expiresAt   = new Date(Date.now() + 15 * 60 * 1000);
     const backendBase = process.env.BACKEND_URL || `${req.protocol}://${req.get('host')}`;
 
     await pool.execute('DELETE FROM magic_link_tokens WHERE email = ?', [email]);
-    await pool.execute('INSERT INTO magic_link_tokens (token_hash, email, expires_at) VALUES (?, ?, ?)', [tokenHash, email, expiresAt]);
+    await pool.execute(
+        'INSERT INTO magic_link_tokens (token_hash, email, expires_at) VALUES (?, ?, ?)',
+        [tokenHash, email, expiresAt]
+    );
 
     const magicUrl = `${backendBase}/api/auth/magic?token=${rawToken}`;
     try {
         await sendEmail({ to: email, subject: 'Sign in to HelpMate', html: EMAIL_HTML(magicUrl) });
-        res.json({ success: true, message: 'Sign-in link sent — check your inbox.' });
+        console.log(`[AUTH] Magic-link email sent to new user: ${email}`);
+        res.json({ success: true, directLogin: false, message: 'Sign-in link sent — check your inbox.' });
     } catch (err) {
         console.error('[AUTH] Failed to send magic link email:', err.message);
         console.log(`[DEV] Magic link for ${email}: ${magicUrl}`);
