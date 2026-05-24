@@ -93,13 +93,20 @@ sap.ui.define([
             .then(function(r) { clearTimeout(oTimeout); return r.json(); })
             .then(function(oData) {
                 that._oBusyDialog.close();
-                if (oData.success) {
+                if (!oData.success) {
+                    MessageToast.show(oData.error || "Could not send link. Try again.");
+                    return;
+                }
+                if (oData.directLogin) {
+                    // Existing verified user — backend issued tokens directly.
+                    // No email was sent; log the user in immediately.
+                    that._applySession(oData);
+                } else {
+                    // New user — magic-link email was sent; show the "check inbox" step.
                     that.byId("stepEmail").setVisible(false);
                     that.byId("stepLinkSent").setVisible(true);
                     var sHint = that.getResourceBundle().getText("loginLinkSentHint", [sEmail]);
                     that.byId("linkSentHint").setText(sHint);
-                } else {
-                    MessageToast.show(oData.error || "Could not send link. Try again.");
                 }
             })
             .catch(function(err) {

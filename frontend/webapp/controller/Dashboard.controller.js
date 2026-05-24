@@ -512,7 +512,7 @@ sap.ui.define([
         onLogout: function() {
             var oModel = this.getModel("appData");
             // Revoke refresh token on backend (fire-and-forget — clear locally regardless)
-            window.HelpHubStorage.get("helpmate_refresh_token", function(sRefresh) {
+            window.HelpHubStorage.get("helphub_refresh_token", function(sRefresh) {
                 if (sRefresh) {
                     window.HelpHubStorage.get("helpmate_token", function(sToken) {
                         fetch(API_BASE + "/api/auth/logout", {
