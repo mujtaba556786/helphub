@@ -676,6 +676,11 @@ xmlns:l="sap.ui.layout"
 
         <!-- PAGE 3: Edit Profile -->
         <Page id="editPage" title="{i18n>myProfile}" showNavButton="true" navButtonPress="onNavBack" enableScrolling="true">
+            <headerContent>
+                <Button icon="sap-icon://log" type="Reject" tooltip="{i18n>signOut}" press="onLogout"/>
+                <Button icon="sap-icon://it-system" type="Transparent" tooltip="{i18n>adminPanel}" press="onNavToAdmin"
+                    visible="{= ${appData>/user/role} === 'admin'}"/>
+            </headerContent>
             <content>
                 <VBox class="sapUiSmallMargin">
 
