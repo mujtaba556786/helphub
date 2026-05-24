@@ -2,6 +2,44 @@ const pool = require('../db/pool');
 const path = require('path');
 const fs = require('fs');
 const nodemailer = require('nodemailer');
+const https = require('https');
+
+/**
+ * Geocode a human-readable address using OpenStreetMap Nominatim (no API key needed).
+ * Returns { lat, lng } or null if the address cannot be resolved.
+ */
+async function geocodeAddress({ street_name, street_number, city, state, country, pincode } = {}) {
+    const parts = [
+        street_number && street_name ? `${street_number} ${street_name}` : (street_name || ''),
+        city,
+        state,
+        pincode,
+        country
+    ].filter(Boolean);
+    if (!parts.length) return null;
+
+    const q = encodeURIComponent(parts.join(', '));
+    const url = `https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=1`;
+
+    return new Promise((resolve) => {
+        const req = https.get(url, { headers: { 'User-Agent': 'HelpMate/1.0 mujtabaahmed556@gmail.com' } }, (res) => {
+            let body = '';
+            res.on('data', d => body += d);
+            res.on('end', () => {
+                try {
+                    const results = JSON.parse(body);
+                    if (results && results[0]) {
+                        resolve({ lat: parseFloat(results[0].lat), lng: parseFloat(results[0].lon) });
+                    } else {
+                        resolve(null);
+                    }
+                } catch { resolve(null); }
+            });
+        });
+        req.on('error', () => resolve(null));
+        req.setTimeout(5000, () => { req.destroy(); resolve(null); });
+    });
+}
 
 const UPLOADS_DIR = path.join(__dirname, '../uploads');
 
@@ -63,6 +101,27 @@ async function updateUser(id, b) {
 
     values.push(id);
     await pool.execute(`UPDATE users SET ${fields.join(', ')} WHERE id = ?`, values);
+
+    // Auto-geocode: if address fields changed but lat/lng weren't explicitly provided,
+    // fetch coordinates in background so provider appears in location searches.
+    const addressChanged = ['street_name','street_number','city','state','country','pincode']
+        .some(k => b[k] !== undefined);
+    const latLngExplicit = b.lat !== undefined || b.lng !== undefined;
+    if (addressChanged && !latLngExplicit) {
+        // Fetch current address from DB and geocode
+        const [[row]] = await pool.query(
+            'SELECT street_name, street_number, city, state, country, pincode, lat, lng FROM users WHERE id = ?', [id]
+        );
+        if (row && row.lat == null) {
+            geocodeAddress(row).then(async (coords) => {
+                if (coords) {
+                    await pool.execute('UPDATE users SET lat = ?, lng = ? WHERE id = ?',
+                        [coords.lat, coords.lng, id]);
+                    console.log(`[GEO] Geocoded user ${id}: ${coords.lat}, ${coords.lng}`);
+                }
+            }).catch(e => console.error('[GEO] Geocoding error:', e.message));
+        }
+    }
 }
 
 async function uploadAvatar(id, filename) {
@@ -87,8 +146,7 @@ async function getProviders(category) {
                FROM users
                WHERE service_categories IS NOT NULL
                  AND service_categories != ''
-                 AND service_categories != 'None'
-                 AND lat IS NOT NULL`;
+                 AND service_categories != 'None'`;
     const params = [];
     if (category) {
         sql += ' AND FIND_IN_SET(?, service_categories)';
