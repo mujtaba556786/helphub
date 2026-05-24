@@ -74,28 +74,26 @@ sap.ui.define([
 
         onTaskCategoryMore: function(oEvent) {
             var oModel   = this.getModel("appData");
+            var oBundle  = this.getOwnerComponent().getModel("i18n").getResourceBundle();
             var that     = this;
             var sCurrent = oModel.getProperty("/taskCategoryFilter") || "";
 
+            // Build from the frontend service constants already stored in the model
+            var aServices = oModel.getProperty("/services") || [];
             var aCategories = [
-                { label: "All Tasks",   value: "",           icon: "🏷" },
-                { label: "Cleaning",    value: "Cleaning",   icon: "🧹" },
-                { label: "Handyman",    value: "Handyman",   icon: "🔧" },
-                { label: "Transport",   value: "Transport",  icon: "🚗" },
-                { label: "Elder Care",  value: "Elder Care", icon: "🧓" },
-                { label: "Pet Care",    value: "Pet Care",   icon: "🐾" },
-                { label: "Gardening",   value: "Gardening",  icon: "🌿" },
-                { label: "Moving",      value: "Moving",     icon: "📦" },
-                { label: "Tutoring",    value: "Tutoring",   icon: "📚" },
-                { label: "Cooking",     value: "Cooking",    icon: "🍳" }
-            ];
+                { label: oBundle.getText("serviceAllTasks"), value: "", icon: "sap-icon://filter" }
+            ].concat(aServices.map(function(svc) {
+                return { label: svc.label, value: svc.name, icon: svc.icon };
+            }));
 
             var oSheet = new ActionSheet({
-                title: "Filter by Category",
+                title: oBundle.getText("taskFilterByCategory"),
                 showCancelButton: true,
                 buttons: aCategories.map(function(cat) {
                     return new Button({
-                        text: (cat.value === sCurrent ? "✓  " : "      ") + cat.icon + "  " + cat.label,
+                        text: cat.label,
+                        icon: cat.value === sCurrent ? "sap-icon://accept" : cat.icon,
+                        type: cat.value === sCurrent ? "Emphasized" : "Default",
                         press: function() {
                             oModel.setProperty("/taskCategoryFilter", cat.value);
                             that._loadTasksFeed();
@@ -376,16 +374,17 @@ sap.ui.define([
             var oNow  = new Date();
             var oDue  = new Date(sDate);
             var iDiff = Math.floor((oDue - oNow) / 86400000);
-            if (iDiff === 0)  return "📅 Today";
-            if (iDiff === 1)  return "📅 Tomorrow";
+            if (iDiff === 0)  return "Today";
+            if (iDiff === 1)  return "Tomorrow";
             if (iDiff < 0)   return "Overdue";
-            if (iDiff < 7)   return "📅 In " + iDiff + " days";
-            return "📅 " + oDue.toLocaleDateString([], { month: "short", day: "numeric" });
+            if (iDiff < 7)   return "In " + iDiff + " days";
+            return oDue.toLocaleDateString([], { month: "short", day: "numeric" });
         },
 
         onTaskFilterMenu: function(oEvent) {
-            var oModel = this.getModel("appData");
-            var that   = this;
+            var oModel  = this.getModel("appData");
+            var oBundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
+            var that    = this;
             sap.ui.require(["sap/m/ActionSheet", "sap/m/Button"], function(ActionSheet, Button) {
                 var sBudget = oModel.getProperty("/taskBudgetFilter") || "";
                 var sSort   = oModel.getProperty("/taskSort") || "newest";
@@ -393,36 +392,13 @@ sap.ui.define([
                     title: "Filter & Sort",
                     showCancelButton: true,
                     buttons: [
-                        // ── Budget ──
-                        new Button({
-                            text: (sBudget === ""       ? "✓ " : "  ") + "Any budget",
-                            press: function() { oModel.setProperty("/taskBudgetFilter", "");       that._applyTaskFilters(); oSheet.close(); }
-                        }),
-                        new Button({
-                            text: (sBudget === "<€50"   ? "✓ " : "  ") + "Under €50",
-                            press: function() { oModel.setProperty("/taskBudgetFilter", "<€50");   that._applyTaskFilters(); oSheet.close(); }
-                        }),
-                        new Button({
-                            text: (sBudget === "€50–100"? "✓ " : "  ") + "€50 – €100",
-                            press: function() { oModel.setProperty("/taskBudgetFilter", "€50–100"); that._applyTaskFilters(); oSheet.close(); }
-                        }),
-                        new Button({
-                            text: (sBudget === ">€100"  ? "✓ " : "  ") + "Over €100",
-                            press: function() { oModel.setProperty("/taskBudgetFilter", ">€100");   that._applyTaskFilters(); oSheet.close(); }
-                        }),
-                        // ── Sort ──
-                        new Button({
-                            text: (sSort === "newest"      ? "✓ " : "  ") + "🕒 Newest first",
-                            press: function() { oModel.setProperty("/taskSort", "newest");      that._applyTaskFilters(); oSheet.close(); }
-                        }),
-                        new Button({
-                            text: (sSort === "budget_high" ? "✓ " : "  ") + "💎 Highest pay",
-                            press: function() { oModel.setProperty("/taskSort", "budget_high"); that._applyTaskFilters(); oSheet.close(); }
-                        }),
-                        new Button({
-                            text: (sSort === "budget_low"  ? "✓ " : "  ") + "💸 Lowest pay",
-                            press: function() { oModel.setProperty("/taskSort", "budget_low");  that._applyTaskFilters(); oSheet.close(); }
-                        })
+                        new Button({ text: oBundle.getText("taskBudgetAny"),    icon: sBudget === ""       ? "sap-icon://accept" : "sap-icon://money-bills",  type: sBudget === ""       ? "Emphasized" : "Default", press: function() { oModel.setProperty("/taskBudgetFilter", "");       that._applyTaskFilters(); oSheet.close(); } }),
+                        new Button({ text: oBundle.getText("taskBudgetUnder50"),icon: sBudget === "<€50"   ? "sap-icon://accept" : "sap-icon://money-bills",  type: sBudget === "<€50"   ? "Emphasized" : "Default", press: function() { oModel.setProperty("/taskBudgetFilter", "<€50");   that._applyTaskFilters(); oSheet.close(); } }),
+                        new Button({ text: oBundle.getText("taskBudget50to100"),icon: sBudget === "€50–100"? "sap-icon://accept" : "sap-icon://money-bills",  type: sBudget === "€50–100"? "Emphasized" : "Default", press: function() { oModel.setProperty("/taskBudgetFilter", "€50–100"); that._applyTaskFilters(); oSheet.close(); } }),
+                        new Button({ text: oBundle.getText("taskBudgetOver100"),icon: sBudget === ">€100"  ? "sap-icon://accept" : "sap-icon://money-bills",  type: sBudget === ">€100"  ? "Emphasized" : "Default", press: function() { oModel.setProperty("/taskBudgetFilter", ">€100");   that._applyTaskFilters(); oSheet.close(); } }),
+                        new Button({ text: oBundle.getText("taskSortNewest"),     icon: sSort === "newest"      ? "sap-icon://accept" : "sap-icon://sort-descending", type: sSort === "newest"      ? "Emphasized" : "Default", press: function() { oModel.setProperty("/taskSort", "newest");      that._applyTaskFilters(); oSheet.close(); } }),
+                        new Button({ text: oBundle.getText("taskSortHighestPay"), icon: sSort === "budget_high" ? "sap-icon://accept" : "sap-icon://high-priority",   type: sSort === "budget_high" ? "Emphasized" : "Default", press: function() { oModel.setProperty("/taskSort", "budget_high"); that._applyTaskFilters(); oSheet.close(); } }),
+                        new Button({ text: oBundle.getText("taskSortLowestPay"),  icon: sSort === "budget_low"  ? "sap-icon://accept" : "sap-icon://down",             type: sSort === "budget_low"  ? "Emphasized" : "Default", press: function() { oModel.setProperty("/taskSort", "budget_low");  that._applyTaskFilters(); oSheet.close(); } })
                     ]
                 });
                 oSheet.openBy(oEvent.getSource());
@@ -430,17 +406,19 @@ sap.ui.define([
         },
 
         onTaskBudgetMenu: function(oEvent) {
-            var oModel = this.getModel("appData");
-            var that   = this;
+            var oModel  = this.getModel("appData");
+            var oBundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
+            var that    = this;
             sap.ui.require(["sap/m/ActionSheet", "sap/m/Button"], function(ActionSheet, Button) {
+                var sBudget = oModel.getProperty("/taskBudgetFilter") || "";
                 var oSheet = new ActionSheet({
-                    title: "Filter by Budget",
+                    title: oBundle.getText("taskBudgetAny"),
                     showCancelButton: true,
                     buttons: [
-                        new Button({ text: "Any budget",   press: function() { oModel.setProperty("/taskBudgetFilter", "");      that._applyTaskFilters(); oSheet.close(); } }),
-                        new Button({ text: "Under €50",    press: function() { oModel.setProperty("/taskBudgetFilter", "<€50");   that._applyTaskFilters(); oSheet.close(); } }),
-                        new Button({ text: "€50 – €100",  press: function() { oModel.setProperty("/taskBudgetFilter", "€50–100"); that._applyTaskFilters(); oSheet.close(); } }),
-                        new Button({ text: "Over €100",   press: function() { oModel.setProperty("/taskBudgetFilter", ">€100");   that._applyTaskFilters(); oSheet.close(); } })
+                        new Button({ text: oBundle.getText("taskBudgetAny"),     icon: "sap-icon://money-bills", press: function() { oModel.setProperty("/taskBudgetFilter", "");       that._applyTaskFilters(); oSheet.close(); } }),
+                        new Button({ text: oBundle.getText("taskBudgetUnder50"), icon: "sap-icon://money-bills", press: function() { oModel.setProperty("/taskBudgetFilter", "<€50");   that._applyTaskFilters(); oSheet.close(); } }),
+                        new Button({ text: oBundle.getText("taskBudget50to100"), icon: "sap-icon://money-bills", press: function() { oModel.setProperty("/taskBudgetFilter", "€50–100"); that._applyTaskFilters(); oSheet.close(); } }),
+                        new Button({ text: oBundle.getText("taskBudgetOver100"), icon: "sap-icon://money-bills", press: function() { oModel.setProperty("/taskBudgetFilter", ">€100");   that._applyTaskFilters(); oSheet.close(); } })
                     ]
                 });
                 oSheet.openBy(oEvent.getSource());
@@ -448,16 +426,17 @@ sap.ui.define([
         },
 
         onTaskSortMenu: function(oEvent) {
-            var oModel = this.getModel("appData");
-            var that   = this;
+            var oModel  = this.getModel("appData");
+            var oBundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
+            var that    = this;
             sap.ui.require(["sap/m/ActionSheet", "sap/m/Button"], function(ActionSheet, Button) {
                 var oSheet = new ActionSheet({
                     title: "Sort Tasks",
                     showCancelButton: true,
                     buttons: [
-                        new Button({ text: "🕒 Newest first",  press: function() { oModel.setProperty("/taskSort", "newest");      that._applyTaskFilters(); oSheet.close(); } }),
-                        new Button({ text: "💎 Highest pay",   press: function() { oModel.setProperty("/taskSort", "budget_high"); that._applyTaskFilters(); oSheet.close(); } }),
-                        new Button({ text: "💸 Lowest pay",    press: function() { oModel.setProperty("/taskSort", "budget_low");  that._applyTaskFilters(); oSheet.close(); } })
+                        new Button({ text: oBundle.getText("taskSortNewest"),     icon: "sap-icon://sort-descending", press: function() { oModel.setProperty("/taskSort", "newest");      that._applyTaskFilters(); oSheet.close(); } }),
+                        new Button({ text: oBundle.getText("taskSortHighestPay"), icon: "sap-icon://high-priority",   press: function() { oModel.setProperty("/taskSort", "budget_high"); that._applyTaskFilters(); oSheet.close(); } }),
+                        new Button({ text: oBundle.getText("taskSortLowestPay"),  icon: "sap-icon://down",            press: function() { oModel.setProperty("/taskSort", "budget_low");  that._applyTaskFilters(); oSheet.close(); } })
                     ]
                 });
                 oSheet.openBy(oEvent.getSource());

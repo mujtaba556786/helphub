@@ -72,9 +72,9 @@
                                 <CustomListItem class="fiSvcCard" type="Active" press=".onServicePress">
                                     <VBox class="fiSvcCardInner" alignItems="Center" justifyContent="Center">
                                         <VBox class="fiSvcIconWrap" alignItems="Center" justifyContent="Center">
-                                            <core:Icon src="{path:'appData>name', formatter:'.formatServiceIcon'}" class="fiSvcIcon"/>
+                                            <core:Icon src="{appData>icon}" class="fiSvcIcon"/>
                                         </VBox>
-                                        <Text text="{appData>name}" class="fiSvcName"/>
+                                        <Text text="{appData>label}" class="fiSvcName"/>
                                         <ObjectStatus text="Popular" state="Success"
                                             visible="{appData>is_hero}"
                                             class="fiHeroBadge"/>
@@ -731,7 +731,7 @@
 
                                         <Label text="{i18n>serviceCategories}"/>
                                         <MultiComboBox selectedKeys="{appData>/user/serviceCategories}" items="{appData>/services}">
-                                            <core:Item key="{appData>name}" text="{appData>name}"/>
+                                            <core:ListItem key="{appData>name}" text="{appData>label}" icon="{appData>icon}" iconDensityAware="false"/>
                                         </MultiComboBox>
 
                                         <Label text="{i18n>hourlyRate}"/>

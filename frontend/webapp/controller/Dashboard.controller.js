@@ -4,6 +4,7 @@ sap.ui.define([
     "sap/m/MessageBox",
     "sap/ui/core/Fragment",
     "helphub/model/countryStates",
+    "helphub/model/ServiceConstants",
     "helphub/controller/mixins/NotificationMixin",
     "helphub/controller/mixins/MapMixin",
     "helphub/controller/mixins/FilterMixin",
@@ -16,7 +17,7 @@ sap.ui.define([
     "helphub/controller/mixins/TrustSafetyMixin",
     "helphub/config"
 ], function(
-    BaseController, MessageToast, MessageBox, Fragment, CountryStates,
+    BaseController, MessageToast, MessageBox, Fragment, CountryStates, ServiceConstants,
     NotificationMixin, MapMixin, FilterMixin, BookingMixin, AiChatMixin,
     DmMixin, OnboardingFavoritesMixin, ProfileMixin, TaskMixin, TrustSafetyMixin,
     Config
@@ -66,7 +67,7 @@ sap.ui.define([
                 }.bind(this));
             }
             this._loadProvidersFromApi();
-            this._loadServicesFromApi();
+            this._initServicesFromConstants();
             this._loadSchedule();
             this._loadFavorites();
             this._loadUnreadDmCount();
@@ -308,89 +309,35 @@ sap.ui.define([
          * Maps backend fields:  id, name, icon, category, description, status
          *           → model fields: id, name, icon, sector, color, description
          */
-        _loadServicesFromApi: function() {
-            var oModel = this.getModel("appData");
+        /**
+         * Initialises appData>/services from the frontend ServiceConstants.
+         * No backend fetch — names, icons and colours are all defined in
+         * model/ServiceConstants.js. Translated labels are resolved from the
+         * i18n resource bundle so they update automatically on language change.
+         */
+        _initServicesFromConstants: function() {
+            var oModel   = this.getModel("appData");
+            var oBundle  = this.getOwnerComponent().getModel("i18n").getResourceBundle();
 
-            // Colour lookup by sector — keeps the palette consistent even for
-            // services added later via the admin panel.
-            var mSectorColors = {
-                "Home":      "#a7f3d0",
-                "Care":      "#fde68a",
-                "Transport": "#bfdbfe",
-                "Wellness":  "#e9d5ff",
-                "Skills":    "#e0e7ff"
-            };
+            var aServices = ServiceConstants.map(function(svc) {
+                return {
+                    name:    svc.name,           // API key — never translated
+                    icon:    svc.icon,           // sap-icon:// URI
+                    label:   oBundle.getText(svc.key) || svc.name,  // localised label
+                    color:   svc.color,
+                    is_hero: svc.is_hero
+                };
+            });
 
-            // Per-service overrides so existing tiles keep their original shade.
-            var mServiceColors = {
-                "Gardening":    "#bbf7d0",
-                "Cleaning":     "#a7f3d0",
-                "Handyman":     "#e2e8f0",
-                "Babysitting":  "#fecdd3",
-                "Elder Care":   "#fde68a",
-                "Pet Care":     "#fbcfe8",
-                "Transport":    "#bfdbfe",
-                "Groceries":    "#ddd6fe",
-                "Cooking":      "#fed7aa",
-                "Massage":      "#e9d5ff",
-                "Math Tuition": "#fef9c3",
-                "IT Support":   "#e0e7ff"
-            };
-
-            fetch(API_BASE + "/api/services")
-                .then(function(r) { return r.json(); })
-                .then(function(aRows) {
-                    // Backend returns a plain array (not wrapped in {success, ...})
-                    if (!Array.isArray(aRows) || aRows.length === 0) return;
-
-                    var aServices = aRows
-                        .filter(function(row) { return row.status === "Active"; })
-                        .map(function(row) {
-                            return {
-                                id:          String(row.id),
-                                name:        row.name,
-                                icon:        row.icon  || "📦",
-                                sector:      row.category || "Home",
-                                color:       mServiceColors[row.name] ||
-                                             mSectorColors[row.category] ||
-                                             "#e2e8f0",
-                                description: row.description || "",
-                                is_hero:     !!row.is_hero
-                            };
-                        });
-
-                    oModel.setProperty("/services", aServices);
-                    // Re-apply tile colours after the list re-renders
-                    setTimeout(this._applyTileColors.bind(this), 150);
-                }.bind(this))
-                .catch(function() { /* keep hardcoded list on network error */ });
-        },
-
-        // ── Service emoji HTML formatter ─────────────────────────────────────────
-        formatSvcEmoji: function(sIcon) {
-            return '<span class="fiSvcEmoji">' + (sIcon || "⚙️") + "</span>";
+            oModel.setProperty("/services", aServices);
+            setTimeout(this._applyTileColors.bind(this), 150);
         },
 
         // ── Service card formatters ──────────────────────────────────────────────
+        // Kept for backward-compat with any provider card that still binds by name.
         formatServiceIcon: function(sName) {
-            var mIcons = {
-                "Cleaning":     "sap-icon://home-share",
-                "Gardening":    "sap-icon://tree",
-                "Handyman":     "sap-icon://wrench",
-                "Babysitting":  "sap-icon://group",
-                "Elder Care":   "sap-icon://heart",
-                "Pet Care":     "sap-icon://customer",
-                "Transport":    "sap-icon://car-rental",
-                "Groceries":    "sap-icon://basket",
-                "Cooking":      "sap-icon://meal",
-                "Massage":      "sap-icon://physical-activity",
-                "Math Tuition": "sap-icon://education",
-                "IT Support":   "sap-icon://laptop",
-                "Driver":       "sap-icon://car-rental",
-                "Plumbing":     "sap-icon://wrench",
-                "Electrician":  "sap-icon://flash"
-            };
-            return mIcons[sName] || "sap-icon://activities";
+            var oSvc = ServiceConstants.find(function(s) { return s.name === sName; });
+            return oSvc ? oSvc.icon : "sap-icon://activities";
         },
 
         formatServiceDesc: function(sName) {
