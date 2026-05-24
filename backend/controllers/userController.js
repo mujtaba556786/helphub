@@ -12,7 +12,8 @@ async function updateUser(req, res) {
 
 async function uploadAvatar(req, res) {
     if (!req.file) return res.status(400).json({ success: false, error: 'No file uploaded' });
-    const avatarUrl = await svc.uploadAvatar(req.params.id, req.file.filename);
+    // Cloudinary gives req.file.path (full https URL); local disk gives req.file.filename
+    const avatarUrl = await svc.uploadAvatar(req.params.id, req.file.path || req.file.filename);
     res.json({ success: true, avatarUrl });
 }
 

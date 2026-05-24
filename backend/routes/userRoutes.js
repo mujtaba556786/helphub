@@ -6,18 +6,21 @@ const { handleAsync } = require('../middleware/auth');
 const validate = require('../middleware/validate');
 const s        = require('../middleware/schemas');
 const ctrl     = require('../controllers/userController');
+const { avatarStorage, isConfigured } = require('../config/cloudinary');
 
 const UPLOADS_DIR = path.join(__dirname, '../uploads');
 const ALLOWED_MIME = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
 
+const localDiskStorage = multer.diskStorage({
+    destination: UPLOADS_DIR,
+    filename: (req, file, cb) => {
+        const ext = path.extname(file.originalname).toLowerCase();
+        cb(null, `avatar_${req.params.id}_${uuidv4()}${ext}`);
+    }
+});
+
 const avatarUpload = multer({
-    storage: multer.diskStorage({
-        destination: UPLOADS_DIR,
-        filename: (req, file, cb) => {
-            const ext = path.extname(file.originalname).toLowerCase();
-            cb(null, `avatar_${req.params.id}_${uuidv4()}${ext}`);
-        }
-    }),
+    storage: isConfigured() ? avatarStorage : localDiskStorage,
     limits: { fileSize: 5 * 1024 * 1024 },
     fileFilter: (req, file, cb) => {
         ALLOWED_MIME.includes(file.mimetype)
