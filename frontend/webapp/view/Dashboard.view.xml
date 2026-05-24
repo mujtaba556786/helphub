@@ -678,26 +678,21 @@
         <!-- PAGE 3: Edit Profile -->
         <Page id="editPage" title="{i18n>myProfile}" showNavButton="true" navButtonPress="onNavBack" enableScrolling="true">
             <content>
-                <IconTabBar expandable="false" class="hhEditProfileTabs">
-                    <items>
+                <VBox class="sapUiSmallMargin">
 
-                        <!-- TAB: Edit Profile -->
-                        <IconTabFilter text="{i18n>editProfile}" icon="sap-icon://edit" key="editProfile">
-                                <VBox class="sapUiSmallMargin">
-
-                                    <!-- PROFILE PHOTO -->
-                                    <VBox alignItems="Center" class="sapUiMediumMarginBottom">
-                                        <Avatar id="profileAvatar" src="{appData>/user/photo}" displaySize="XL" backgroundColor="Accent6" initials="{appData>/user/avatar}" class="sapUiSmallMarginBottom"/>
-                                        <u:FileUploader
-                                            id="avatarFileUploader"
-                                            fileType="jpg,jpeg,png,gif,webp"
-                                            maximumFileSize="5"
-                                            buttonOnly="true"
-                                            buttonText="{i18n>changePhoto}"
-                                            change="onAvatarFileSelected"
-                                            uploadOnChange="false"/>
-                                        <Text id="photoError" text="" class="errorText" visible="false"/>
-                                    </VBox>
+                    <!-- PROFILE PHOTO -->
+                    <VBox alignItems="Center" class="sapUiMediumMarginBottom">
+                        <Avatar id="profileAvatar" src="{appData>/user/photo}" displaySize="XL" backgroundColor="Accent6" initials="{appData>/user/avatar}" class="sapUiSmallMarginBottom"/>
+                        <u:FileUploader
+                            id="avatarFileUploader"
+                            fileType="jpg,jpeg,png,gif,webp"
+                            maximumFileSize="5"
+                            buttonOnly="true"
+                            buttonText="{i18n>changePhoto}"
+                            change="onAvatarFileSelected"
+                            uploadOnChange="false"/>
+                        <Text id="photoError" text="" class="errorText" visible="false"/>
+                    </VBox>
 
                                     <f:SimpleForm editable="true" layout="ResponsiveGridLayout" columnsL="2" columnsM="2">
 
@@ -800,94 +795,9 @@
 
                                     </f:SimpleForm>
 
-                                    <Button text="{i18n>saveProfile}" type="Emphasized" press="onSaveProfile" class="sapUiMediumMarginTop sapUiLargeMarginBottom" width="100%"/>
+                    <Button text="{i18n>saveProfile}" icon="sap-icon://save" type="Emphasized" press="onSaveProfile" class="sapUiMediumMarginTop sapUiLargeMarginBottom" width="100%"/>
 
-                                </VBox>
-                        </IconTabFilter>
-
-                        <!-- TAB: About & Settings -->
-                        <IconTabFilter text="{i18n>settingsTab}" icon="sap-icon://action-settings" key="settings">
-                            <VBox class="sapUiSmallMargin hhSettingsPage">
-
-                                <!-- ── App Identity ── -->
-                                <VBox alignItems="Center" class="hhAboutHero">
-                                    <Title text="HelpMate" level="H2" class="sapUiTinyMarginBottom"/>
-                                    <Text text="{i18n>aboutTagline}" wrapping="true" class="grayText textCenter"/>
-                                    <ObjectStatus text="Version 2.25" state="None" class="sapUiTinyMarginTop"/>
-                                </VBox>
-
-                                <!-- ── Legal Documents ── -->
-                                <VBox class="hhSettingsGroup">
-                                    <HBox alignItems="Center" class="hhSettingsGroupHeader">
-                                        <core:Icon src="sap-icon://document-text" class="hhSettingsGroupIcon"/>
-                                        <Text text="{i18n>settingsLegalSection}" class="fontBold smallText"/>
-                                    </HBox>
-                                    <Text text="{i18n>settingsLegalHint}" wrapping="true" class="smallText grayText hhSettingsGroupHint"/>
-                                    <List showSeparators="Inner" mode="None">
-                                        <StandardListItem
-                                            title="{i18n>viewTerms}"
-                                            description="{i18n>aboutTermsDesc}"
-                                            icon="sap-icon://document-text"
-                                            iconDensityAware="false"
-                                            type="Active"
-                                            press="onViewTerms"/>
-                                        <StandardListItem
-                                            title="{i18n>viewPrivacy}"
-                                            description="{i18n>aboutPrivacyDesc}"
-                                            icon="sap-icon://privacy"
-                                            iconDensityAware="false"
-                                            type="Active"
-                                            press="onViewPrivacy"/>
-                                    </List>
-                                    <Text text="{i18n>termsVersionHint}" class="smallText grayText sapUiTinyMarginTop sapUiTinyMarginBottom" wrapping="true"/>
-                                </VBox>
-
-                                <!-- ── Support ── -->
-                                <VBox class="hhSettingsGroup">
-                                    <HBox alignItems="Center" class="hhSettingsGroupHeader">
-                                        <core:Icon src="sap-icon://sys-help" class="hhSettingsGroupIcon"/>
-                                        <Text text="{i18n>settingsSupportSection}" class="fontBold smallText"/>
-                                    </HBox>
-                                    <Text text="{i18n>settingsSupportHint}" wrapping="true" class="smallText grayText hhSettingsGroupHint"/>
-                                    <List showSeparators="Inner" mode="None">
-                                        <StandardListItem
-                                            title="{i18n>settingsHelpFaq}"
-                                            description="{i18n>aboutHelpDesc}"
-                                            icon="sap-icon://sys-help-2"
-                                            iconDensityAware="false"
-                                            type="Active"
-                                            press="onOpenHelp"/>
-                                        <StandardListItem
-                                            title="{i18n>settingsContactSupport}"
-                                            description="{i18n>aboutContactDesc}"
-                                            icon="sap-icon://email"
-                                            iconDensityAware="false"
-                                            type="Active"
-                                            press="onContactSupport"/>
-                                    </List>
-                                </VBox>
-
-                                <!-- ── App Information ── -->
-                                <VBox class="hhSettingsGroup">
-                                    <HBox alignItems="Center" class="hhSettingsGroupHeader">
-                                        <core:Icon src="sap-icon://hint" class="hhSettingsGroupIcon"/>
-                                        <Text text="{i18n>settingsAboutSection}" class="fontBold smallText"/>
-                                    </HBox>
-                                    <HBox justifyContent="SpaceBetween" alignItems="Center" class="hhSettingsInfoRow">
-                                        <Text text="{i18n>settingsAppVersion}" class="smallText grayText"/>
-                                        <Text text="2.25" class="smallText fontBold"/>
-                                    </HBox>
-                                    <HBox justifyContent="SpaceBetween" alignItems="Center" class="hhSettingsInfoRow">
-                                        <Text text="{i18n>settingsTermsVersion}" class="smallText grayText"/>
-                                        <Text text="{appData>/user/terms_version}" class="smallText"/>
-                                    </HBox>
-                                </VBox>
-
-                            </VBox>
-                        </IconTabFilter>
-
-                    </items>
-                </IconTabBar>
+                </VBox>
             </content>
 
         </Page>
