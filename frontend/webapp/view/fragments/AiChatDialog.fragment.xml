@@ -12,11 +12,11 @@
                 </HBox>
             </ScrollContainer>
             <HBox class="hhQuickReplies" wrap="Wrap">
-                <Button text="{i18n>qrOnMyWay}"         type="Transparent" press="onQuickReply" class="hhQRChip sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
-                <Button text="{i18n>qrImAvailable}"     type="Transparent" press="onQuickReply" class="hhQRChip sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
-                <Button text="{i18n>qrReschedule}"      type="Transparent" press="onQuickReply" class="hhQRChip sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
-                <Button text="{i18n>qrSeeSoon}"         type="Transparent" press="onQuickReply" class="hhQRChip sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
-                <Button text="{i18n>qrAllDone}"         type="Transparent" press="onQuickReply" class="hhQRChip sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                <Button icon="sap-icon://car-rental"     text="{i18n>qrOnMyWay}"     type="Transparent" press="onQuickReply" class="hhQRChip sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                <Button icon="sap-icon://accept"         text="{i18n>qrImAvailable}" type="Transparent" press="onQuickReply" class="hhQRChip sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                <Button icon="sap-icon://appointment-2"  text="{i18n>qrReschedule}"  type="Transparent" press="onQuickReply" class="hhQRChip sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                <Button icon="sap-icon://goodbye"        text="{i18n>qrSeeSoon}"     type="Transparent" press="onQuickReply" class="hhQRChip sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                <Button icon="sap-icon://sys-enter-2"    text="{i18n>qrAllDone}"     type="Transparent" press="onQuickReply" class="hhQRChip sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
             </HBox>
             <HBox alignItems="Center" class="hhChatInputBar">
                 <Input id="chatInput" placeholder="{i18n>askAnything}" width="100%" submit="onChatSend"/>

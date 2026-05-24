@@ -549,10 +549,10 @@ xmlns:l="sap.ui.layout"
 
                         <!-- Quick filter pills -->
                         <HBox wrap="Wrap" alignItems="Center" class="hhExpertPills">
-                            <Button text="{i18n>availableNow}" type="{= ${appData>/filters/availableNow} ? 'Emphasized' : 'Default'}" press="onFilterAvailableNow" class="hhFilterPill"/>
-                            <Button text="{i18n>all}"          type="{= ${appData>/filters/priceCategory} === 'all' ? 'Emphasized' : 'Default'}" press="onFilterAll" class="hhFilterPill"/>
-                            <Button text="{i18n>topRated}"     type="{= ${appData>/filters/priceCategory} === 'top' ? 'Emphasized' : 'Default'}" press="onFilterTopRated" class="hhFilterPill"/>
-                            <Button text="{i18n>budgetFilter}" type="{= ${appData>/filters/priceCategory} === 'budget' ? 'Emphasized' : 'Default'}" press="onFilterBudget" class="hhFilterPill"/>
+                            <Button icon="sap-icon://status-positive" text="{i18n>availableNow}" type="{= ${appData>/filters/availableNow} ? 'Emphasized' : 'Default'}" press="onFilterAvailableNow" class="hhFilterPill"/>
+                            <Button text="{i18n>all}"                 type="{= ${appData>/filters/priceCategory} === 'all' ? 'Emphasized' : 'Default'}" press="onFilterAll" class="hhFilterPill"/>
+                            <Button icon="sap-icon://favorite"        text="{i18n>topRated}"     type="{= ${appData>/filters/priceCategory} === 'top' ? 'Emphasized' : 'Default'}" press="onFilterTopRated" class="hhFilterPill"/>
+                            <Button icon="sap-icon://money-bills"     text="{i18n>budgetFilter}" type="{= ${appData>/filters/priceCategory} === 'budget' ? 'Emphasized' : 'Default'}" press="onFilterBudget" class="hhFilterPill"/>
                         </HBox>
 
                         <!-- Distance + Language row -->
@@ -744,22 +744,22 @@ xmlns:l="sap.ui.layout"
                                         </FlexBox>
                                         <!-- Time of day row -->
                                         <FlexBox wrap="Wrap">
-                                            <Button text="{i18n>morning}" press="onAvailabilityToggle" type="{= ${appData>/user/availabilityFlags/morning} ? 'Emphasized' : 'Default'}" class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
+                                            <Button icon="sap-icon://light-mode"  text="{i18n>morning}"   press="onAvailabilityToggle" type="{= ${appData>/user/availabilityFlags/morning} ? 'Emphasized' : 'Default'}" class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
                                                 <customData>
                                                     <core:CustomData key="availKey" value="morning"/>
                                                 </customData>
                                             </Button>
-                                            <Button text="{i18n>afternoon}" press="onAvailabilityToggle" type="{= ${appData>/user/availabilityFlags/afternoon} ? 'Emphasized' : 'Default'}" class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
+                                            <Button icon="sap-icon://sunny"       text="{i18n>afternoon}" press="onAvailabilityToggle" type="{= ${appData>/user/availabilityFlags/afternoon} ? 'Emphasized' : 'Default'}" class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
                                                 <customData>
                                                     <core:CustomData key="availKey" value="afternoon"/>
                                                 </customData>
                                             </Button>
-                                            <Button text="{i18n>evening}" press="onAvailabilityToggle" type="{= ${appData>/user/availabilityFlags/evening} ? 'Emphasized' : 'Default'}" class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
+                                            <Button icon="sap-icon://evening"     text="{i18n>evening}"   press="onAvailabilityToggle" type="{= ${appData>/user/availabilityFlags/evening} ? 'Emphasized' : 'Default'}" class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
                                                 <customData>
                                                     <core:CustomData key="availKey" value="evening"/>
                                                 </customData>
                                             </Button>
-                                            <Button text="{i18n>night}" press="onAvailabilityToggle" type="{= ${appData>/user/availabilityFlags/night} ? 'Emphasized' : 'Default'}" class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
+                                            <Button icon="sap-icon://night-mode"  text="{i18n>night}"     press="onAvailabilityToggle" type="{= ${appData>/user/availabilityFlags/night} ? 'Emphasized' : 'Default'}" class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
                                                 <customData>
                                                     <core:CustomData key="availKey" value="night"/>
                                                 </customData>
