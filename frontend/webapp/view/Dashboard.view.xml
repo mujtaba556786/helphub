@@ -515,18 +515,8 @@
                 </Bar>
             </footer>
 
-            <dependents>
-                <!-- Avatar header menu — declared here so it is instantiated with dashboardPage
-                     and available as soon as the user taps the header avatar. -->
-                <ActionSheet id="headerAvatarSheet" title="" showCancelButton="true" cancelButtonText="{i18n>cancel}">
-                    <buttons>
-                        <Button text="{i18n>editProfile}"     icon="sap-icon://person-placeholder" press="onEditProfile"/>
-                        <Button text="{i18n>adminPanel}"      icon="sap-icon://it-system"          press="onNavToAdmin"
-                            visible="{= ${appData>/user/role} === 'admin'}"/>
-                        <Button text="{i18n>signOut}"         icon="sap-icon://log"                press="onLogout" type="Reject"/>
-                    </buttons>
-                </ActionSheet>
-            </dependents>
+            <!-- headerAvatarSheet built dynamically in onHeaderAvatarMenu
+                 so i18n text is read at tap-time (bundle always loaded by then) -->
 
         </Page>
 
