@@ -23,7 +23,10 @@
 
             <!-- After link is sent -->
             <VBox visible="{= !!${logoutData>/linkSent} }" class="sapUiSmallMarginBeginEnd sapUiSmallMarginTopBottom">
-                <Title text="📧 Check your inbox" level="H4" class="sapUiSmallMarginBottom" />
+                <HBox alignItems="Center" class="sapUiSmallMarginBottom">
+                    <core:Icon src="sap-icon://email" size="1.25rem" class="sapUiTinyMarginEnd"/>
+                    <Title text="Check your inbox" level="H4"/>
+                </HBox>
                 <Text
                     text="A sign-in link has been sent to {logoutData>/email}. Tap the link in the email to sign back in."
                     wrapping="true" />

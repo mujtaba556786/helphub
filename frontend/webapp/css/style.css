@@ -331,7 +331,7 @@
 }
 
 .hhMsgEmpty     { padding: 56px 32px 32px; text-align: center; }
-.hhMsgEmptyIcon { font-size: 52px; margin-bottom: 12px; opacity: 0.55; }
+.hhMsgEmptyIcon { font-size: 52px !important; margin-bottom: 12px; opacity: 0.55; color: var(--sapContent_IconColor); }
 
 /* ── Filter pills ─────────────────────────────────────────────── */
 .hhFilterPill   { border-radius: 20px; font-size: 13px; }

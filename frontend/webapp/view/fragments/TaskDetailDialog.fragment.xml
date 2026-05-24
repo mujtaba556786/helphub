@@ -28,9 +28,9 @@
 
             <!-- Action buttons (for providers viewing others' tasks) -->
             <HBox visible="{= ${appData>/selectedTask/poster_id} !== ${appData>/user/id}}" class="sapUiSmallMarginBottom" wrap="Wrap">
-                <Button text="{i18n>applyForTask}" type="Emphasized" press="onApplyToTask" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"
+                <Button text="{i18n>applyForTask}" icon="sap-icon://paper-plane" type="Emphasized" press="onApplyToTask" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"
                     visible="{= ${appData>/selectedTask/status} === 'open'}"/>
-                <Button text="{i18n>messagePoster}" type="Default" press="onMessageTaskPoster" class="sapUiTinyMarginBottom"/>
+                <Button text="{i18n>messagePoster}" icon="sap-icon://discussion" type="Default" press="onMessageTaskPoster" class="sapUiTinyMarginBottom"/>
             </HBox>
 
             <!-- Applicants (visible to poster) -->
@@ -50,8 +50,8 @@
                                 </VBox>
                             </HBox>
                             <VBox alignItems="End">
-                                <Button text="{i18n>assign}" type="Emphasized" press="onAssignProvider" class="sapUiTinyMarginBottom" visible="{= ${appData>/selectedTask/status} === 'open'}"/>
-                                <Button text="{i18n>messageHelper}" type="Default" press="onMessageApplicant"/>
+                                <Button text="{i18n>assign}" icon="sap-icon://employee" type="Emphasized" press="onAssignProvider" class="sapUiTinyMarginBottom" visible="{= ${appData>/selectedTask/status} === 'open'}"/>
+                                <Button text="{i18n>messageHelper}" icon="sap-icon://discussion" type="Default" press="onMessageApplicant"/>
                             </VBox>
                         </HBox>
                     </CustomListItem>
@@ -59,11 +59,11 @@
             </VBox>
 
             <!-- Complete task button (for poster, when assigned) -->
-            <Button text="{i18n>markAsCompleted}" type="Accept" press="onCompleteTask" width="100%" class="sapUiSmallMarginTop"
+            <Button text="{i18n>markAsCompleted}" icon="sap-icon://accept" type="Accept" press="onCompleteTask" width="100%" class="sapUiSmallMarginTop"
                 visible="{= ${appData>/selectedTask/status} === 'assigned' &amp;&amp; ${appData>/selectedTask/poster_id} === ${appData>/user/id}}"/>
 
             <!-- Delete task (for poster only) -->
-            <Button text="{i18n>deleteTask}" type="Reject" press="onDeleteTask" width="100%" class="sapUiSmallMarginTop"
+            <Button text="{i18n>deleteTask}" icon="sap-icon://delete" type="Reject" press="onDeleteTask" width="100%" class="sapUiSmallMarginTop"
                 visible="{= ${appData>/selectedTask/poster_id} === ${appData>/user/id}}"/>
         </VBox>
         <endButton>

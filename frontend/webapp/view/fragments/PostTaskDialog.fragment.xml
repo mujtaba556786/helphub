@@ -20,7 +20,7 @@
             <Input value="{appData>/taskForm/location}" placeholder="{i18n>locationPlaceholder}" width="100%" class="sapUiTinyMarginBottom"/>
         </VBox>
         <beginButton>
-            <Button text="{i18n>postTaskBtn}" type="Emphasized" press="onConfirmPostTask"/>
+            <Button text="{i18n>postTaskBtn}" icon="sap-icon://paper-plane" type="Emphasized" press="onConfirmPostTask"/>
         </beginButton>
         <endButton>
             <Button text="{i18n>cancel}" press="onClosePostTask"/>

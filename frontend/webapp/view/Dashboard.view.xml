@@ -104,7 +104,7 @@
                                             <customData><core:CustomData key="mode" value="mine"/></customData>
                                         </Button>
                                     </HBox>
-                                    <Button text="+ Post Task" type="Emphasized" press="onOpenPostTask" class="hhPostTaskBtn"/>
+                                    <Button text="Post Task" icon="sap-icon://add" type="Emphasized" press="onOpenPostTask" class="hhPostTaskBtn"/>
                                 </HBox>
 
                                 <!-- ══ BROWSE VIEW ══════════════════════════════════ -->
@@ -239,7 +239,7 @@
                                     <!-- ── Pinned section ── -->
                                     <VBox visible="{appData>/msgPinnedVisible}">
                                         <HBox class="hhMsgSectionHdr" alignItems="Center">
-                                            <core:HTML content="&lt;span class='hhMsgPinIcon'&gt;📌&lt;/span&gt;"/>
+                                            <core:Icon src="sap-icon://bookmark" size="0.9rem" color="var(--sapHighlightColor)"/>
                                             <Text text="{i18n>msgPinned}" class="hhMsgSectionLabel"/>
                                         </HBox>
                                         <List items="{appData>/msgPinned}" showSeparators="None" class="hhMsgList">
@@ -333,14 +333,14 @@
 
                                     <!-- ── Empty state: no conversations ── -->
                                     <VBox visible="{appData>/msgEmptyNoConvos}" class="hhMsgEmpty" alignItems="Center">
-                                        <core:HTML content="&lt;div class='hhMsgEmptyIcon'&gt;💬&lt;/div&gt;"/>
+                                        <core:Icon src="sap-icon://discussion" size="3.25rem" class="hhMsgEmptyIcon"/>
                                         <Title text="{i18n>noMessagesYet}" level="H5" class="textCenter sapUiSmallMarginTop"/>
                                         <Text text="{i18n>msgEmptyHint}" class="grayText smallText textCenter sapUiTinyMarginTop" wrapping="true"/>
                                     </VBox>
 
                                     <!-- ── Empty state: no search results ── -->
                                     <VBox visible="{appData>/msgEmptySearch}" class="hhMsgEmpty" alignItems="Center">
-                                        <core:HTML content="&lt;div class='hhMsgEmptyIcon'&gt;🔍&lt;/div&gt;"/>
+                                        <core:Icon src="sap-icon://search" size="3.25rem" class="hhMsgEmptyIcon"/>
                                         <Title text="{i18n>msgNoResults}" level="H5" class="textCenter sapUiSmallMarginTop"/>
                                     </VBox>
 
@@ -394,16 +394,16 @@
                                                 </HBox>
                                                 <!-- View provider profile -->
                                                 <HBox>
-                                                    <Button text="{i18n>profile}" type="Transparent" press="onViewBookingProfile" class="hhNotifChip"/>
+                                                    <Button text="{i18n>profile}" icon="sap-icon://person-placeholder" type="Transparent" press="onViewBookingProfile" class="hhNotifChip"/>
                                                 </HBox>
                                                 <!-- Provider actions: accept / decline -->
                                                 <HBox wrap="Wrap" class="fiBookingActions" visible="{= ${appData>status} === 'pending' &amp;&amp; String(${appData>/user/id}) === String(${appData>provider_id})}">
-                                                    <Button text="{i18n>accept}" type="Accept" press="onAcceptBooking"/>
-                                                    <Button text="{i18n>decline}" type="Reject" press="onDeclineBooking"/>
+                                                    <Button text="{i18n>accept}" icon="sap-icon://accept" type="Accept" press="onAcceptBooking"/>
+                                                    <Button text="{i18n>decline}" icon="sap-icon://decline" type="Reject" press="onDeclineBooking"/>
                                                 </HBox>
                                                 <!-- Customer action: cancel -->
                                                 <HBox wrap="Wrap" class="fiBookingActions" visible="{= ${appData>status} === 'pending' &amp;&amp; String(${appData>/user/id}) === String(${appData>customer_id})}">
-                                                    <Button text="{i18n>cancelBooking}" type="Reject" press="onCancelBooking"/>
+                                                    <Button text="{i18n>cancelBooking}" icon="sap-icon://sys-cancel-2" type="Reject" press="onCancelBooking"/>
                                                 </HBox>
                                                 <Text text="{appData>message}" class="smallText grayText" visible="{= !!${appData>message}}"/>
                                             </VBox>
@@ -429,7 +429,7 @@
                                                         <Text text="{appData>serviceType}" class="grayText smallText"/>
                                                     </VBox>
                                                 </HBox>
-                                                <Button text="{i18n>profile}" type="Transparent" press="onViewRecentProfile"/>
+                                                <Button text="{i18n>profile}" icon="sap-icon://person-placeholder" type="Transparent" press="onViewRecentProfile"/>
                                             </HBox>
                                         </CustomListItem>
                                     </List>
@@ -452,7 +452,7 @@
                                                 </HBox>
                                                 <VBox alignItems="End">
                                                     <Button icon="sap-icon://favorite" type="Emphasized" press="onToggleFavorite" tooltip="{i18n>removeFromSaved}" class="sapUiTinyMarginBottom"/>
-                                                    <Button text="{i18n>profile}" type="Transparent" press="onViewFavoriteProfile"/>
+                                                    <Button text="{i18n>profile}" icon="sap-icon://person-placeholder" type="Transparent" press="onViewFavoriteProfile"/>
                                                 </VBox>
                                             </HBox>
                                         </CustomListItem>
@@ -583,6 +583,7 @@
                                 width="140px"
                                 class="hhLangInput"/>
                             <Button text="{i18n>resetFilters}"
+                                icon="sap-icon://undo"
                                 type="Transparent"
                                 press="onResetFilters"
                                 visible="{= ${appData>/filters/activeCount} > 0}"
@@ -604,7 +605,7 @@
                         <core:Icon src="sap-icon://search" size="3rem" class="sapUiSmallMarginBottom"/>
                         <Title text="{i18n>noHelpersFoundTitle}" level="H4" class="sapUiTinyMarginBottom" textAlign="Center"/>
                         <Text text="{i18n>noHelpersFoundHint}" class="grayText smallText sapUiTinyMarginBottom" textAlign="Center"/>
-                        <Button text="{i18n>postTaskInstead}" type="Emphasized" press="onTabToTasks" class="sapUiTinyMarginTop"/>
+                        <Button text="{i18n>postTaskInstead}" icon="sap-icon://task" type="Emphasized" press="onTabToTasks" class="sapUiTinyMarginTop"/>
                     </VBox>
 
                     <!-- ── Helper cards ── -->
@@ -664,7 +665,7 @@
                                         tooltip="{i18n>saveHelper}"
                                         class="hhExpertIconBtn"/>
                                     <!-- Profile text link -->
-                                    <Button text="{i18n>profile}" type="Transparent" press="onViewProfile" class="hhExpertProfileBtn"/>
+                                    <Button text="{i18n>profile}" icon="sap-icon://person-placeholder" type="Transparent" press="onViewProfile" class="hhExpertProfileBtn"/>
                                     <!-- Primary: Book -->
                                     <Button text="{i18n>book}" type="Emphasized" icon="sap-icon://appointment-2" press="onQuickBook" class="hhExpertBookBtn"/>
                                     <!-- Secondary: Message -->

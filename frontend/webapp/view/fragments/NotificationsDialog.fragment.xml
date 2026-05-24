@@ -15,7 +15,7 @@
                     <Title text="{i18n>notifications}"/>
                 </contentLeft>
                 <contentRight>
-                    <Button text="Mark all read" type="Transparent" press="onMarkAllRead" visible="{= ${appData>/unreadCount} > 0}"/>
+                    <Button text="Mark all read" icon="sap-icon://accept" type="Transparent" press="onMarkAllRead" visible="{= ${appData>/unreadCount} > 0}"/>
                     <Button icon="sap-icon://decline" type="Transparent" press="onCloseNotifications"/>
                 </contentRight>
             </Bar>
