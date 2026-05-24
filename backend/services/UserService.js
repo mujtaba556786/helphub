@@ -124,14 +124,18 @@ async function updateUser(id, b) {
     }
 }
 
-async function uploadAvatar(id, filename) {
+async function uploadAvatar(id, filenameOrUrl) {
     const [existing] = await pool.query('SELECT avatar FROM users WHERE id = ?', [id]);
     const oldAvatar = existing[0]?.avatar;
+    // Clean up old local file only (skip Cloudinary/external URLs)
     if (oldAvatar && oldAvatar.startsWith('/uploads/')) {
         const oldPath = path.join(UPLOADS_DIR, path.basename(oldAvatar));
         if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
     }
-    const avatarUrl = `/uploads/${filename}`;
+    // Cloudinary gives a full https URL; local disk gives just a filename
+    const avatarUrl = filenameOrUrl.startsWith('http')
+        ? filenameOrUrl
+        : `/uploads/${filenameOrUrl}`;
     await pool.execute('UPDATE users SET avatar = ? WHERE id = ?', [avatarUrl, id]);
     return avatarUrl;
 }
@@ -169,7 +173,7 @@ async function getProviders(category) {
     return rows.map(u => ({
         id: u.id,
         name: u.name,
-        photo: u.avatar && u.avatar.startsWith('/uploads/') ? `${process.env.API_BASE_URL || 'http://localhost:3000'}${u.avatar}` : (u.avatar || ''),
+        photo: u.avatar && u.avatar.startsWith('/uploads/') ? `${process.env.BACKEND_URL || process.env.API_BASE_URL || 'https://helphub-production.up.railway.app'}${u.avatar}` : (u.avatar || ''),
         bio: u.bio || '',
         rating: u.rating || 5.0,
         rate: u.rate || 0,
