@@ -361,22 +361,22 @@ xmlns:l="sap.ui.layout"
                                     </HBox>
                                     <!-- Status filters -->
                                     <HBox alignItems="Center" class="fiScheduleFilters">
-                                        <Button text="{i18n>filterAll}" type="{= (${appData>/bookingStatusFilter} || 'all') === 'all' ? 'Emphasized' : 'Default'}" press="onBookingFilter" class="hhNotifChip">
+                                        <Button icon="sap-icon://filter"           text="{i18n>filterAll}"       type="{= (${appData>/bookingStatusFilter} || 'all') === 'all' ? 'Emphasized' : 'Default'}" press="onBookingFilter" class="hhNotifChip">
                                             <customData><core:CustomData key="status" value="all"/></customData>
                                         </Button>
-                                        <Button text="{i18n>filterPending}" type="{= ${appData>/bookingStatusFilter} === 'pending' ? 'Emphasized' : 'Default'}" press="onBookingFilter" class="hhNotifChip">
+                                        <Button icon="sap-icon://pending"          text="{i18n>filterPending}"   type="{= ${appData>/bookingStatusFilter} === 'pending' ? 'Emphasized' : 'Default'}" press="onBookingFilter" class="hhNotifChip">
                                             <customData><core:CustomData key="status" value="pending"/></customData>
                                         </Button>
-                                        <Button text="{i18n>filterConfirmed}" type="{= ${appData>/bookingStatusFilter} === 'confirmed' ? 'Emphasized' : 'Default'}" press="onBookingFilter" class="hhNotifChip">
+                                        <Button icon="sap-icon://status-positive"  text="{i18n>filterConfirmed}" type="{= ${appData>/bookingStatusFilter} === 'confirmed' ? 'Emphasized' : 'Default'}" press="onBookingFilter" class="hhNotifChip">
                                             <customData><core:CustomData key="status" value="confirmed"/></customData>
                                         </Button>
-                                        <Button text="{i18n>filterCompleted}" type="{= ${appData>/bookingStatusFilter} === 'completed' ? 'Emphasized' : 'Default'}" press="onBookingFilter" class="hhNotifChip">
+                                        <Button icon="sap-icon://sys-enter-2"      text="{i18n>filterCompleted}" type="{= ${appData>/bookingStatusFilter} === 'completed' ? 'Emphasized' : 'Default'}" press="onBookingFilter" class="hhNotifChip">
                                             <customData><core:CustomData key="status" value="completed"/></customData>
                                         </Button>
-                                        <Button text="{i18n>filterDeclined}" type="{= ${appData>/bookingStatusFilter} === 'declined' ? 'Emphasized' : 'Default'}" press="onBookingFilter" class="hhNotifChip">
+                                        <Button icon="sap-icon://status-negative"  text="{i18n>filterDeclined}"  type="{= ${appData>/bookingStatusFilter} === 'declined' ? 'Emphasized' : 'Default'}" press="onBookingFilter" class="hhNotifChip">
                                             <customData><core:CustomData key="status" value="declined"/></customData>
                                         </Button>
-                                        <Button text="{i18n>filterCancelled}" type="{= ${appData>/bookingStatusFilter} === 'cancelled' ? 'Emphasized' : 'Default'}" press="onBookingFilter" class="hhNotifChip">
+                                        <Button icon="sap-icon://sys-cancel"       text="{i18n>filterCancelled}" type="{= ${appData>/bookingStatusFilter} === 'cancelled' ? 'Emphasized' : 'Default'}" press="onBookingFilter" class="hhNotifChip">
                                             <customData><core:CustomData key="status" value="cancelled"/></customData>
                                         </Button>
                                     </HBox>
