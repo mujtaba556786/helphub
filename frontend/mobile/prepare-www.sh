@@ -7,11 +7,16 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 WEBAPP="$SCRIPT_DIR/../webapp"
 WWW="$SCRIPT_DIR/www"
 
+# ── Java 17 (Android requires Java 17 — Java 21+ breaks the jlink step) ─────
+export JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home
+export PATH="$JAVA_HOME/bin:$PATH"
+echo "Java: $(java -version 2>&1 | head -1)"
+
 # ── Android SDK (Homebrew install) ──────────────────────────────────────────
 export ANDROID_HOME=/opt/homebrew/share/android-commandlinetools
 export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/build-tools/35.0.0:$PATH"
 
-# Create tools/bin symlink that older Cordova checks for
+# Create tools/bin symlink that Cordova checks for
 if [ ! -d "$ANDROID_HOME/tools/bin" ]; then
     mkdir -p "$ANDROID_HOME/tools"
     ln -sf "$ANDROID_HOME/cmdline-tools/latest/bin" "$ANDROID_HOME/tools/bin"
