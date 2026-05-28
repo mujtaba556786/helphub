@@ -3,25 +3,14 @@
 <head>
     <meta charset="UTF-8">
 
-    <!-- ── Content Security Policy (required by Cordova Android) ── -->
-    <!-- Allow inline scripts/styles (SAP UI5 needs both), local resources,
-         the Railway backend, and tile servers for Leaflet maps.          -->
-    <meta http-equiv="Content-Security-Policy" content="
-        default-src 'self' data: blob: 'unsafe-inline';
-        script-src  'self' 'unsafe-inline' 'unsafe-eval';
-        style-src   'self' 'unsafe-inline' data: blob:;
-        connect-src 'self' https://helphub-production.up.railway.app
-                    https://res.cloudinary.com
-                    https://nominatim.openstreetmap.org
-                    https://*.tile.openstreetmap.org
-                    blob: data:;
-        img-src     'self' data: blob: https: http:;
-        font-src    'self' data: blob:;
-        media-src   'self' blob: data:;
-    ">
+    <!-- Content Security Policy — allows SAP UI5 CDN + Leaflet CDN + backend API -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: blob: 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://ui5.sap.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://ui5.sap.com data: blob:; connect-src 'self' https: http: blob: data:; img-src 'self' data: blob: https: http:; font-src 'self' data: blob: https://ui5.sap.com;">
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>HelpMate</title>
 
     <meta name="application-name" content="HelpMate">
@@ -42,7 +31,6 @@
     <link rel="stylesheet" href="css/style.css?v=2.15">
 
     <!-- ── Cordova bridge — MUST be first script ── -->
-    <!-- cordova.js is injected into www/ automatically by `cordova build` -->
     <script src="cordova.js"></script>
 
     <!-- Cache-bust helphub app JS/XML/i18n files -->
@@ -91,25 +79,32 @@
         };
     </script>
 
-    <!-- ── SAP UI5 bootstrap — uses locally bundled resources (62 MB in www/resources/) ──
-         frame-options="allow"  ← critical: "trusted" blanks the page in a Cordova WebView
-                                  because http://localhost is not in UI5's trusted-origins list -->
-    <script
-        id="sap-ui-bootstrap"
-        src="resources/sap-ui-core.js"
-        data-sap-ui-theme="helpmate"
-        data-sap-ui-theme-roots='{"helpmate":"./themes/"}'
-        data-sap-ui-resource-roots='{"helphub":""}'
-        data-sap-ui-on-init="module:sap/ui/core/ComponentSupport"
-        data-sap-ui-compat-version="edge"
-        data-sap-ui-async="true"
-        data-sap-ui-frame-options="allow"
-    ></script>
+    <!-- ── SAP UI5 bootstrap ──
+         Always load from CDN in the APK — the local sap-ui-core.js is only
+         a 1.6 KB stub that uses document.write(), which is unreliable in
+         Cordova WebView. CDN version is the full self-contained bundle.
+         frame-options="allow" — "trusted" causes UI5 to blank the page
+         because http://localhost is not in its trusted-origins whitelist. -->
+    <script>
+        (function () {
+            var src = 'https://ui5.sap.com/1.120/resources/sap-ui-core.js';
+            var s = document.createElement('script');
+            s.id = 'sap-ui-bootstrap';
+            s.setAttribute('data-sap-ui-theme', 'helpmate');
+            s.setAttribute('data-sap-ui-theme-roots', '{"helpmate":"./themes/"}');
+            s.setAttribute('data-sap-ui-resource-roots', '{"helphub":""}');
+            s.setAttribute('data-sap-ui-on-init', 'module:sap/ui/core/ComponentSupport');
+            s.setAttribute('data-sap-ui-compat-version', 'edge');
+            s.setAttribute('data-sap-ui-async', 'true');
+            s.setAttribute('data-sap-ui-frame-options', 'allow');
+            s.src = src;
+            document.head.appendChild(s);
+        })();
+    </script>
 
-    <!-- ── Leaflet Maps — loaded from local copy to satisfy CSP ── -->
-    <!-- leaflet.css/js are copied into www/css/ and www/js/ by the build script -->
-    <link rel="stylesheet" href="css/leaflet.css"/>
-    <script src="js/leaflet.js"></script>
+    <!-- ── Leaflet Maps ── -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body class="sapUiBody sapUiSizeCompact" id="content">
     <div
