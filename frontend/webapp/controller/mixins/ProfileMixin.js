@@ -235,6 +235,28 @@ sap.ui.define([
 
         onCloseProfile: function() {
             this._getProfileDialog().then(function(d) { d.close(); }.bind(this));
+        },
+
+        // Opens the ProfileDialog directly on the Settings tab
+        onOpenSettings: function() {
+            this.onOpenMyProfile();
+            this._getProfileDialog().then(function(oDialog) {
+                var oTabBar = oDialog.getContent()[0];
+                // Walk content tree to find the IconTabBar
+                function findTabBar(oControl) {
+                    if (!oControl) return null;
+                    if (oControl.isA && oControl.isA("sap.m.IconTabBar")) return oControl;
+                    var aItems = (oControl.getItems && oControl.getItems()) ||
+                                 (oControl.getContent && oControl.getContent()) || [];
+                    for (var i = 0; i < aItems.length; i++) {
+                        var found = findTabBar(aItems[i]);
+                        if (found) return found;
+                    }
+                    return null;
+                }
+                var oBar = findTabBar(oDialog);
+                if (oBar) oBar.setSelectedKey("settings");
+            }.bind(this));
         }
 
     };
