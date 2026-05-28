@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <!-- ── Content Security Policy (required by Cordova Android) ── -->
+    <!-- Allow inline scripts/styles (SAP UI5 needs both), local resources,
+         the Railway backend, and tile servers for Leaflet maps.          -->
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self' data: blob: 'unsafe-inline';
+        script-src  'self' 'unsafe-inline' 'unsafe-eval';
+        style-src   'self' 'unsafe-inline' data: blob:;
+        connect-src 'self' https://helphub-production.up.railway.app
+                    https://res.cloudinary.com
+                    https://nominatim.openstreetmap.org
+                    https://*.tile.openstreetmap.org
+                    blob: data:;
+        img-src     'self' data: blob: https: http:;
+        font-src    'self' data: blob:;
+        media-src   'self' blob: data:;
+    ">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>HelpMate</title>
+
+    <meta name="application-name" content="HelpMate">
+    <meta name="description" content="Get everyday tasks done by trusted neighbors.">
+
+    <!-- iOS Web App -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="HelpMate">
+
+    <style>
+        html, body, body > div, #container, #container-uiarea {
+            height: 100%;
+        }
+    </style>
+
+    <!-- App stylesheet -->
+    <link rel="stylesheet" href="css/style.css?v=2.15">
+
+    <!-- ── Cordova bridge — MUST be first script ── -->
+    <!-- cordova.js is injected into www/ automatically by `cordova build` -->
+    <script src="cordova.js"></script>
+
+    <!-- Cache-bust helphub app JS/XML/i18n files -->
+    <script>
+        (function () {
+            var _HH_BUILD = '2.42';
+            var _desc = Object.getOwnPropertyDescriptor(HTMLScriptElement.prototype, 'src');
+            Object.defineProperty(HTMLScriptElement.prototype, 'src', {
+                get: _desc.get,
+                set: function (val) {
+                    if (typeof val === 'string' && val.indexOf('?') === -1 &&
+                        (val.indexOf('/controller/') !== -1 ||
+                         val.indexOf('/model/')      !== -1 ||
+                         val.indexOf('Component.js') !== -1)) {
+                        val = val + '?v=' + _HH_BUILD;
+                    }
+                    _desc.set.call(this, val);
+                },
+                configurable: true
+            });
+
+            var _HH_RE = /\/(controller|model|view|fragments|Base|i18n)\//;
+            var _origOpen = XMLHttpRequest.prototype.open;
+            XMLHttpRequest.prototype.open = function (method, url) {
+                if (typeof url === 'string' && url.indexOf('?') === -1 &&
+                    (_HH_RE.test(url) || url.indexOf('Component.js') !== -1)) {
+                    url = url + '?v=' + _HH_BUILD;
+                }
+                return _origOpen.apply(this, arguments);
+            };
+            var _origFetch = window.fetch;
+            window.fetch = function (input, init) {
+                if (typeof input === 'string' && input.indexOf('?') === -1 &&
+                    (_HH_RE.test(input) || input.indexOf('Component.js') !== -1)) {
+                    input = input + '?v=' + _HH_BUILD;
+                }
+                return _origFetch.call(this, input, init);
+            };
+        })();
+    </script>
+
+    <!-- Apply saved language before UI5 boots -->
+    <script>
+        window['sap-ui-config'] = {
+            language: localStorage.getItem('helpmate_lang') || ''
+        };
+    </script>
+
+    <!-- ── SAP UI5 bootstrap — uses locally bundled resources (62 MB in www/resources/) ──
+         frame-options="allow"  ← critical: "trusted" blanks the page in a Cordova WebView
+                                  because http://localhost is not in UI5's trusted-origins list -->
+    <script
+        id="sap-ui-bootstrap"
+        src="resources/sap-ui-core.js"
+        data-sap-ui-theme="helpmate"
+        data-sap-ui-theme-roots='{"helpmate":"./themes/"}'
+        data-sap-ui-resource-roots='{"helphub":""}'
+        data-sap-ui-on-init="module:sap/ui/core/ComponentSupport"
+        data-sap-ui-compat-version="edge"
+        data-sap-ui-async="true"
+        data-sap-ui-frame-options="allow"
+    ></script>
+
+    <!-- ── Leaflet Maps — loaded from local copy to satisfy CSP ── -->
+    <!-- leaflet.css/js are copied into www/css/ and www/js/ by the build script -->
+    <link rel="stylesheet" href="css/leaflet.css"/>
+    <script src="js/leaflet.js"></script>
+</head>
+<body class="sapUiBody sapUiSizeCompact" id="content">
+    <div
+        data-sap-ui-component
+        data-name="helphub"
+        data-id="container"
+        data-settings='{"id" : "helphub"}'
+        data-handle-validation="true"
+    ></div>
+</body>
+</html>
