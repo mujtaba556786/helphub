@@ -82,12 +82,13 @@ sap.ui.define([
             // Expose StorageHelper globally so all controllers can use it
             window.HelpHubStorage = StorageHelper;
 
-            // ── Magic-link token pick-up (BEFORE router.initialize) ───────────
-            // When the user clicks the email link, the backend redirects here with
-            // ?accessToken=...&refreshToken=...  The router would flash the Login
-            // page while we process the tokens.  Setting magicLinkProcessing=true
-            // BEFORE the router starts means Login.view shows a "Signing you in…"
-            // screen instead of the email form.
+            // ── Session check + magic-link pick-up (BEFORE router.initialize) ──
+            // Always set magicLinkProcessing=true so the Login view shows a
+            // "Resuming your session…" screen instead of flashing the email form
+            // while the async token check runs. It is cleared to false as soon as
+            // we know whether the user has a valid session or not.
+            oAppData.setProperty("/magicLinkProcessing", true);
+
             var oUrlParams    = new URLSearchParams(window.location.search);
             var sMagicAccess  = oUrlParams.get("accessToken");
             var sMagicRefresh = oUrlParams.get("refreshToken");
@@ -95,7 +96,6 @@ sap.ui.define([
                 StorageHelper.set("helpmate_token", sMagicAccess);
                 if (sMagicRefresh) StorageHelper.set("helphub_refresh_token", sMagicRefresh);
                 window.history.replaceState({}, "", window.location.pathname);
-                oAppData.setProperty("/magicLinkProcessing", true);
             }
 
             this.getRouter().initialize();
@@ -146,7 +146,11 @@ sap.ui.define([
             // ── Try silent refresh when access token is expired ────────────────
             function trySilentRefresh() {
                 StorageHelper.get("helphub_refresh_token", function(sRefresh) {
-                    if (!sRefresh) { StorageHelper.clear(); return; }
+                    if (!sRefresh) {
+                        StorageHelper.clear();
+                        oAppData.setProperty("/magicLinkProcessing", false);
+                        return;
+                    }
                     fetch(API_BASE + "/api/auth/refresh", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
@@ -162,10 +166,14 @@ sap.ui.define([
                             }).then(function(r) { return r.json(); })
                               .then(function(oData) {
                                   if (oData.success) applyUser(oData.user);
-                                  else StorageHelper.clear();
+                                  else {
+                                      StorageHelper.clear();
+                                      oAppData.setProperty("/magicLinkProcessing", false);
+                                  }
                               });
                         }
                         StorageHelper.clear();
+                        oAppData.setProperty("/magicLinkProcessing", false);
                     })
                     .catch(function() {
                         StorageHelper.clear();
@@ -188,7 +196,10 @@ sap.ui.define([
                     return r.json();
                 })
                 .then(function(oData) {
-                    if (!oData || !oData.success) return;
+                    if (!oData || !oData.success) {
+                        oAppData.setProperty("/magicLinkProcessing", false);
+                        return;
+                    }
                     applyUser(oData.user);
                 })
                 .catch(function() { trySilentRefresh(); });

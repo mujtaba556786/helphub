@@ -15,11 +15,11 @@
                     <Text text="{i18n>loginTagline}" class="grayText textCenter"/>
                 </VBox>
 
-                <!-- Step 0: Magic link processing — shown while auto-login runs after clicking email link -->
+                <!-- Step 0: Session check — shown on every app open while token is verified -->
                 <VBox id="stepProcessing" visible="{appData>/magicLinkProcessing}" alignItems="Center" class="sapUiMediumMargin">
                     <core:Icon src="sap-icon://locked" size="3rem" color="#f97316" class="sapUiSmallMarginBottom"/>
-                    <Title text="Signing you in…" level="H3" class="sapUiSmallMarginBottom"/>
-                    <Text text="Verifying your link, please wait." class="grayText textCenter sapUiSmallMarginBottom"/>
+                    <Title text="Resuming your session…" level="H3" class="sapUiSmallMarginBottom"/>
+                    <Text text="Please wait a moment." class="grayText textCenter sapUiSmallMarginBottom"/>
                     <BusyIndicator active="true" size="2rem"/>
                 </VBox>
 
