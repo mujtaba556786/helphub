@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
-# prepare-www.sh — syncs the webapp into Cordova www/ and applies mobile overrides
-# Run this before: cordova build android   (or   cordova build ios)
-#
+# prepare-www.sh — syncs webapp → www/, applies mobile overrides, then builds APK
 # Usage:  cd frontend/mobile && bash prepare-www.sh
 
 set -e
@@ -9,24 +7,30 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 WEBAPP="$SCRIPT_DIR/../webapp"
 WWW="$SCRIPT_DIR/www"
 
+# ── Android SDK (Homebrew install) ──────────────────────────────────────────
+export ANDROID_HOME=/opt/homebrew/share/android-commandlinetools
+export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/build-tools/35.0.0:$PATH"
+
+# Create tools/bin symlink that older Cordova checks for
+if [ ! -d "$ANDROID_HOME/tools/bin" ]; then
+    mkdir -p "$ANDROID_HOME/tools"
+    ln -sf "$ANDROID_HOME/cmdline-tools/latest/bin" "$ANDROID_HOME/tools/bin"
+    echo "  Created tools/bin symlink"
+fi
+
 echo "▶ Syncing webapp → www/ ..."
 rsync -a --delete \
     --exclude='test/' \
     --exclude='*.map' \
     "$WEBAPP/" "$WWW/"
 
-echo "▶ Copying Cordova-specific files ..."
-# Mobile index.html has: cordova.js, CSP, frame-options=allow, local Leaflet
+echo "▶ Applying mobile-specific index.html ..."
 cp "$SCRIPT_DIR/src/index.html" "$WWW/index.html"
 
-echo "▶ Downloading Leaflet locally (CSP blocks CDN in WebView) ..."
-mkdir -p "$WWW/js" "$WWW/css/images"
-curl -sL https://unpkg.com/leaflet@1.9.4/dist/leaflet.js     -o "$WWW/js/leaflet.js"
-curl -sL https://unpkg.com/leaflet@1.9.4/dist/leaflet.css    -o "$WWW/css/leaflet.css"
-curl -sL https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png    -o "$WWW/css/images/marker-icon.png"
-curl -sL https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png -o "$WWW/css/images/marker-icon-2x.png"
-curl -sL https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png  -o "$WWW/css/images/marker-shadow.png"
-curl -sL https://unpkg.com/leaflet@1.9.4/dist/images/layers.png         -o "$WWW/css/images/layers.png"
-curl -sL https://unpkg.com/leaflet@1.9.4/dist/images/layers-2x.png      -o "$WWW/css/images/layers-2x.png"
+echo "▶ Building APK ..."
+cd "$SCRIPT_DIR"
+cordova build android
 
-echo "✅ www/ is ready — now run: cordova build android"
+echo ""
+echo "✅ APK ready:"
+find "$SCRIPT_DIR/platforms/android/app/build/outputs/apk" -name "*.apk" 2>/dev/null
