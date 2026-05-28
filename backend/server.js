@@ -64,9 +64,12 @@ app.use(helmet({
 
 app.use(cors({
     origin: function(origin, callback) {
-        // allow server-to-server (no origin), whitelisted origins, and Railway/HTTPS origins
+        // allow server-to-server requests (no origin header)
         if (!origin) return callback(null, true);
+        // allow whitelisted origins (dev)
         if (ALLOWED_ORIGINS.includes(origin)) return callback(null, true);
+        // allow Cordova Android WebView — serves from http://localhost (no port)
+        if (origin === 'http://localhost' || origin === 'http://localhost:80') return callback(null, true);
         // allow any HTTPS origin in production (Railway URL, mobile apps, etc.)
         if (process.env.NODE_ENV === 'production' && origin.startsWith('https://')) return callback(null, true);
         callback(new Error('Not allowed by CORS'));
