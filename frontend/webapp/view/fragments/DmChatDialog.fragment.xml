@@ -36,24 +36,23 @@
             </Bar>
         </subHeader>
 
-        <!-- Messages area fills remaining space -->
         <content>
-            <ScrollContainer id="dmScrollContainer" height="100%" vertical="true" horizontal="false">
-                <core:HTML id="dmBubblesHtml" content="&lt;div&gt;&lt;/div&gt;"/>
-            </ScrollContainer>
+            <FlexBox direction="Column" height="100%" fitContainer="true">
+                <items>
+                    <!-- Messages — grows to fill -->
+                    <ScrollContainer id="dmScrollContainer" vertical="true" horizontal="false">
+                        <layoutData><FlexItemData growFactor="1" shrinkFactor="1" baseSize="0"/></layoutData>
+                        <core:HTML id="dmBubblesHtml" content="&lt;div&gt;&lt;/div&gt;"/>
+                    </ScrollContainer>
+                    <!-- Input bar — pinned to bottom -->
+                    <HBox alignItems="Center" class="sapUiSmallMarginBeginEnd sapUiTinyMarginBottom">
+                        <layoutData><FlexItemData shrinkFactor="0"/></layoutData>
+                        <Input id="dmInput" placeholder="{i18n>typeMessage}" width="100%" submit="onDmSend"/>
+                        <Button id="dmSendBtn" icon="sap-icon://paper-plane" type="Emphasized" press="onDmSend" class="sapUiTinyMarginBegin"/>
+                    </HBox>
+                </items>
+            </FlexBox>
         </content>
-
-        <!-- Input bar pinned to bottom -->
-        <footer>
-            <Bar>
-                <contentLeft>
-                    <Input id="dmInput" placeholder="{i18n>typeMessage}" submit="onDmSend"/>
-                </contentLeft>
-                <contentRight>
-                    <Button id="dmSendBtn" icon="sap-icon://paper-plane" type="Emphasized" press="onDmSend"/>
-                </contentRight>
-            </Bar>
-        </footer>
 
     </Dialog>
 
