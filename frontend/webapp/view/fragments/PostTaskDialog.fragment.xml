@@ -2,29 +2,37 @@
     xmlns="sap.m"
     xmlns:core="sap.ui.core">
 
-    <Dialog id="postTaskDialog" title="{i18n>postTaskTitle}" contentWidth="92%" stretch="{device>/system/phone}">
-        <VBox class="sapUiMediumMargin">
-            <Label text="{i18n>whatNeedHelp}" required="true"/>
-            <Input value="{appData>/taskForm/title}" placeholder="{i18n>taskTitlePlaceholder}" width="100%" class="sapUiTinyMarginBottom"/>
-            <Label text="{i18n>description}"/>
-            <TextArea value="{appData>/taskForm/description}" rows="3" width="100%" placeholder="{i18n>taskDescriptionPlaceholder}" class="sapUiTinyMarginBottom"/>
-            <Label text="{i18n>category}" required="true"/>
-            <Select id="taskCategorySelect" selectedKey="{appData>/taskForm/category}" width="100%" class="sapUiTinyMarginBottom" items="{appData>/services}">
-                <core:ListItem key="{appData>name}" text="{appData>label}" icon="{appData>icon}" iconDensityAware="false"/>
-            </Select>
-            <Label text="{i18n>budgetEur}"/>
-            <Input value="{appData>/taskForm/budget}" type="Number" placeholder="e.g. 50" width="100%" class="sapUiTinyMarginBottom"/>
-            <Label text="{i18n>when}"/>
-            <DatePicker value="{appData>/taskForm/task_date}" valueFormat="yyyy-MM-dd" displayFormat="MMM dd, yyyy" width="100%" class="sapUiTinyMarginBottom"/>
-            <Label text="{i18n>location}"/>
-            <Input value="{appData>/taskForm/location}" placeholder="{i18n>locationPlaceholder}" width="100%" class="sapUiTinyMarginBottom"/>
-        </VBox>
+    <Dialog id="postTaskDialog" title="{i18n>postTaskTitle}"
+        contentWidth="92%"
+        verticalScrolling="true"
+        stretch="{device>/system/phone}">
+
+        <content>
+            <VBox class="sapUiSmallMarginBeginEnd sapUiSmallMarginTopBottom">
+                <Label text="{i18n>whatNeedHelp}" required="true"/>
+                <Input value="{appData>/taskForm/title}" placeholder="{i18n>taskTitlePlaceholder}" width="100%" class="sapUiTinyMarginBottom"/>
+                <Label text="{i18n>description}"/>
+                <TextArea value="{appData>/taskForm/description}" rows="3" width="100%" placeholder="{i18n>taskDescriptionPlaceholder}" class="sapUiTinyMarginBottom"/>
+                <Label text="{i18n>category}" required="true"/>
+                <Select id="taskCategorySelect" selectedKey="{appData>/taskForm/category}" width="100%" class="sapUiTinyMarginBottom" items="{appData>/services}">
+                    <core:ListItem key="{appData>name}" text="{appData>label}" icon="{appData>icon}" iconDensityAware="false"/>
+                </Select>
+                <Label text="{i18n>budgetEur}"/>
+                <Input value="{appData>/taskForm/budget}" type="Number" placeholder="e.g. 50" width="100%" class="sapUiTinyMarginBottom"/>
+                <Label text="{i18n>when}"/>
+                <DatePicker value="{appData>/taskForm/task_date}" valueFormat="yyyy-MM-dd" displayFormat="MMM dd, yyyy" width="100%" class="sapUiTinyMarginBottom"/>
+                <Label text="{i18n>location}"/>
+                <Input value="{appData>/taskForm/location}" placeholder="{i18n>locationPlaceholder}" width="100%" class="sapUiTinyMarginBottom"/>
+            </VBox>
+        </content>
+
         <beginButton>
             <Button text="{i18n>postTaskBtn}" icon="sap-icon://paper-plane" type="Emphasized" press="onConfirmPostTask"/>
         </beginButton>
         <endButton>
             <Button text="{i18n>cancel}" press="onClosePostTask"/>
         </endButton>
+
     </Dialog>
 
 </core:FragmentDefinition>
