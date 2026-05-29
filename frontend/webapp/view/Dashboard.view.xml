@@ -797,10 +797,16 @@ xmlns:l="sap.ui.layout"
 
                                     </f:SimpleForm>
 
-                    <Button text="{i18n>saveProfile}" icon="sap-icon://save" type="Emphasized" press="onSaveProfile" class="sapUiMediumMarginTop sapUiLargeMarginBottom" width="100%"/>
-
                 </VBox>
             </content>
+
+            <footer>
+                <Bar>
+                    <contentRight>
+                        <Button text="{i18n>saveProfile}" icon="sap-icon://save" type="Emphasized" press="onSaveProfile"/>
+                    </contentRight>
+                </Bar>
+            </footer>
 
         </Page>
 
