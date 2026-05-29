@@ -187,10 +187,7 @@
 
 @media (max-width: 480px) { .mapDiv { height: 180px; } }
 
-/* ── Chat dialog ──────────────────────────────────────────────── */
-.hhChatLayout    { height: 100%; display: flex; flex-direction: column; }
-.hhChatMessages  { flex: 1; min-height: 0; }
-.hhChatInputBar  { flex-shrink: 0; padding: 8px 12px; border-top: 1px solid; }
+/* ── Chat dialog — layout handled by SAP UI5 FlexBox + FlexItemData ── */
 #chatBubbles     { display: flex; flex-direction: column; gap: 8px; padding: 12px; }
 
 /* ── Booking list ─────────────────────────────────────────────── */
@@ -215,13 +212,7 @@
     box-shadow: 0 1px 4px rgba(0,0,0,0.2);
 }
 
-/* ── Notifications dialog ─────────────────────────────────────── */
-.hhNotifWrap { padding: 0; }
-
-.hhNotifFilterRow {
-    gap: 6px; padding: 10px 16px 8px;
-    flex-wrap: nowrap; overflow-x: auto;
-}
+/* ── Notifications popover ────────────────────────────────────── */
 
 .hhNotifChip.sapMBtn {
     border-radius: 20px !important;
@@ -283,7 +274,6 @@
 .hhToastClose { background: none; border: none; font-size: 16px; cursor: pointer; padding: 0; flex-shrink: 0; margin-top: 2px; }
 
 /* ── Quick reply chips ────────────────────────────────────────── */
-.hhQuickReplies { padding: 4px 8px; border-top: 1px solid; flex-shrink: 0; }
 .hhQRChip       { border-radius: 16px; font-size: 12px; padding: 2px 10px; height: auto; }
 
 @media (max-width: 480px) { .hhQRChip { font-size: 11px; padding: 1px 8px; } }
