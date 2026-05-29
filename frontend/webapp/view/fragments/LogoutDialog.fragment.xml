@@ -33,19 +33,14 @@
             </VBox>
         </content>
 
-        <buttons>
-            <!-- Send link button — hidden once link is sent -->
-            <Button
-                text="Send Login Link"
-                type="Emphasized"
+        <beginButton>
+            <Button text="Send Login Link" type="Emphasized"
                 press=".onLogoutSendLink"
-                visible="{= !${logoutData>/linkSent} }" />
-
-            <!-- Close / back to login -->
-            <Button
-                text="Back to Login"
-                press=".onLogoutClose" />
-        </buttons>
+                visible="{= !${logoutData>/linkSent} }"/>
+        </beginButton>
+        <endButton>
+            <Button text="Back to Login" press=".onLogoutClose"/>
+        </endButton>
 
     </Dialog>
 
