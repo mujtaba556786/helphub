@@ -22,29 +22,31 @@
             </Bar>
         </subHeader>
 
-        <!-- Messages area fills remaining space -->
         <content>
-            <ScrollContainer id="chatScrollContainer" height="100%" vertical="true" horizontal="false">
-                <core:HTML id="chatMessagesHtml" content="&lt;div&gt;&lt;/div&gt;"/>
-                <HBox id="chatTypingIndicator" visible="false" alignItems="Center" class="sapUiTinyMarginBegin sapUiTinyMarginBottom">
-                    <BusyIndicator size="1rem" class="sapUiTinyMarginEnd"/>
-                    <Text text="{i18n>typing}" class="grayText smallText"/>
-                </HBox>
-            </ScrollContainer>
+            <FlexBox direction="Column" height="100%" fitContainer="true">
+                <items>
+                    <!-- Messages — grows to fill -->
+                    <ScrollContainer id="chatScrollContainer" vertical="true" horizontal="false">
+                        <layoutData><FlexItemData growFactor="1" shrinkFactor="1" baseSize="0"/></layoutData>
+                        <core:HTML id="chatMessagesHtml" content="&lt;div&gt;&lt;/div&gt;"/>
+                        <HBox id="chatTypingIndicator" visible="false" alignItems="Center" class="sapUiTinyMarginBegin sapUiTinyMarginBottom">
+                            <BusyIndicator size="1rem" class="sapUiTinyMarginEnd"/>
+                            <Text text="{i18n>typing}" class="grayText smallText"/>
+                        </HBox>
+                    </ScrollContainer>
+                    <!-- Input bar — pinned to bottom -->
+                    <HBox alignItems="Center" class="sapUiSmallMarginBeginEnd sapUiTinyMarginBottom">
+                        <layoutData><FlexItemData shrinkFactor="0"/></layoutData>
+                        <Input id="chatInput" placeholder="{i18n>askAnything}" width="100%" submit="onChatSend"/>
+                        <Button id="chatSendBtn" icon="sap-icon://paper-plane" type="Emphasized" press="onChatSend" class="sapUiTinyMarginBegin"/>
+                    </HBox>
+                </items>
+            </FlexBox>
         </content>
 
-        <!-- Input + Close pinned to bottom -->
-        <footer>
-            <Bar>
-                <contentLeft>
-                    <Input id="chatInput" placeholder="{i18n>askAnything}" submit="onChatSend"/>
-                </contentLeft>
-                <contentRight>
-                    <Button id="chatSendBtn" icon="sap-icon://paper-plane" type="Emphasized" press="onChatSend"/>
-                    <Button text="{i18n>close}" press="onCloseChat"/>
-                </contentRight>
-            </Bar>
-        </footer>
+        <endButton>
+            <Button text="{i18n>close}" press="onCloseChat"/>
+        </endButton>
 
     </Dialog>
 
