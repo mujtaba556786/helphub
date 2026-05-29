@@ -72,10 +72,12 @@ sap.ui.define([
         /* ─────────────────────────────────────────────
            Open dialog
         ───────────────────────────────────────────── */
-        onShowNotifications: function () {
+        onShowNotifications: function (oEvent) {
             var oModel  = this.getModel("appData");
             var sUserId = oModel.getProperty("/user/id") || localStorage.getItem("helpmate_user_id");
             if (!sUserId) { MessageToast.show("Please log in first."); return; }
+
+            var oSource = oEvent.getSource(); // bell button — Popover anchors here
 
             // Default filter
             if (!oModel.getProperty("/notifFilter")) {
@@ -89,10 +91,10 @@ sap.ui.define([
                         oModel.setProperty("/notifications", oData.notifications || []);
                         this._applyNotifFilter();
                     }
-                    this._getNotificationsDialog().then(function (d) { d.open(); }.bind(this));
+                    this._getNotificationsDialog().then(function (d) { d.openBy(oSource); }.bind(this));
                 }.bind(this))
                 .catch(function () {
-                    this._getNotificationsDialog().then(function (d) { d.open(); }.bind(this));
+                    this._getNotificationsDialog().then(function (d) { d.openBy(oSource); }.bind(this));
                 }.bind(this));
         },
 

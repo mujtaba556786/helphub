@@ -2,27 +2,46 @@
     xmlns="sap.m"
     xmlns:core="sap.ui.core">
 
-    <Dialog id="chatDialog" title="{i18n>aiChat}" contentHeight="65vh" contentWidth="92%" verticalScrolling="false" stretch="{device>/system/phone}">
-        <VBox height="100%" class="hhChatLayout">
-            <ScrollContainer id="chatScrollContainer" vertical="true" horizontal="false" class="hhChatMessages">
-                <core:HTML id="chatMessagesHtml" content="&lt;div&gt;&lt;/div&gt;"/>
-                <HBox id="chatTypingIndicator" visible="false" alignItems="Center" class="sapUiTinyMarginBegin sapUiTinyMarginBottom">
-                    <BusyIndicator size="1rem" class="sapUiTinyMarginEnd"/>
-                    <Text text="{i18n>typing}" class="grayText smallText"/>
-                </HBox>
-            </ScrollContainer>
-            <HBox class="hhQuickReplies" wrap="Wrap">
-                <Button icon="sap-icon://car-rental"     text="{i18n>qrOnMyWay}"     type="Transparent" press="onQuickReply" class="hhQRChip sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
-                <Button icon="sap-icon://accept"         text="{i18n>qrImAvailable}" type="Transparent" press="onQuickReply" class="hhQRChip sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
-                <Button icon="sap-icon://appointment-2"  text="{i18n>qrReschedule}"  type="Transparent" press="onQuickReply" class="hhQRChip sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
-                <Button icon="sap-icon://goodbye"        text="{i18n>qrSeeSoon}"     type="Transparent" press="onQuickReply" class="hhQRChip sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
-                <Button icon="sap-icon://sys-enter-2"    text="{i18n>qrAllDone}"     type="Transparent" press="onQuickReply" class="hhQRChip sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
-            </HBox>
-            <HBox alignItems="Center" class="hhChatInputBar">
-                <Input id="chatInput" placeholder="{i18n>askAnything}" width="100%" submit="onChatSend"/>
-                <Button id="chatSendBtn" icon="sap-icon://paper-plane" type="Emphasized" press="onChatSend" class="sapUiTinyMarginBegin"/>
-            </HBox>
-        </VBox>
+    <Dialog id="chatDialog" title="{i18n>aiChat}"
+        contentHeight="65vh" contentWidth="92%"
+        verticalScrolling="false"
+        stretch="{device>/system/phone}">
+
+        <content>
+            <FlexBox direction="Column" height="100%" fitContainer="true">
+                <items>
+
+                    <!-- Messages area — grows to fill all available space -->
+                    <ScrollContainer id="chatScrollContainer" vertical="true" horizontal="false">
+                        <layoutData><FlexItemData growFactor="1" shrinkFactor="1" baseSize="0"/></layoutData>
+                        <core:HTML id="chatMessagesHtml" content="&lt;div&gt;&lt;/div&gt;"/>
+                        <HBox id="chatTypingIndicator" visible="false" alignItems="Center" class="sapUiTinyMarginBegin sapUiTinyMarginBottom">
+                            <BusyIndicator size="1rem" class="sapUiTinyMarginEnd"/>
+                            <Text text="{i18n>typing}" class="grayText smallText"/>
+                        </HBox>
+                    </ScrollContainer>
+
+                    <!-- Quick reply chips -->
+                    <HBox wrap="Wrap" alignItems="Center" class="sapUiTinyMarginBeginEnd sapUiTinyMarginTopBottom">
+                        <layoutData><FlexItemData shrinkFactor="0"/></layoutData>
+                        <Button icon="sap-icon://car-rental"    text="{i18n>qrOnMyWay}"     type="Transparent" press="onQuickReply" class="hhQRChip sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                        <Button icon="sap-icon://accept"        text="{i18n>qrImAvailable}" type="Transparent" press="onQuickReply" class="hhQRChip sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                        <Button icon="sap-icon://appointment-2" text="{i18n>qrReschedule}"  type="Transparent" press="onQuickReply" class="hhQRChip sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                        <Button icon="sap-icon://goodbye"       text="{i18n>qrSeeSoon}"     type="Transparent" press="onQuickReply" class="hhQRChip sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                        <Button icon="sap-icon://sys-enter-2"   text="{i18n>qrAllDone}"     type="Transparent" press="onQuickReply" class="hhQRChip sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                    </HBox>
+
+                    <!-- Input bar -->
+                    <HBox alignItems="Center" class="sapUiSmallMarginBeginEnd sapUiTinyMarginBottom">
+                        <layoutData><FlexItemData shrinkFactor="0"/></layoutData>
+                        <Input id="chatInput" placeholder="{i18n>askAnything}" width="100%" submit="onChatSend"/>
+                        <Button id="chatSendBtn" icon="sap-icon://paper-plane" type="Emphasized" press="onChatSend" class="sapUiTinyMarginBegin"/>
+                    </HBox>
+
+                </items>
+            </FlexBox>
+        </content>
+
         <endButton>
             <Button text="{i18n>close}" press="onCloseChat"/>
         </endButton>
