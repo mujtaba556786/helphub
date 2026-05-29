@@ -1,0 +1,83 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    displayBlock="true">
+
+    <Dialog id="settingsDialog"
+        title="{i18n>settingsTab}"
+        contentWidth="380px"
+        verticalScrolling="true"
+        stretch="{device>/system/phone}">
+
+        <content>
+            <VBox>
+
+                <!-- ── Language ── -->
+                <List showSeparators="None">
+                    <GroupHeaderListItem title="{i18n>changeLanguage}" upperCase="false"/>
+                    <StandardListItem
+                        title="{i18n>changeLanguage}"
+                        icon="sap-icon://world"
+                        iconDensityAware="false"
+                        type="Active"
+                        info="{appData>/currentLanguageLabel}"
+                        press="onLanguageMenu"/>
+                </List>
+
+                <!-- ── Legal ── -->
+                <List showSeparators="None">
+                    <GroupHeaderListItem title="{i18n>settingsLegalSection}" upperCase="false"/>
+                    <StandardListItem
+                        title="{i18n>viewTerms}"
+                        description="{i18n>aboutTermsDesc}"
+                        icon="sap-icon://document-text"
+                        iconDensityAware="false"
+                        type="Active"
+                        press="onViewTerms"/>
+                    <StandardListItem
+                        title="{i18n>viewPrivacy}"
+                        description="{i18n>aboutPrivacyDesc}"
+                        icon="sap-icon://privacy"
+                        iconDensityAware="false"
+                        type="Active"
+                        press="onViewPrivacy"/>
+                </List>
+
+                <!-- ── Support ── -->
+                <List showSeparators="None">
+                    <GroupHeaderListItem title="{i18n>settingsSupportSection}" upperCase="false"/>
+                    <StandardListItem
+                        title="{i18n>settingsHelpFaq}"
+                        description="{i18n>aboutHelpDesc}"
+                        icon="sap-icon://sys-help-2"
+                        iconDensityAware="false"
+                        type="Active"
+                        press="onOpenHelp"/>
+                    <StandardListItem
+                        title="{i18n>settingsContactSupport}"
+                        description="{i18n>aboutContactDesc}"
+                        icon="sap-icon://email"
+                        iconDensityAware="false"
+                        type="Active"
+                        press="onContactSupport"/>
+                </List>
+
+                <!-- ── About ── -->
+                <List showSeparators="None">
+                    <GroupHeaderListItem title="{i18n>settingsAboutSection}" upperCase="false"/>
+                </List>
+                <VBox alignItems="Center" class="hhAboutHero">
+                    <Title text="HelpMate" level="H4" class="sapUiTinyMarginBottom"/>
+                    <Text text="{i18n>aboutTagline}" wrapping="true" class="grayText textCenter"/>
+                    <ObjectStatus text="Version 2.44" state="Success" class="sapUiTinyMarginTop"/>
+                </VBox>
+
+            </VBox>
+        </content>
+
+        <endButton>
+            <Button text="{i18n>close}" press="onCloseSettings"/>
+        </endButton>
+    </Dialog>
+
+</core:FragmentDefinition>

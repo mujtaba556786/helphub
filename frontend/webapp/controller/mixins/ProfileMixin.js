@@ -237,26 +237,32 @@ sap.ui.define([
             this._getProfileDialog().then(function(d) { d.close(); }.bind(this));
         },
 
-        // Opens the ProfileDialog directly on the Settings tab
+        // Opens the dedicated SettingsDialog (language, legal, support, about)
         onOpenSettings: function() {
-            this.onOpenMyProfile();
-            this._getProfileDialog().then(function(oDialog) {
-                var oTabBar = oDialog.getContent()[0];
-                // Walk content tree to find the IconTabBar
-                function findTabBar(oControl) {
-                    if (!oControl) return null;
-                    if (oControl.isA && oControl.isA("sap.m.IconTabBar")) return oControl;
-                    var aItems = (oControl.getItems && oControl.getItems()) ||
-                                 (oControl.getContent && oControl.getContent()) || [];
-                    for (var i = 0; i < aItems.length; i++) {
-                        var found = findTabBar(aItems[i]);
-                        if (found) return found;
-                    }
-                    return null;
-                }
-                var oBar = findTabBar(oDialog);
-                if (oBar) oBar.setSelectedKey("settings");
+            this._getSettingsDialog().then(function(oDialog) {
+                oDialog.open();
             }.bind(this));
+        },
+
+        onCloseSettings: function() {
+            this._getSettingsDialog().then(function(oDialog) {
+                oDialog.close();
+            }.bind(this));
+        },
+
+        _getSettingsDialog: function() {
+            if (!this._pSettingsDialog) {
+                var Fragment = sap.ui.require("sap/ui/core/Fragment");
+                this._pSettingsDialog = Fragment.load({
+                    id:         this.getView().getId(),
+                    name:       "helphub.view.fragments.SettingsDialog",
+                    controller: this
+                }).then(function(oDialog) {
+                    this.getView().addDependent(oDialog);
+                    return oDialog;
+                }.bind(this));
+            }
+            return this._pSettingsDialog;
         }
 
     };
