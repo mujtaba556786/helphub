@@ -1,14 +1,15 @@
 /**
- * OPA5 Journey — About & Legal page (Settings tab on edit profile page).
+ * OPA5 Journey — Settings dialog (gear icon on Edit Profile page).
  *
  * Scenarios covered:
- *  1. Settings tab exists in the edit-profile page
- *  2. Settings tab contains the app hero with "HelpMate" title
- *  3. Settings tab contains a Terms & Conditions list item
- *  4. Settings tab contains a Privacy Policy list item
- *  5. Settings tab contains Help & FAQ list item
- *  6. Settings tab contains Contact Support list item
- *  7. Settings tab contains the App version info row
+ *  1. Gear button exists on the edit-profile page header
+ *  2. Tapping gear opens the SettingsDialog
+ *  3. SettingsDialog contains Language list item
+ *  4. SettingsDialog contains Terms of Service list item
+ *  5. SettingsDialog contains Privacy Policy list item
+ *  6. SettingsDialog contains Help & FAQ list item
+ *  7. SettingsDialog contains Contact Support list item
+ *  8. SettingsDialog contains "HelpMate" title in About section
  */
 sap.ui.define([
     "sap/ui/test/opaQunit",
@@ -20,16 +21,16 @@ sap.ui.define([
 ], function (opaTest, Opa5, Press, PropertyStrictEquals, DashboardPage, MockServer) {
     "use strict";
 
-    QUnit.module("About & Legal — Settings tab on edit profile page", {
+    QUnit.module("Settings Dialog — gear icon on Edit Profile page", {
         before: function () { MockServer.start(); },
         after:  function () { MockServer.stop(); }
     });
 
-    // ── Helper: navigate to Settings tab ──────────────────────────────────────
-    // The Settings tab is the second tab in the edit-profile IconTabBar.
-    // We open the edit page via the header avatar action sheet.
+    // ── Helper: navigate to edit profile and open Settings dialog ─────────────
+    function iOpenSettingsDialog(Given, When) {
+        Given.iStartMyUIComponent({ componentConfig: { name: "helphub", manifest: true } });
 
-    function iNavigateToSettingsTab(When) {
+        // Open edit profile via header avatar
         When.waitFor({
             id: "headerAvatar",
             viewName: "helphub.view.Dashboard",
@@ -43,19 +44,19 @@ sap.ui.define([
             actions: new Press(),
             errorMessage: "Edit Profile button not found in action sheet"
         });
-        // Press the Settings tab (key="settings")
+        // Press the gear / settings button in the editPage header
         When.waitFor({
-            controlType: "sap.m.IconTabFilter",
+            controlType: "sap.m.Button",
             viewName: "helphub.view.Dashboard",
-            matchers: new PropertyStrictEquals({ name: "key", value: "settings" }),
+            matchers: new PropertyStrictEquals({ name: "icon", value: "sap-icon://action-settings" }),
             actions: new Press(),
-            errorMessage: "Settings tab not found in edit profile page"
+            errorMessage: "Settings gear button not found in edit profile header"
         });
     }
 
-    // ── 1. Settings tab exists ────────────────────────────────────────────────
+    // ── 1. Gear button exists on edit profile ─────────────────────────────────
 
-    opaTest("Settings tab exists in the edit-profile IconTabBar", function (Given, When, Then) {
+    opaTest("Gear (settings) button exists on edit profile page header", function (Given, When, Then) {
         Given.iStartMyUIComponent({ componentConfig: { name: "helphub", manifest: true } });
 
         When.waitFor({
@@ -73,97 +74,107 @@ sap.ui.define([
         });
 
         Then.waitFor({
-            controlType: "sap.m.IconTabFilter",
+            controlType: "sap.m.Button",
             viewName: "helphub.view.Dashboard",
-            matchers: new PropertyStrictEquals({ name: "key", value: "settings" }),
+            matchers: new PropertyStrictEquals({ name: "icon", value: "sap-icon://action-settings" }),
             success: function () {
-                Opa5.assert.ok(true, "Settings tab (key='settings') exists in edit-profile page");
+                Opa5.assert.ok(true, "Settings gear button found on edit profile header");
             },
-            errorMessage: "Settings tab not found"
+            errorMessage: "Settings gear button not found on edit profile header"
         });
 
         Then.iTeardownMyUIComponent();
     });
 
-    // ── 2. Hero title shows "HelpMate" ────────────────────────────────────────
+    // ── 2. Tapping gear opens SettingsDialog ──────────────────────────────────
 
-    opaTest("Settings tab hero shows 'HelpMate' title", function (Given, When, Then) {
-        Given.iStartMyUIComponent({ componentConfig: { name: "helphub", manifest: true } });
+    opaTest("Tapping gear button opens the Settings dialog", function (Given, When, Then) {
+        iOpenSettingsDialog(Given, When);
 
-        iNavigateToSettingsTab(When);
+        Then.waitFor({
+            id: "settingsDialog",
+            success: function () {
+                Opa5.assert.ok(true, "SettingsDialog opened after pressing gear button");
+            },
+            errorMessage: "SettingsDialog did not open"
+        });
+
+        Then.iTeardownMyUIComponent();
+    });
+
+    // ── 3. Language item ──────────────────────────────────────────────────────
+
+    opaTest("SettingsDialog contains Language list item", function (Given, When, Then) {
+        iOpenSettingsDialog(Given, When);
+
+        Then.waitFor({
+            controlType: "sap.m.StandardListItem",
+            matchers: new PropertyStrictEquals({ name: "icon", value: "sap-icon://world" }),
+            success: function () {
+                Opa5.assert.ok(true, "Language list item found in SettingsDialog");
+            },
+            errorMessage: "Language list item not found in SettingsDialog"
+        });
+
+        Then.iTeardownMyUIComponent();
+    });
+
+    // ── 4 & 5. Legal list items ───────────────────────────────────────────────
+
+    [
+        { title: "Terms of Service",  icon: "sap-icon://document-text" },
+        { title: "Privacy Policy",    icon: "sap-icon://privacy"       }
+    ].forEach(function (oItem) {
+        opaTest("SettingsDialog contains '" + oItem.title + "' list item", function (Given, When, Then) {
+            iOpenSettingsDialog(Given, When);
+
+            Then.waitFor({
+                controlType: "sap.m.StandardListItem",
+                matchers: new PropertyStrictEquals({ name: "icon", value: oItem.icon }),
+                success: function () {
+                    Opa5.assert.ok(true, "'" + oItem.title + "' list item found in SettingsDialog");
+                },
+                errorMessage: "'" + oItem.title + "' list item not found in SettingsDialog"
+            });
+
+            Then.iTeardownMyUIComponent();
+        });
+    });
+
+    // ── 6 & 7. Support list items ─────────────────────────────────────────────
+
+    [
+        { title: "Help & FAQ",       icon: "sap-icon://sys-help-2" },
+        { title: "Contact Support",  icon: "sap-icon://email"      }
+    ].forEach(function (oItem) {
+        opaTest("SettingsDialog contains '" + oItem.title + "' list item", function (Given, When, Then) {
+            iOpenSettingsDialog(Given, When);
+
+            Then.waitFor({
+                controlType: "sap.m.StandardListItem",
+                matchers: new PropertyStrictEquals({ name: "icon", value: oItem.icon }),
+                success: function () {
+                    Opa5.assert.ok(true, "'" + oItem.title + "' list item found in SettingsDialog");
+                },
+                errorMessage: "'" + oItem.title + "' list item not found in SettingsDialog"
+            });
+
+            Then.iTeardownMyUIComponent();
+        });
+    });
+
+    // ── 8. HelpMate title in About section ───────────────────────────────────
+
+    opaTest("SettingsDialog About section shows 'HelpMate' title", function (Given, When, Then) {
+        iOpenSettingsDialog(Given, When);
 
         Then.waitFor({
             controlType: "sap.m.Title",
-            viewName: "helphub.view.Dashboard",
             matchers: new PropertyStrictEquals({ name: "text", value: "HelpMate" }),
             success: function () {
-                Opa5.assert.ok(true, "'HelpMate' title found in Settings tab hero");
+                Opa5.assert.ok(true, "'HelpMate' title found in SettingsDialog About section");
             },
-            errorMessage: "'HelpMate' title not found in Settings tab"
-        });
-
-        Then.iTeardownMyUIComponent();
-    });
-
-    // ── 3 & 4. Legal list items ───────────────────────────────────────────────
-
-    ["Terms & Conditions", "Privacy Policy"].forEach(function (sTitle) {
-        opaTest("Settings tab contains '" + sTitle + "' list item", function (Given, When, Then) {
-            Given.iStartMyUIComponent({ componentConfig: { name: "helphub", manifest: true } });
-
-            iNavigateToSettingsTab(When);
-
-            Then.waitFor({
-                controlType: "sap.m.StandardListItem",
-                viewName: "helphub.view.Dashboard",
-                matchers: new PropertyStrictEquals({ name: "title", value: sTitle }),
-                success: function () {
-                    Opa5.assert.ok(true, "'" + sTitle + "' list item found in Settings tab");
-                },
-                errorMessage: "'" + sTitle + "' list item not found in Settings tab"
-            });
-
-            Then.iTeardownMyUIComponent();
-        });
-    });
-
-    // ── 5 & 6. Support list items ─────────────────────────────────────────────
-
-    ["Help & FAQ", "Contact Support"].forEach(function (sTitle) {
-        opaTest("Settings tab contains '" + sTitle + "' list item", function (Given, When, Then) {
-            Given.iStartMyUIComponent({ componentConfig: { name: "helphub", manifest: true } });
-
-            iNavigateToSettingsTab(When);
-
-            Then.waitFor({
-                controlType: "sap.m.StandardListItem",
-                viewName: "helphub.view.Dashboard",
-                matchers: new PropertyStrictEquals({ name: "title", value: sTitle }),
-                success: function () {
-                    Opa5.assert.ok(true, "'" + sTitle + "' list item found in Settings tab");
-                },
-                errorMessage: "'" + sTitle + "' list item not found in Settings tab"
-            });
-
-            Then.iTeardownMyUIComponent();
-        });
-    });
-
-    // ── 7. App version row ────────────────────────────────────────────────────
-
-    opaTest("Settings tab About section shows app version '2.25'", function (Given, When, Then) {
-        Given.iStartMyUIComponent({ componentConfig: { name: "helphub", manifest: true } });
-
-        iNavigateToSettingsTab(When);
-
-        Then.waitFor({
-            controlType: "sap.m.Text",
-            viewName: "helphub.view.Dashboard",
-            matchers: new PropertyStrictEquals({ name: "text", value: "2.25" }),
-            success: function () {
-                Opa5.assert.ok(true, "App version '2.25' found in Settings tab About section");
-            },
-            errorMessage: "App version text '2.25' not found"
+            errorMessage: "'HelpMate' title not found in SettingsDialog"
         });
 
         Then.iTeardownMyUIComponent();
