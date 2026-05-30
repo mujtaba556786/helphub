@@ -7,22 +7,7 @@
         verticalScrolling="false"
         stretch="{device>/system/phone}">
 
-        <!-- Quick replies pinned below header -->
-        <subHeader>
-            <Bar>
-                <contentLeft>
-                    <HBox wrap="Wrap" alignItems="Center" class="sapUiTinyMarginBeginEnd sapUiTinyMarginTopBottom">
-                        <Button icon="sap-icon://car-rental"    text="{i18n>qrOnMyWay}"     type="Transparent" press="onQuickReply" class="hhQRChip sapUiTinyMarginEnd"/>
-                        <Button icon="sap-icon://accept"        text="{i18n>qrImAvailable}" type="Transparent" press="onQuickReply" class="hhQRChip sapUiTinyMarginEnd"/>
-                        <Button icon="sap-icon://appointment-2" text="{i18n>qrReschedule}"  type="Transparent" press="onQuickReply" class="hhQRChip sapUiTinyMarginEnd"/>
-                        <Button icon="sap-icon://goodbye"       text="{i18n>qrSeeSoon}"     type="Transparent" press="onQuickReply" class="hhQRChip sapUiTinyMarginEnd"/>
-                        <Button icon="sap-icon://sys-enter-2"   text="{i18n>qrAllDone}"     type="Transparent" press="onQuickReply" class="hhQRChip sapUiTinyMarginEnd"/>
-                    </HBox>
-                </contentLeft>
-            </Bar>
-        </subHeader>
-
-        <content>
+<content>
             <FlexBox direction="Column" height="100%" fitContainer="true">
                 <items>
                     <!-- Messages — grows to fill -->

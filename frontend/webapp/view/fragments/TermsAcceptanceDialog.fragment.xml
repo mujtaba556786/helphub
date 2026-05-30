@@ -7,8 +7,7 @@
             contentWidth="480px"
             stretch="{device>/system/phone}"
             verticalScrolling="true"
-            escapeHandler=".onTermsEscapeHandler"
-            class="hhTermsDialog">
+            escapeHandler=".onTermsEscapeHandler">
 
         <beginButton>
             <Button text="{i18n>termsAgree}"
@@ -37,13 +36,13 @@
             <Text text="{i18n>termsIntro}" wrapping="true"
                   class="sapUiSmallMarginBegin sapUiSmallMarginEnd sapUiSmallMarginTop sapUiTinyMarginBottom grayText"/>
 
-            <!-- Terms sections — CustomListItem so height grows with content -->
+            <!-- Terms sections -->
             <List showSeparators="Inner" backgroundDesign="Transparent">
 
                 <CustomListItem type="Inactive">
-                    <HBox alignItems="Start" class="hhTermsItem">
-                        <core:Icon src="sap-icon://group" class="hhTermsIcon"/>
-                        <VBox class="sapUiTinyMarginBegin">
+                    <HBox alignItems="Start" class="sapUiSmallMarginBeginEnd sapUiTinyMarginTopBottom">
+                        <core:Icon src="sap-icon://group" class="sapUiSmallMarginEnd sapUiTinyMarginTop"/>
+                        <VBox>
                             <Text text="{i18n>termsPeerTitle}" class="fontBold"/>
                             <Text text="{i18n>termsPeerDesc}" wrapping="true" class="grayText"/>
                         </VBox>
@@ -51,9 +50,9 @@
                 </CustomListItem>
 
                 <CustomListItem type="Inactive">
-                    <HBox alignItems="Start" class="hhTermsItem">
-                        <core:Icon src="sap-icon://warning2" class="hhTermsIcon"/>
-                        <VBox class="sapUiTinyMarginBegin">
+                    <HBox alignItems="Start" class="sapUiSmallMarginBeginEnd sapUiTinyMarginTopBottom">
+                        <core:Icon src="sap-icon://warning2" class="sapUiSmallMarginEnd sapUiTinyMarginTop"/>
+                        <VBox>
                             <Text text="{i18n>termsResponsibilityTitle}" class="fontBold"/>
                             <Text text="{i18n>termsResponsibilityDesc}" wrapping="true" class="grayText"/>
                         </VBox>
@@ -61,9 +60,9 @@
                 </CustomListItem>
 
                 <CustomListItem type="Inactive">
-                    <HBox alignItems="Start" class="hhTermsItem">
-                        <core:Icon src="sap-icon://shield" class="hhTermsIcon"/>
-                        <VBox class="sapUiTinyMarginBegin">
+                    <HBox alignItems="Start" class="sapUiSmallMarginBeginEnd sapUiTinyMarginTopBottom">
+                        <core:Icon src="sap-icon://shield" class="sapUiSmallMarginEnd sapUiTinyMarginTop"/>
+                        <VBox>
                             <Text text="{i18n>termsSafetyTitle}" class="fontBold"/>
                             <Text text="{i18n>termsSafetyDesc}" wrapping="true" class="grayText"/>
                         </VBox>
@@ -71,9 +70,9 @@
                 </CustomListItem>
 
                 <CustomListItem type="Inactive">
-                    <HBox alignItems="Start" class="hhTermsItem">
-                        <core:Icon src="sap-icon://document-text" class="hhTermsIcon"/>
-                        <VBox class="sapUiTinyMarginBegin">
+                    <HBox alignItems="Start" class="sapUiSmallMarginBeginEnd sapUiTinyMarginTopBottom">
+                        <core:Icon src="sap-icon://document-text" class="sapUiSmallMarginEnd sapUiTinyMarginTop"/>
+                        <VBox>
                             <Text text="{i18n>termsGuidelinesTitle}" class="fontBold"/>
                             <Text text="{i18n>termsGuidelinesDesc}" wrapping="true" class="grayText"/>
                         </VBox>
@@ -81,9 +80,9 @@
                 </CustomListItem>
 
                 <CustomListItem type="Inactive">
-                    <HBox alignItems="Start" class="hhTermsItem">
-                        <core:Icon src="sap-icon://customer" class="hhTermsIcon"/>
-                        <VBox class="sapUiTinyMarginBegin">
+                    <HBox alignItems="Start" class="sapUiSmallMarginBeginEnd sapUiTinyMarginTopBottom">
+                        <core:Icon src="sap-icon://customer" class="sapUiSmallMarginEnd sapUiTinyMarginTop"/>
+                        <VBox>
                             <Text text="{i18n>termsEligibilityTitle}" class="fontBold"/>
                             <Text text="{i18n>termsEligibilityDesc}" wrapping="true" class="grayText"/>
                         </VBox>
@@ -91,9 +90,9 @@
                 </CustomListItem>
 
                 <CustomListItem type="Inactive">
-                    <HBox alignItems="Start" class="hhTermsItem">
-                        <core:Icon src="sap-icon://chain-link" class="hhTermsIcon"/>
-                        <VBox class="sapUiTinyMarginBegin">
+                    <HBox alignItems="Start" class="sapUiSmallMarginBeginEnd sapUiTinyMarginTopBottom">
+                        <core:Icon src="sap-icon://chain-link" class="sapUiSmallMarginEnd sapUiTinyMarginTop"/>
+                        <VBox>
                             <Text text="{i18n>termsFullTitle}" class="fontBold"/>
                             <Text text="{i18n>termsFullDesc}" wrapping="true" class="grayText"/>
                         </VBox>
@@ -104,7 +103,7 @@
 
             <!-- Checkbox row -->
             <HBox alignItems="Center" wrap="Wrap"
-                  class="hhTermsCheckboxRow sapUiSmallMarginBegin sapUiSmallMarginEnd sapUiSmallMarginTop sapUiSmallMarginBottom">
+                  class="sapUiSmallMarginBeginEnd sapUiSmallMarginTopBottom">
                 <CheckBox id="termsCheckbox" selected="{appData>/termsCheckbox}"/>
                 <Text text="{i18n>termsCheckboxPrefix}" class="smallText"/>
                 <Link text="{i18n>viewTerms}"   press="onViewTermsInline"   class="smallText sapUiTinyMarginBegin sapUiTinyMarginEnd"/>

@@ -198,13 +198,20 @@ sap.ui.define([
         },
 
         onViewBookingProfile: function(oEvent) {
-            var oCtx = oEvent.getSource().getParent().getParent().getBindingContext("appData");
+            // getBindingContext propagates up the tree automatically — no fragile getParent() chain
+            var oCtx = oEvent.getSource().getBindingContext("appData");
             if (!oCtx) return;
             var oBooking = oCtx.getObject();
             var sProviderId = oBooking.provider_id;
             if (!sProviderId) { MessageToast.show("Provider not found."); return; }
 
             var oModel = this.getModel("appData");
+            // If the user is the provider of this booking, open their own profile
+            if (String(sProviderId) === String(oModel.getProperty("/user/id"))) {
+                this.onOpenMyProfile();
+                return;
+            }
+
             var aProviders = oModel.getProperty("/providers") || [];
             var oKnown = aProviders.filter(function(p) { return String(p.id) === String(sProviderId); })[0];
 

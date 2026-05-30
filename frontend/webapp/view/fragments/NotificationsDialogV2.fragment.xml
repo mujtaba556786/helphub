@@ -27,16 +27,16 @@
             <VBox>
                 <!-- Filter chips -->
                 <HBox alignItems="Center" class="sapUiTinyMarginBeginEnd sapUiTinyMarginTopBottom" wrap="Wrap">
-                    <Button text="All"       type="{= ${appData>/notifFilter} === 'all'       ? 'Emphasized' : 'Default'}" press="onNotifFilter" class="hhNotifChip sapUiTinyMarginEnd">
+                    <Button text="All"       type="{= ${appData>/notifFilter} === 'all'       ? 'Emphasized' : 'Default'}" press="onNotifFilter" class="sapUiTinyMarginEnd">
                         <customData><core:CustomData key="filter" value="all"/></customData>
                     </Button>
-                    <Button text="Today"     type="{= ${appData>/notifFilter} === 'today'     ? 'Emphasized' : 'Default'}" press="onNotifFilter" class="hhNotifChip sapUiTinyMarginEnd">
+                    <Button text="Today"     type="{= ${appData>/notifFilter} === 'today'     ? 'Emphasized' : 'Default'}" press="onNotifFilter" class="sapUiTinyMarginEnd">
                         <customData><core:CustomData key="filter" value="today"/></customData>
                     </Button>
-                    <Button text="Yesterday" type="{= ${appData>/notifFilter} === 'yesterday' ? 'Emphasized' : 'Default'}" press="onNotifFilter" class="hhNotifChip sapUiTinyMarginEnd">
+                    <Button text="Yesterday" type="{= ${appData>/notifFilter} === 'yesterday' ? 'Emphasized' : 'Default'}" press="onNotifFilter" class="sapUiTinyMarginEnd">
                         <customData><core:CustomData key="filter" value="yesterday"/></customData>
                     </Button>
-                    <Button text="Earlier"   type="{= ${appData>/notifFilter} === 'earlier'   ? 'Emphasized' : 'Default'}" press="onNotifFilter" class="hhNotifChip sapUiTinyMarginEnd">
+                    <Button text="Earlier"   type="{= ${appData>/notifFilter} === 'earlier'   ? 'Emphasized' : 'Default'}" press="onNotifFilter" class="sapUiTinyMarginEnd">
                         <customData><core:CustomData key="filter" value="earlier"/></customData>
                     </Button>
                 </HBox>
@@ -61,7 +61,7 @@
                             <VBox class="sapUiTinyMarginBegin" width="100%">
                                 <HBox justifyContent="SpaceBetween" alignItems="Start">
                                     <Text text="{appData>title}" class="fontBold smallText"/>
-                                    <core:HTML content="{= ${appData>is_read} ? '' : '&lt;span class=&quot;hhNotifUnreadDot&quot;&gt;&lt;/span&gt;'}"/>
+                                    <core:Icon src="sap-icon://circle-task" color="Highlight" size="0.55rem" visible="{= !${appData>is_read}}" class="sapUiTinyMarginBegin"/>
                                 </HBox>
                                 <Text text="{appData>message}" class="smallText" wrapping="true"/>
                                 <Text text="{path:'appData>created_at', formatter:'.formatNotifTime'}" class="smallText grayText"/>
