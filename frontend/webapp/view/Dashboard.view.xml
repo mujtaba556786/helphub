@@ -238,7 +238,7 @@ xmlns:l="sap.ui.layout"
                                     <!-- ── Pinned section ── -->
                                     <VBox visible="{appData>/msgPinnedVisible}">
                                         <HBox class="hhMsgSectionHdr" alignItems="Center">
-                                            <core:Icon src="sap-icon://bookmark" size="0.9rem" color="var(--sapHighlightColor)"/>
+                                            <core:Icon src="sap-icon://bookmark" size="0.9rem" color="Highlight"/>
                                             <Text text="{i18n>msgPinned}" class="hhMsgSectionLabel"/>
                                         </HBox>
                                         <List items="{appData>/msgPinned}" showSeparators="None" class="hhMsgList">
@@ -718,7 +718,7 @@ xmlns:l="sap.ui.layout"
 
                                         <Label text="{i18n>serviceCategories}"/>
                                         <MultiComboBox selectedKeys="{appData>/user/serviceCategories}" items="{appData>/services}">
-                                            <core:ListItem key="{appData>name}" text="{appData>label}" icon="{appData>icon}" iconDensityAware="false"/>
+                                            <core:ListItem key="{appData>name}" text="{appData>label}" icon="{appData>icon}"/>
                                         </MultiComboBox>
 
                                         <Label text="{i18n>hourlyRate}"/>

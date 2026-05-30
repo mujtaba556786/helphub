@@ -18,7 +18,7 @@
                     <StandardListItem
                         title="{i18n>changeLanguage}"
                         icon="sap-icon://world"
-                        iconDensityAware="false"
+                       
                         type="Active"
                         info="{appData>/currentLanguageLabel}"
                         press="onLanguageMenu"/>
@@ -31,14 +31,14 @@
                         title="{i18n>viewTerms}"
                         description="{i18n>aboutTermsDesc}"
                         icon="sap-icon://document-text"
-                        iconDensityAware="false"
+                       
                         type="Active"
                         press="onViewTerms"/>
                     <StandardListItem
                         title="{i18n>viewPrivacy}"
                         description="{i18n>aboutPrivacyDesc}"
                         icon="sap-icon://privacy"
-                        iconDensityAware="false"
+                       
                         type="Active"
                         press="onViewPrivacy"/>
                 </List>
@@ -50,14 +50,14 @@
                         title="{i18n>settingsHelpFaq}"
                         description="{i18n>aboutHelpDesc}"
                         icon="sap-icon://sys-help-2"
-                        iconDensityAware="false"
+                       
                         type="Active"
                         press="onOpenHelp"/>
                     <StandardListItem
                         title="{i18n>settingsContactSupport}"
                         description="{i18n>aboutContactDesc}"
                         icon="sap-icon://email"
-                        iconDensityAware="false"
+                       
                         type="Active"
                         press="onContactSupport"/>
                 </List>

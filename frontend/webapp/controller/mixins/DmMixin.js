@@ -163,6 +163,7 @@ sap.ui.define([
 
             oInput.setValue("");
 
+            if (!this._dmMessages) { this._dmMessages = []; }
             this._dmMessages.push({
                 sender_id: sUserId,
                 content: sText,

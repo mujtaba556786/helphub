@@ -59,6 +59,8 @@ sap.ui.define([
                             title: "Booking Request Sent!",
                             onClose: function() {
                                 this._loadSchedule();
+                                oModel.setProperty("/currentTab", "mySchedule");
+                                this._markBookingsSeen && this._markBookingsSeen();
                             }.bind(this)
                         }
                     );
