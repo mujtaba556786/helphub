@@ -123,12 +123,15 @@ sap.ui.define([
             }
             if (!oCtx) return;
 
-            var oProvider = Object.assign({}, oCtx.getObject());
-            if (oProvider.name && !oProvider.initials) {
+            var oStub = oCtx.getObject();
+            // Enrich with full provider data (has rate, years, languages, city, bio)
+            var aProviders = oModel.getProperty("/providers") || [];
+            var oFull = aProviders.filter(function(p) { return String(p.id) === String(oStub.id); })[0];
+            var oProvider = Object.assign({}, oStub, oFull || {}, { reviews: [] });
+            if (!oProvider.initials && oProvider.name) {
                 oProvider.initials = oProvider.name.split(" ")
                     .map(function(p) { return p[0]; }).join("").substring(0, 2).toUpperCase();
             }
-            oProvider.reviews = [];
             oModel.setProperty("/selectedProfile", oProvider);
             this._trackRecentlyViewed(oProvider);
 
