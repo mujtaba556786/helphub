@@ -451,7 +451,7 @@ app.use('/api', (req, res) => {
 });
 
 app.use((err, req, res, next) => {
-    const status = err.status || 500;
+    const status = err.status || err.statusCode || 500;
     if (status >= 500) console.error('🔥 Server Error:', err.stack);
     res.status(status).json({ success: false, error: err.message });
 });
