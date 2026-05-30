@@ -567,42 +567,10 @@ section { -webkit-overflow-scrolling: touch; }
 .flexBasis65 { padding-bottom: 60px; }
 
 /* ══════════════════════════════════════════════════════════════
-   Helper Profile Dialog
+   Helper Profile Dialog — layout via SAP UI5 standard margin
+   classes only. Custom rules kept only for visual decoration
+   (borders, border-radius, line-height).
    ══════════════════════════════════════════════════════════════ */
-
-/* Outer wrapper — let dialog auto-size around content */
-.hhProfWrap { }
-
-/* Hero section */
-.hhProfHero    { padding: 16px 16px 12px; gap: 14px; }
-.hhProfAvatar  { flex-shrink: 0; }
-.hhProfHeroText { flex: 1; min-width: 0; gap: 4px; }
-.hhProfRatingRow { gap: 6px; margin-top: 2px; }
-
-/* 3-button action bar */
-.hhProfActions {
-    padding: 0 16px 12px;
-    gap: 8px;
-    border-bottom: 1px solid;
-}
-.hhProfActionBtn.sapMBtn {
-    flex: 1 !important;
-    border-radius: 10px !important;
-    height: 42px !important;
-    font-size: 0.82rem !important;
-    font-weight: 600 !important;
-}
-
-/* Tabs */
-.hhProfTabs { flex: 1; }
-
-/* Tab content sections */
-.hhProfSection  { padding: 14px 16px; gap: 10px; }
-.hhProfStats    { gap: 6px; flex-wrap: wrap; }
-.hhStatPill     { font-size: 0.78rem !important; }
-.hhProfLocation { gap: 6px; }
-.hhProfSectionTitle { margin-top: 6px !important; margin-bottom: 2px !important; }
-.hhProfBio      { line-height: 1.6; }
 
 /* Reviews */
 .hhReviewItem   { padding: 0 !important; border: none !important; }

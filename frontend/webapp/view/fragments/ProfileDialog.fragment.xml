@@ -10,35 +10,38 @@
         contentWidth="460px">
 
         <content>
-            <VBox class="hhProfWrap">
+            <VBox>
 
                 <!-- ── Hero ── -->
-                <HBox alignItems="Center" class="hhProfHero">
+                <HBox alignItems="Center"
+                    class="sapUiMediumMarginBeginEnd sapUiSmallMarginTop sapUiSmallMarginBottom">
                     <Avatar
                         src="{appData>/selectedProfile/photo}"
                         initials="{appData>/selectedProfile/initials}"
                         displaySize="L"
-                        class="hhProfAvatar"/>
-                    <VBox class="hhProfHeroText">
+                        class="sapUiMediumMarginEnd"/>
+                    <VBox>
                         <Title text="{appData>/selectedProfile/name}" level="H4"/>
                         <Text text="{appData>/selectedProfile/serviceType}" class="smallText"/>
-                        <HBox alignItems="Center" class="hhProfRatingRow">
+                        <HBox alignItems="Center" class="sapUiTinyMarginTop">
                             <RatingIndicator value="{appData>/selectedProfile/rating}" maxValue="5" visualMode="Half" displayOnly="true" class="sapUiTinyMarginEnd"/>
                             <Text text="{= ${appData>/selectedProfile/rating} ? String(${appData>/selectedProfile/rating}) + ' / 5' : 'No rating'}" class="smallText"/>
                         </HBox>
                         <ObjectStatus
                             text="{= ${appData>/selectedProfile/trust_level} === 'trusted_user' ? 'Trusted User' : ${appData>/selectedProfile/trust_level} === 'verified_user' ? 'Verified User' : 'New User' }"
                             state="{= ${appData>/selectedProfile/trust_level} === 'trusted_user' ? 'Success' : ${appData>/selectedProfile/trust_level} === 'verified_user' ? 'Information' : 'None' }"
-                            visible="{= !!${appData>/selectedProfile/trust_level} }"/>
+                            visible="{= !!${appData>/selectedProfile/trust_level} }"
+                            class="sapUiTinyMarginTop"/>
                     </VBox>
                 </HBox>
 
                 <!-- ── Action buttons (only for other people) ── -->
-                <HBox justifyContent="SpaceBetween" class="hhProfActions"
+                <HBox justifyContent="SpaceAround"
+                    class="sapUiMediumMarginBeginEnd sapUiSmallMarginBottom"
                     visible="{= String(${appData>/selectedProfile/id}) !== String(${appData>/user/id})}">
-                    <Button text="Book"    icon="sap-icon://appointment-2" type="Emphasized" press="onOpenBooking" class="hhProfActionBtn"/>
-                    <Button text="Message" icon="sap-icon://discussion"    type="Default"    press="onStartDm"    class="hhProfActionBtn"/>
-                    <Button text="Ask AI"  icon="sap-icon://da"            type="Default"    press="onOpenChat"   class="hhProfActionBtn"/>
+                    <Button text="Book"    icon="sap-icon://appointment-2" type="Emphasized" press="onOpenBooking"/>
+                    <Button text="Message" icon="sap-icon://discussion"    type="Default"    press="onStartDm"/>
+                    <Button text="Ask AI"  icon="sap-icon://da"            type="Default"    press="onOpenChat"/>
                 </HBox>
 
                 <!-- ── Info card ── -->
@@ -66,14 +69,14 @@
                 </VBox>
 
                 <!-- ── Bio ── -->
-                <VBox class="hhProfSection">
-                    <Title text="About" level="H5" class="hhProfSectionTitle"/>
+                <VBox class="sapUiMediumMarginBeginEnd sapUiSmallMarginTop">
+                    <Title text="About" level="H5" class="sapUiTinyMarginBottom"/>
                     <Text text="{= ${appData>/selectedProfile/bio} || 'No bio added yet.'}" wrapping="true" class="hhProfBio"/>
                 </VBox>
 
                 <!-- ── Reviews ── -->
-                <VBox class="hhProfSection">
-                    <Title text="{i18n>reviews}" level="H5" class="hhProfSectionTitle"/>
+                <VBox class="sapUiMediumMarginBeginEnd sapUiSmallMarginTop">
+                    <Title text="{i18n>reviews}" level="H5" class="sapUiTinyMarginBottom"/>
                     <List id="reviewsList"
                         items="{appData>/selectedProfile/reviews}"
                         noDataText="{i18n>noReviewsYet}"
@@ -106,7 +109,7 @@
                 </VBox>
 
                 <!-- ── Safety (only for other people) ── -->
-                <VBox class="hhProfSection"
+                <VBox class="sapUiMediumMarginBeginEnd sapUiSmallMarginTop"
                     visible="{= String(${appData>/selectedProfile/id}) !== String(${appData>/user/id})}">
                     <Text text="Use these options if you feel unsafe or this user is behaving inappropriately." wrapping="true" class="smallText hhSafetyNote"/>
                     <HBox justifyContent="SpaceBetween">
