@@ -216,10 +216,17 @@ sap.ui.define([
                 this._loadTasksFeed();
                 this._loadMyTasks();
                 if (!this._taskMapInitialized) {
-                    setTimeout(function() {
-                        this._initTaskMap();
-                        this._taskMapInitialized = true;
-                    }.bind(this), 400);
+                    // Retry until the taskMap div is in the DOM (SAP UI5 renders async)
+                    var nTry = 0, that = this;
+                    var fnTryMap = function() {
+                        if (document.getElementById("taskMap")) {
+                            that._initTaskMap();
+                            that._taskMapInitialized = true;
+                        } else if (nTry++ < 10) {
+                            setTimeout(fnTryMap, 150);
+                        }
+                    };
+                    setTimeout(fnTryMap, 150);
                 }
             }
         },

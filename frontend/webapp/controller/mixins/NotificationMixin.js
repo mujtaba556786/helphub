@@ -157,26 +157,30 @@ sap.ui.define([
 
             this.onCloseNotifications();
 
-            // Find the IconTabBar in the view
-            var oTabBar = this.getView().findElements(true, function(o) {
-                return o.getMetadata && o.getMetadata().getName() === "sap.m.IconTabBar";
-            })[0];
+            // Navigate back to dashboardPage if on edit/search
+            var oNavContainer = this.byId("navContainer");
+            if (oNavContainer) {
+                var oCurrent = oNavContainer.getCurrentPage();
+                if (oCurrent && oCurrent.getId().indexOf("dashboardPage") === -1) {
+                    oNavContainer.back();
+                }
+            }
 
-            if (!oTabBar) return;
-
+            // Switch tab via model — same mechanism as onBottomNavSelect
             if (sType === "task_application" || sType === "task_assigned") {
-                oTabBar.setSelectedKey("tasks");
-                oTabBar.fireSelect({ key: "tasks" });
+                oModel.setProperty("/currentTab", "tasks");
+                this._loadTasksFeed && this._loadTasksFeed();
+                this._loadMyTasks  && this._loadMyTasks();
 
             } else if (sType === "booking_request" || sType === "booking_accepted" ||
                        sType === "booking_confirmed" || sType === "booking_declined" ||
                        sType === "booking_completed" || sType === "booking_cancelled") {
-                oTabBar.setSelectedKey("mySchedule");
-                oTabBar.fireSelect({ key: "mySchedule" });
+                oModel.setProperty("/currentTab", "mySchedule");
+                this._markBookingsSeen && this._markBookingsSeen();
 
             } else if (sType === "direct_message" || sType === "chat") {
-                oTabBar.setSelectedKey("messages");
-                oTabBar.fireSelect({ key: "messages" });
+                oModel.setProperty("/currentTab", "messages");
+                this._loadConversations && this._loadConversations();
             }
         },
 

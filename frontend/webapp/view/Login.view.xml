@@ -20,7 +20,7 @@
                     <core:Icon src="sap-icon://locked" size="3rem" color="#f97316" class="sapUiSmallMarginBottom"/>
                     <Title text="Resuming your session…" level="H3" class="sapUiSmallMarginBottom"/>
                     <Text text="Please wait a moment." class="grayText textCenter sapUiSmallMarginBottom"/>
-                    <BusyIndicator active="true" size="2rem"/>
+                    <BusyIndicator size="2rem"/>
                 </VBox>
 
                 <!-- Step 1: Enter Email — hidden while processing magic link -->

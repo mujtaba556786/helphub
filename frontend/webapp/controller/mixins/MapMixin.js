@@ -85,6 +85,7 @@ sap.ui.define([], function () {
 
         _initTaskMap: function () {
             if (!window.L) return;
+            if (!document.getElementById("taskMap")) return;
             var oModel = this.getModel("appData");
             var oUserLoc = oModel.getProperty("/user/location") || { lat: 52.52, lng: 13.405 };
 
