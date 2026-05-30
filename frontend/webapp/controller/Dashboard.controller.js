@@ -765,12 +765,12 @@ sap.ui.define([
                     rate:              oUser.rate,
                     availability:      oUser.availability,
                     serviceCategories: oUser.serviceCategories,
-                    street_name:       oAddr.street,
-                    street_number:     oAddr.houseNumber,
-                    city:              oAddr.city,
-                    state:             oAddr.state,
-                    country:           oAddr.country,
-                    pincode:           oAddr.postalCode
+                    street_name:       oAddr.street      || undefined,
+                    street_number:     oAddr.houseNumber  || undefined,
+                    city:              oAddr.city         || undefined,
+                    state:             oAddr.state        || undefined,
+                    country:           oAddr.country      || undefined,
+                    pincode:           oAddr.postalCode   || undefined
                 })
             })
             .then(function(oData) {
