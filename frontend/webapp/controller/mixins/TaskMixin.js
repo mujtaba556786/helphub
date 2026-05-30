@@ -1,10 +1,11 @@
 sap.ui.define([
     "sap/m/MessageToast",
     "sap/m/MessageBox",
-    "sap/m/ActionSheet",
-    "sap/m/Button",
+    "sap/m/Popover",
+    "sap/m/List",
+    "sap/m/StandardListItem",
     "helphub/config"
-], function(MessageToast, MessageBox, ActionSheet, Button, Config) {
+], function(MessageToast, MessageBox, Popover, List, StandardListItem, Config) {
     "use strict";
 
     var API_BASE = Config.API_BASE;
@@ -78,7 +79,6 @@ sap.ui.define([
             var that     = this;
             var sCurrent = oModel.getProperty("/taskCategoryFilter") || "";
 
-            // Build from the frontend service constants already stored in the model
             var aServices = oModel.getProperty("/services") || [];
             var aCategories = [
                 { label: oBundle.getText("serviceAllTasks"), value: "", icon: "sap-icon://filter" }
@@ -86,23 +86,31 @@ sap.ui.define([
                 return { label: svc.label, value: svc.name, icon: svc.icon };
             }));
 
-            var oSheet = new ActionSheet({
-                title: oBundle.getText("taskFilterByCategory"),
-                showCancelButton: true,
-                buttons: aCategories.map(function(cat) {
-                    return new Button({
-                        text: cat.label,
-                        icon: cat.value === sCurrent ? "sap-icon://accept" : cat.icon,
-                        type: cat.value === sCurrent ? "Emphasized" : "Default",
+            var oList = new List({
+                mode: "SingleSelectMaster",
+                showSeparators: "None",
+                items: aCategories.map(function(cat) {
+                    return new StandardListItem({
+                        title: cat.label,
+                        icon:  cat.icon,
+                        selected: cat.value === sCurrent,
                         press: function() {
                             oModel.setProperty("/taskCategoryFilter", cat.value);
                             that._loadTasksFeed();
-                            oSheet.close();
+                            oPopover.close();
                         }
                     });
                 })
             });
-            oSheet.openBy(oEvent.getSource());
+
+            var oPopover = new Popover({
+                title:        oBundle.getText("taskFilterByCategory"),
+                placement:    "Bottom",
+                contentWidth: "220px",
+                content:      [oList],
+                afterClose:   function() { oPopover.destroy(); }
+            });
+            oPopover.openBy(oEvent.getSource());
         },
 
         onOpenPostTask: function() {
