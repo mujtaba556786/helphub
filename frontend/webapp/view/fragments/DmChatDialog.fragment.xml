@@ -26,11 +26,11 @@
             <Bar>
                 <contentLeft>
                     <HBox wrap="Wrap" alignItems="Center" class="sapUiTinyMarginBeginEnd sapUiTinyMarginTopBottom">
-                        <Button icon="sap-icon://car-rental"    text="{i18n>qrOnMyWay}"     type="Transparent" press="onDmQuickReply" class="hhQRChip sapUiTinyMarginEnd"/>
-                        <Button icon="sap-icon://accept"        text="{i18n>qrImAvailable}" type="Transparent" press="onDmQuickReply" class="hhQRChip sapUiTinyMarginEnd"/>
-                        <Button icon="sap-icon://appointment-2" text="{i18n>qrReschedule}"  type="Transparent" press="onDmQuickReply" class="hhQRChip sapUiTinyMarginEnd"/>
-                        <Button icon="sap-icon://heart"         text="{i18n>qrThankYou}"    type="Transparent" press="onDmQuickReply" class="hhQRChip sapUiTinyMarginEnd"/>
-                        <Button icon="sap-icon://goodbye"       text="{i18n>qrSeeSoon}"     type="Transparent" press="onDmQuickReply" class="hhQRChip sapUiTinyMarginEnd"/>
+                        <Button icon="sap-icon://car-rental"    text="{i18n>qrOnMyWay}"     type="Transparent" press="onDmQuickReply" class="sapUiTinyMarginEnd"/>
+                        <Button icon="sap-icon://accept"        text="{i18n>qrImAvailable}" type="Transparent" press="onDmQuickReply" class="sapUiTinyMarginEnd"/>
+                        <Button icon="sap-icon://appointment-2" text="{i18n>qrReschedule}"  type="Transparent" press="onDmQuickReply" class="sapUiTinyMarginEnd"/>
+                        <Button icon="sap-icon://heart"         text="{i18n>qrThankYou}"    type="Transparent" press="onDmQuickReply" class="sapUiTinyMarginEnd"/>
+                        <Button icon="sap-icon://goodbye"       text="{i18n>qrSeeSoon}"     type="Transparent" press="onDmQuickReply" class="sapUiTinyMarginEnd"/>
                     </HBox>
                 </contentLeft>
             </Bar>

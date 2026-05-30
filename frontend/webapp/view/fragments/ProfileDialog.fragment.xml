@@ -13,9 +13,6 @@
             <VBox>
 
                 <!-- ── Hero ── -->
-                <!-- sapUiMediumMarginTop ensures the avatar clears the dialog title bar
-                     in stretch (full-screen) mode on phone. Name is already in the
-                     Dialog title attribute so we don't repeat it here. -->
                 <HBox alignItems="Center"
                     class="sapUiMediumMarginBeginEnd sapUiMediumMarginTop sapUiSmallMarginBottom">
                     <Avatar
@@ -54,34 +51,35 @@
                         press="onEditProfileFromDialog" width="100%"/>
                 </HBox>
 
-                <!-- ── Info card ── -->
-                <VBox class="hhInfoCard">
-                    <HBox alignItems="Center" class="hhInfoRow">
-                        <core:Icon src="sap-icon://money-bills"  class="hhInfoIcon"/>
-                        <Text text="Rate"        class="hhInfoLabel"/>
-                        <Text text="{= ${appData>/selectedProfile/rate} ? ${appData>/selectedProfile/rate} + ' ' + (${appData>/selectedProfile/currency} || 'EUR') + '/hr' : '—'}" class="hhInfoValue"/>
-                    </HBox>
-                    <HBox alignItems="Center" class="hhInfoRow">
-                        <core:Icon src="sap-icon://history"      class="hhInfoIcon"/>
-                        <Text text="Experience"  class="hhInfoLabel"/>
-                        <Text text="{= ${appData>/selectedProfile/years} ? ${appData>/selectedProfile/years} + ' years' : '—'}" class="hhInfoValue"/>
-                    </HBox>
-                    <HBox alignItems="Center" class="hhInfoRow">
-                        <core:Icon src="sap-icon://world"        class="hhInfoIcon"/>
-                        <Text text="Language"    class="hhInfoLabel"/>
-                        <Text text="{= ${appData>/selectedProfile/languages} || '—'}" class="hhInfoValue"/>
-                    </HBox>
-                    <HBox alignItems="Center" class="hhInfoRow hhInfoRowLast">
-                        <core:Icon src="sap-icon://map"          class="hhInfoIcon"/>
-                        <Text text="Location"    class="hhInfoLabel"/>
-                        <Text text="{= ${appData>/selectedProfile/city} || '—'}" class="hhInfoValue" wrapping="true"/>
-                    </HBox>
-                </VBox>
+                <!-- ── Info rows — SAP UI5 StandardListItem: icon | label | value ── -->
+                <List showSeparators="Inner" class="sapUiSmallMarginBottom">
+                    <StandardListItem
+                        icon="sap-icon://money-bills"
+                        title="Rate"
+                        info="{= ${appData>/selectedProfile/rate} ? ${appData>/selectedProfile/rate} + ' ' + (${appData>/selectedProfile/currency} || 'EUR') + '/hr' : '—'}"
+                        type="Inactive"/>
+                    <StandardListItem
+                        icon="sap-icon://history"
+                        title="Experience"
+                        info="{= ${appData>/selectedProfile/years} ? ${appData>/selectedProfile/years} + ' years' : '—'}"
+                        type="Inactive"/>
+                    <StandardListItem
+                        icon="sap-icon://world"
+                        title="Language"
+                        info="{= ${appData>/selectedProfile/languages} || '—'}"
+                        type="Inactive"/>
+                    <StandardListItem
+                        icon="sap-icon://map"
+                        title="Location"
+                        info="{= ${appData>/selectedProfile/city} || '—'}"
+                        type="Inactive"
+                        wrapping="true"/>
+                </List>
 
                 <!-- ── Bio ── -->
-                <VBox class="sapUiMediumMarginBeginEnd sapUiSmallMarginTop">
+                <VBox class="sapUiMediumMarginBeginEnd sapUiSmallMarginTop sapUiSmallMarginBottom">
                     <Title text="About" level="H5" class="sapUiTinyMarginBottom"/>
-                    <Text text="{= ${appData>/selectedProfile/bio} || 'No bio added yet.'}" wrapping="true" class="hhProfBio"/>
+                    <Text text="{= ${appData>/selectedProfile/bio} || 'No bio added yet.'}" wrapping="true"/>
                 </VBox>
 
                 <!-- ── Reviews ── -->
@@ -91,10 +89,10 @@
                         items="{appData>/selectedProfile/reviews}"
                         noDataText="{i18n>noReviewsYet}"
                         showSeparators="None">
-                        <CustomListItem class="hhReviewItem">
-                            <HBox alignItems="Start" class="hhReviewRow">
-                                <Avatar initials="{appData>reviewer_initials}" displaySize="XS" class="sapUiTinyMarginEnd"/>
-                                <VBox class="hhReviewContent">
+                        <CustomListItem>
+                            <HBox alignItems="Start" class="sapUiTinyMarginTopBottom">
+                                <Avatar initials="{appData>reviewer_initials}" displaySize="XS" class="sapUiSmallMarginEnd"/>
+                                <VBox width="100%">
                                     <HBox justifyContent="SpaceBetween" alignItems="Center">
                                         <Text text="{appData>reviewer_name}" class="fontBold smallText"/>
                                         <RatingIndicator value="{appData>stars}" maxValue="5" displayOnly="true" iconSize="12px"/>
@@ -107,24 +105,30 @@
                     </List>
 
                     <!-- Leave a review — only for other people -->
-                    <VBox class="hhRateBox"
+                    <Panel
+                        headerText="{i18n>rateThisHelper}"
+                        class="sapUiSmallMarginTop"
                         visible="{= String(${appData>/selectedProfile/id}) !== String(${appData>/user/id})}">
-                        <Title text="{i18n>rateThisHelper}" level="H5"/>
-                        <Label text="{i18n>yourRating}" required="true"/>
-                        <RatingIndicator id="newRatingStars" maxValue="5" value="0" class="sapUiTinyMarginBottom"/>
-                        <Label text="{i18n>yourComment}"/>
-                        <TextArea id="newRatingComment" rows="3" width="100%" placeholder="{i18n>ratingPlaceholder}" class="sapUiTinyMarginBottom"/>
-                        <Button text="{i18n>submitRating}" type="Emphasized" icon="sap-icon://paper-plane" press="onSubmitRating" width="100%"/>
-                    </VBox>
+                        <content>
+                            <VBox class="sapUiSmallMarginBeginEnd sapUiSmallMarginTopBottom">
+                                <Label text="{i18n>yourRating}" required="true" class="sapUiTinyMarginBottom"/>
+                                <RatingIndicator id="newRatingStars" maxValue="5" value="0" class="sapUiTinyMarginBottom"/>
+                                <Label text="{i18n>yourComment}" class="sapUiTinyMarginBottom"/>
+                                <TextArea id="newRatingComment" rows="3" width="100%" placeholder="{i18n>ratingPlaceholder}" class="sapUiTinyMarginBottom"/>
+                                <Button text="{i18n>submitRating}" type="Emphasized" icon="sap-icon://paper-plane" press="onSubmitRating" width="100%"/>
+                            </VBox>
+                        </content>
+                    </Panel>
                 </VBox>
 
                 <!-- ── Safety (only for other people) ── -->
-                <VBox class="sapUiMediumMarginBeginEnd sapUiSmallMarginTop"
+                <VBox class="sapUiMediumMarginBeginEnd sapUiSmallMarginTop sapUiSmallMarginBottom"
                     visible="{= String(${appData>/selectedProfile/id}) !== String(${appData>/user/id})}">
-                    <Text text="Use these options if you feel unsafe or this user is behaving inappropriately." wrapping="true" class="smallText hhSafetyNote"/>
+                    <Text text="Use these options if you feel unsafe or this user is behaving inappropriately."
+                        wrapping="true" class="smallText sapUiSmallMarginBottom"/>
                     <HBox justifyContent="SpaceBetween">
-                        <Button text="Block"  type="Reject" icon="sap-icon://cancel" press="onBlockUser"  class="hhProfActionBtn"/>
-                        <Button text="Report" type="Ghost"  icon="sap-icon://flag"   press="onReportUser" class="hhProfActionBtn"/>
+                        <Button text="Block"  type="Reject" icon="sap-icon://cancel" press="onBlockUser"  width="48%"/>
+                        <Button text="Report" type="Ghost"  icon="sap-icon://flag"   press="onReportUser" width="48%"/>
                     </HBox>
                 </VBox>
 

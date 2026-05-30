@@ -16,88 +16,96 @@
         </customHeader>
 
         <!-- Step 1: Welcome -->
-        <VBox visible="{= ${appData>/onboarding/step} === 1}" class="sapUiMediumMargin hhOnboardStep">
+        <VBox visible="{= ${appData>/onboarding/step} === 1}" class="sapUiMediumMargin">
             <VBox alignItems="Center" class="sapUiSmallMarginBottom">
-                <core:Icon src="sap-icon://home" size="4rem" class="hhOnboardHeroIcon"/>
+                <core:Icon src="sap-icon://home" size="4rem" class="sapUiSmallMarginBottom"/>
             </VBox>
             <Title text="{i18n>onboardTitle1}" level="H2" class="sapUiSmallMarginBottom textCenter"/>
             <Text text="{i18n>onboardDesc1}" class="grayText sapUiSmallMarginBottom textCenter" wrapping="true"/>
             <VBox class="sapUiSmallMarginTop">
                 <HBox alignItems="Center" class="sapUiTinyMarginBottom">
-                    <core:Icon src="sap-icon://map-2" size="1.25rem" class="hhOnboardFeatureIcon sapUiTinyMarginEnd"/>
+                    <core:Icon src="sap-icon://map-2" size="1.25rem" class="sapUiSmallMarginEnd"/>
                     <Text text="{i18n>onboardFeature1}" wrapping="true"/>
                 </HBox>
                 <HBox alignItems="Center" class="sapUiTinyMarginBottom">
-                    <core:Icon src="sap-icon://discussion" size="1.25rem" class="hhOnboardFeatureIcon sapUiTinyMarginEnd"/>
+                    <core:Icon src="sap-icon://discussion" size="1.25rem" class="sapUiSmallMarginEnd"/>
                     <Text text="{i18n>onboardFeature2}" wrapping="true"/>
                 </HBox>
                 <HBox alignItems="Center" class="sapUiTinyMarginBottom">
-                    <core:Icon src="sap-icon://task" size="1.25rem" class="hhOnboardFeatureIcon sapUiTinyMarginEnd"/>
+                    <core:Icon src="sap-icon://task" size="1.25rem" class="sapUiSmallMarginEnd"/>
                     <Text text="{i18n>onboardFeature3}" wrapping="true"/>
                 </HBox>
                 <HBox alignItems="Center" class="sapUiTinyMarginBottom">
-                    <core:Icon src="sap-icon://home" size="1.25rem" class="hhOnboardFeatureIcon sapUiTinyMarginEnd"/>
+                    <core:Icon src="sap-icon://home" size="1.25rem" class="sapUiSmallMarginEnd"/>
                     <Text text="{i18n>onboardFeature4}" wrapping="true"/>
                 </HBox>
             </VBox>
         </VBox>
 
         <!-- Step 2: How it works -->
-        <VBox visible="{= ${appData>/onboarding/step} === 2}" class="sapUiMediumMargin hhOnboardStep">
-            <VBox class="hhOnboardCard sapUiSmallMarginBottom">
-                <HBox alignItems="Center">
-                    <core:HTML content="&lt;div class='hhOnboardNum'&gt;1&lt;/div&gt;"/>
-                    <VBox class="sapUiTinyMarginBegin">
-                        <Title text="{i18n>onboardStep1Title}" level="H5"/>
-                        <Text text="{i18n>onboardStep1Desc}" class="grayText smallText" wrapping="true"/>
-                    </VBox>
-                </HBox>
-            </VBox>
-            <VBox class="hhOnboardCard sapUiSmallMarginBottom">
-                <HBox alignItems="Center">
-                    <core:HTML content="&lt;div class='hhOnboardNum'&gt;2&lt;/div&gt;"/>
-                    <VBox class="sapUiTinyMarginBegin">
-                        <Title text="{i18n>onboardStep2Title}" level="H5"/>
-                        <Text text="{i18n>onboardStep2Desc}" class="grayText smallText" wrapping="true"/>
-                    </VBox>
-                </HBox>
-            </VBox>
-            <VBox class="hhOnboardCard sapUiSmallMarginBottom">
-                <HBox alignItems="Center">
-                    <core:HTML content="&lt;div class='hhOnboardNum'&gt;3&lt;/div&gt;"/>
-                    <VBox class="sapUiTinyMarginBegin">
-                        <Title text="{i18n>onboardStep3Title}" level="H5"/>
-                        <Text text="{i18n>onboardStep3Desc}" class="grayText smallText" wrapping="true"/>
-                    </VBox>
-                </HBox>
-            </VBox>
-            <VBox class="hhOnboardCard sapUiSmallMarginBottom">
-                <HBox alignItems="Center">
-                    <core:HTML content="&lt;div class='hhOnboardNum'&gt;4&lt;/div&gt;"/>
-                    <VBox class="sapUiTinyMarginBegin">
-                        <Title text="{i18n>onboardStep4Title}" level="H5"/>
-                        <Text text="{i18n>onboardStep4Desc}" class="grayText smallText" wrapping="true"/>
-                    </VBox>
-                </HBox>
-            </VBox>
+        <VBox visible="{= ${appData>/onboarding/step} === 2}" class="sapUiMediumMargin">
+            <Panel backgroundDesign="Solid" class="sapUiSmallMarginBottom">
+                <content>
+                    <HBox alignItems="Center" class="sapUiSmallMargin">
+                        <Avatar displaySize="XS" initials="1" backgroundColor="Accent5" class="sapUiSmallMarginEnd"/>
+                        <VBox>
+                            <Title text="{i18n>onboardStep1Title}" level="H5"/>
+                            <Text text="{i18n>onboardStep1Desc}" class="grayText smallText" wrapping="true"/>
+                        </VBox>
+                    </HBox>
+                </content>
+            </Panel>
+            <Panel backgroundDesign="Solid" class="sapUiSmallMarginBottom">
+                <content>
+                    <HBox alignItems="Center" class="sapUiSmallMargin">
+                        <Avatar displaySize="XS" initials="2" backgroundColor="Accent5" class="sapUiSmallMarginEnd"/>
+                        <VBox>
+                            <Title text="{i18n>onboardStep2Title}" level="H5"/>
+                            <Text text="{i18n>onboardStep2Desc}" class="grayText smallText" wrapping="true"/>
+                        </VBox>
+                    </HBox>
+                </content>
+            </Panel>
+            <Panel backgroundDesign="Solid" class="sapUiSmallMarginBottom">
+                <content>
+                    <HBox alignItems="Center" class="sapUiSmallMargin">
+                        <Avatar displaySize="XS" initials="3" backgroundColor="Accent5" class="sapUiSmallMarginEnd"/>
+                        <VBox>
+                            <Title text="{i18n>onboardStep3Title}" level="H5"/>
+                            <Text text="{i18n>onboardStep3Desc}" class="grayText smallText" wrapping="true"/>
+                        </VBox>
+                    </HBox>
+                </content>
+            </Panel>
+            <Panel backgroundDesign="Solid" class="sapUiSmallMarginBottom">
+                <content>
+                    <HBox alignItems="Center" class="sapUiSmallMargin">
+                        <Avatar displaySize="XS" initials="4" backgroundColor="Accent5" class="sapUiSmallMarginEnd"/>
+                        <VBox>
+                            <Title text="{i18n>onboardStep4Title}" level="H5"/>
+                            <Text text="{i18n>onboardStep4Desc}" class="grayText smallText" wrapping="true"/>
+                        </VBox>
+                    </HBox>
+                </content>
+            </Panel>
         </VBox>
 
         <!-- Step 3: Pick interests -->
-        <VBox visible="{= ${appData>/onboarding/step} === 3}" class="sapUiMediumMargin hhOnboardStep">
+        <VBox visible="{= ${appData>/onboarding/step} === 3}" class="sapUiMediumMargin">
             <Text text="{i18n>onboardSelectInterests}" class="grayText sapUiSmallMarginBottom"/>
             <FlexBox wrap="Wrap" class="sapUiTinyMarginTop">
-                <Button icon="sap-icon://home-share"       text="Cleaning"     data:interestKey="Cleaning"     press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
-                <Button icon="sap-icon://tree"             text="Gardening"    data:interestKey="Gardening"    press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
-                <Button icon="sap-icon://wrench"           text="Handyman"     data:interestKey="Handyman"     press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
-                <Button icon="sap-icon://group"            text="Babysitting"  data:interestKey="Babysitting"  press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
-                <Button icon="sap-icon://heart"            text="Elder Care"   data:interestKey="Elder Care"   press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
-                <Button icon="sap-icon://customer"         text="Pet Care"     data:interestKey="Pet Care"     press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
-                <Button icon="sap-icon://car-rental"       text="Transport"    data:interestKey="Transport"    press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
-                <Button icon="sap-icon://basket"           text="Groceries"    data:interestKey="Groceries"    press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
-                <Button icon="sap-icon://meal"             text="Cooking"      data:interestKey="Cooking"      press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
-                <Button icon="sap-icon://physical-activity" text="Massage"     data:interestKey="Massage"      press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
-                <Button icon="sap-icon://education"        text="Math Tuition" data:interestKey="Math Tuition" press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
-                <Button icon="sap-icon://laptop"           text="IT Support"   data:interestKey="IT Support"   press="onToggleInterest" class="hhInterestBtn sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                <Button icon="sap-icon://home-share"        text="Cleaning"     data:interestKey="Cleaning"     press="onToggleInterest" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                <Button icon="sap-icon://tree"              text="Gardening"    data:interestKey="Gardening"    press="onToggleInterest" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                <Button icon="sap-icon://wrench"            text="Handyman"     data:interestKey="Handyman"     press="onToggleInterest" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                <Button icon="sap-icon://group"             text="Babysitting"  data:interestKey="Babysitting"  press="onToggleInterest" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                <Button icon="sap-icon://heart"             text="Elder Care"   data:interestKey="Elder Care"   press="onToggleInterest" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                <Button icon="sap-icon://customer"          text="Pet Care"     data:interestKey="Pet Care"     press="onToggleInterest" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                <Button icon="sap-icon://car-rental"        text="Transport"    data:interestKey="Transport"    press="onToggleInterest" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                <Button icon="sap-icon://basket"            text="Groceries"    data:interestKey="Groceries"    press="onToggleInterest" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                <Button icon="sap-icon://meal"              text="Cooking"      data:interestKey="Cooking"      press="onToggleInterest" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                <Button icon="sap-icon://physical-activity" text="Massage"      data:interestKey="Massage"      press="onToggleInterest" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                <Button icon="sap-icon://education"         text="Math Tuition" data:interestKey="Math Tuition" press="onToggleInterest" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
+                <Button icon="sap-icon://laptop"            text="IT Support"   data:interestKey="IT Support"   press="onToggleInterest" class="sapUiTinyMarginEnd sapUiTinyMarginBottom"/>
             </FlexBox>
         </VBox>
 

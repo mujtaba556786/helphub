@@ -213,25 +213,6 @@
     box-shadow: 0 1px 4px rgba(0,0,0,0.2);
 }
 
-/* ── Notifications popover ────────────────────────────────────── */
-
-.hhNotifChip.sapMBtn {
-    border-radius: 20px !important;
-    height: 28px !important;
-    padding: 0 12px !important;
-    font-size: 0.78rem !important;
-    white-space: nowrap !important;
-    flex-shrink: 0 !important;
-    min-width: 0 !important;
-}
-
-.hhNotifUnreadDot {
-    width: 8px; height: 8px; border-radius: 50%;
-    background: #3b82f6;
-    display: inline-block; flex-shrink: 0;
-    margin-top: 4px; margin-left: 6px;
-}
-
 /* ── In-app toast ─────────────────────────────────────────────── */
 .hhInAppToast {
     position: fixed; top: 16px; left: 50%;
@@ -250,30 +231,6 @@
 .hhToastBody strong { display: block; font-size: 14px; margin-bottom: 2px; }
 .hhToastBody div    { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .hhToastClose { background: none; border: none; font-size: 16px; cursor: pointer; padding: 0; flex-shrink: 0; margin-top: 2px; }
-
-/* ── Quick reply chips ────────────────────────────────────────── */
-.hhQRChip       { border-radius: 16px; font-size: 12px; padding: 2px 10px; height: auto; }
-
-@media (max-width: 480px) { .hhQRChip { font-size: 11px; padding: 1px 8px; } }
-
-/* ── Terms dialog ─────────────────────────────────────────────── */
-.hhTermsItem      { padding: 10px 16px; }
-.hhTermsIcon      { font-size: 18px !important; margin-top: 2px; flex-shrink: 0; }
-.hhTermsCheckboxRow { gap: 0; }
-.hhTermsCheckboxRow .sapMCbBg { flex-shrink: 0; }
-
-/* ── Onboarding dialog ────────────────────────────────────────── */
-.hhOnboardStep  { min-height: 220px; }
-.hhOnboardCard  { border-radius: 12px; padding: 12px 16px; }
-.hhOnboardNum   {
-    width: 32px; height: 32px; min-width: 32px;
-    border-radius: 50%; font-weight: 700; font-size: 16px;
-    display: flex; align-items: center; justify-content: center;
-    margin-right: 12px; flex-shrink: 0;
-}
-.hhInterestBtn  { border-radius: 20px; }
-.hhOnboardHeroIcon  { color: #334155 !important; margin-bottom: 12px; }
-.hhOnboardFeatureIcon { color: #475569 !important; flex-shrink: 0; margin-right: 8px !important; }
 
 /* ── Messages tab ─────────────────────────────────────────────── */
 .hhMsgSearchWrap  { padding: 12px 16px 10px; position: sticky; top: 0; z-index: 10; }
@@ -566,57 +523,6 @@
 section { -webkit-overflow-scrolling: touch; }
 .mainContent { padding-bottom: 40px; }
 .flexBasis65 { padding-bottom: 60px; }
-
-/* ══════════════════════════════════════════════════════════════
-   Helper Profile Dialog — layout via SAP UI5 standard margin
-   classes only. Custom rules kept only for visual decoration
-   (borders, border-radius, line-height).
-   ══════════════════════════════════════════════════════════════ */
-
-/* Reviews */
-.hhReviewItem   { padding: 0 !important; border: none !important; }
-.hhReviewRow    { padding: 8px 0; gap: 10px; }
-.hhReviewContent { flex: 1; min-width: 0; gap: 2px; }
-
-/* Rate box */
-.hhRateBox { border-radius: 12px; border: 1px solid; padding: 14px; gap: 8px; margin-top: 6px; }
-
-/* Info card (overview rows) */
-.hhInfoCard     { border-radius: 12px; border: 1px solid; overflow: hidden; margin-bottom: 12px; }
-
-.hhInfoRow {
-    padding: 11px 14px;
-    gap: 10px;
-    border-bottom: 1px solid;
-}
-.hhInfoRowLast  { border-bottom: none !important; }
-
-.hhInfoIcon     { font-size: 1rem !important; flex-shrink: 0; width: 18px; }
-.hhInfoLabel    { font-size: 0.82rem !important; color: inherit; opacity: 0.6; min-width: 80px; flex-shrink: 0; }
-.hhInfoValue    { font-size: 0.88rem !important; font-weight: 600 !important; flex: 1; }
-
-/* Safety tab */
-.hhSafetyNote   { opacity: 0.65; margin-bottom: 16px !important; line-height: 1.5; }
-
-/* Action buttons */
-.hhActionBtn.sapMBtn {
-    border-radius: 10px !important;
-    height: 44px !important;
-    font-size: 0.9rem !important;
-    font-weight: 600 !important;
-    margin-bottom: 8px !important;
-}
-
-/* ── About page hero card ─────────────────────────────────────────── */
-.hhAboutHero {
-    background: #fff;
-    border-radius: 12px;
-    border-top: 3px solid #f97316;
-    padding: 20px 16px 16px;
-    margin-bottom: 12px;
-    text-align: center;
-    box-shadow: 0 1px 4px rgba(15,23,42,.07);
-}
 
 /* ── Profile Settings tab ─────────────────────────────────────────── */
 .hhSettingsGroup {
