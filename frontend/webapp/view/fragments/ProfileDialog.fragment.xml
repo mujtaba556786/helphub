@@ -126,9 +126,9 @@
                     visible="{= String(${appData>/selectedProfile/id}) !== String(${appData>/user/id})}">
                     <Text text="Use these options if you feel unsafe or this user is behaving inappropriately."
                         wrapping="true" class="smallText sapUiSmallMarginBottom"/>
-                    <HBox justifyContent="SpaceBetween">
-                        <Button text="Block"  type="Reject" icon="sap-icon://cancel" press="onBlockUser"  width="48%"/>
-                        <Button text="Report" type="Ghost"  icon="sap-icon://flag"   press="onReportUser" width="48%"/>
+                    <HBox>
+                        <Button text="Block User"  type="Reject" icon="sap-icon://cancel" press="onBlockUser"  class="sapUiSmallMarginEnd"/>
+                        <Button text="Report User" type="Ghost"  icon="sap-icon://flag"   press="onReportUser"/>
                     </HBox>
                 </VBox>
 
