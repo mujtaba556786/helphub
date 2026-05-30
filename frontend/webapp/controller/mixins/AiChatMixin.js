@@ -142,7 +142,8 @@ sap.ui.define([
         },
 
         _showInAppToast: function (sIcon, sTitle, sMessage) {
-            MessageToast.show(sIcon + " " + sTitle + "\n" + sMessage, {
+            // MessageToast renders plain text only — drop the sap-icon:// URI
+            MessageToast.show(sTitle + "\n" + sMessage, {
                 duration: 5000,
                 width: "20em",
                 my: "center top",

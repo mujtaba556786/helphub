@@ -13,15 +13,17 @@
             <VBox>
 
                 <!-- ── Hero ── -->
+                <!-- sapUiMediumMarginTop ensures the avatar clears the dialog title bar
+                     in stretch (full-screen) mode on phone. Name is already in the
+                     Dialog title attribute so we don't repeat it here. -->
                 <HBox alignItems="Center"
-                    class="sapUiMediumMarginBeginEnd sapUiSmallMarginTop sapUiSmallMarginBottom">
+                    class="sapUiMediumMarginBeginEnd sapUiMediumMarginTop sapUiSmallMarginBottom">
                     <Avatar
                         src="{appData>/selectedProfile/photo}"
                         initials="{appData>/selectedProfile/initials}"
                         displaySize="L"
                         class="sapUiMediumMarginEnd"/>
                     <VBox>
-                        <Title text="{appData>/selectedProfile/name}" level="H4"/>
                         <Text text="{appData>/selectedProfile/serviceType}" class="smallText"/>
                         <HBox alignItems="Center" class="sapUiTinyMarginTop">
                             <RatingIndicator value="{appData>/selectedProfile/rating}" maxValue="5" visualMode="Half" displayOnly="true" class="sapUiTinyMarginEnd"/>
