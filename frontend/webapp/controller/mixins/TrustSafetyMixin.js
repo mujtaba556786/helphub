@@ -75,25 +75,48 @@ sap.ui.define([
             if (!sId) return;
 
             var that = this;
-            sap.m.MessageBox.confirm(
-                "Block " + sName + "? They will no longer be able to message or book with you.",
-                {
-                    title: "Block User",
-                    actions: [sap.m.MessageBox.Action.OK, sap.m.MessageBox.Action.CANCEL],
-                    emphasizedAction: sap.m.MessageBox.Action.CANCEL,
-                    onClose: function(sAction) {
-                        if (sAction !== sap.m.MessageBox.Action.OK) return;
+
+            // Use sap.m.Dialog directly instead of MessageBox.confirm so that
+            // the confirmation text wraps correctly when opened on top of a
+            // stretch (full-screen) profile dialog on mobile — MessageBox
+            // mis-calculates its content height in that stacked-dialog context.
+            sap.ui.require(["sap/m/Dialog", "sap/m/Button", "sap/m/Text"],
+                function(Dialog, Button, MText) {
+                    var fnDoBlock = function() {
                         that.apiFetch(API_BASE + "/api/users/" + sId + "/block", { method: "POST" })
                             .then(function(oData) {
                                 if (oData.success) {
                                     MessageToast.show(sName + " has been blocked.");
-                                    that._getProfileDialog().then(function(oDialog) { oDialog.close(); });
+                                    that._getProfileDialog().then(function(d) { d.close(); });
                                 }
                             })
                             .catch(function() {
                                 MessageToast.show("Could not block user. Please try again.");
                             });
-                    }
+                    };
+
+                    var oDialog = new Dialog({
+                        title: "Block User",
+                        type: "Message",
+                        state: "Warning",
+                        content: new MText({
+                            text: "Block " + sName + "? They will no longer be able to"
+                                + " message or book with you.",
+                            wrapping: true
+                        }),
+                        beginButton: new Button({
+                            text: "Block",
+                            type: "Reject",
+                            press: function() { oDialog.close(); fnDoBlock(); }
+                        }),
+                        endButton: new Button({
+                            text: "Cancel",
+                            type: "Emphasized",
+                            press: function() { oDialog.close(); }
+                        }),
+                        afterClose: function() { oDialog.destroy(); }
+                    });
+                    oDialog.open();
                 }
             );
         },
