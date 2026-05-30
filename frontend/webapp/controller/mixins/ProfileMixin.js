@@ -206,18 +206,23 @@ sap.ui.define([
 
             var oModel = this.getModel("appData");
             var aProviders = oModel.getProperty("/providers") || [];
-            var oKnown = aProviders.filter(function(p) { return p.id === sProviderId; })[0] || {};
+            var oKnown = aProviders.filter(function(p) { return String(p.id) === String(sProviderId); })[0];
 
-            var oProfile = {
-                id:          sProviderId,
-                name:        oBooking.provider_name || "Provider",
-                serviceType: oBooking.service || "",
-                rating:      oKnown.rating || null,
-                reviews:     []
-            };
-            oProfile.initials = oProfile.name
-                .split(" ").map(function(p) { return p[0]; })
-                .join("").substring(0, 2).toUpperCase();
+            // Build profile — use full providers-list data if available (has bio, rate, years, etc.)
+            var oProfile = oKnown
+                ? Object.assign({}, oKnown, { reviews: [] })
+                : {
+                    id:          sProviderId,
+                    name:        oBooking.provider_name || "Provider",
+                    serviceType: oBooking.service || "",
+                    reviews:     []
+                  };
+
+            if (!oProfile.initials && oProfile.name) {
+                oProfile.initials = oProfile.name
+                    .split(" ").map(function(p) { return p[0]; })
+                    .join("").substring(0, 2).toUpperCase();
+            }
 
             oModel.setProperty("/selectedProfile", oProfile);
             this._trackRecentlyViewed(oProfile);
@@ -228,31 +233,6 @@ sap.ui.define([
             if (oComment) oComment.setValue("");
 
             this._getProfileDialog().then(function(oDialog) { oDialog.open(); }.bind(this));
-
-            var that = this;
-            fetch(API_BASE + "/api/providers/" + encodeURIComponent(sProviderId))
-                .then(function(r) { return r.json(); })
-                .then(function(oData) {
-                    if (oData.success && oData.provider) {
-                        var oFull = Object.assign({}, oProfile, oData.provider);
-                        if (!oFull.initials) {
-                            oFull.initials = (oFull.name || "").split(" ")
-                                .map(function(p) { return p[0]; })
-                                .join("").substring(0, 2).toUpperCase();
-                        }
-                        // Resolve photo URL — relative paths and localhost URLs from local dev uploads
-                        if (oFull.photo) {
-                            if (oFull.photo.indexOf("://") === -1) {
-                                oFull.photo = API_BASE + oFull.photo;
-                            } else if (oFull.photo.indexOf("localhost") !== -1 || oFull.photo.indexOf("127.0.0.1") !== -1) {
-                                try { oFull.photo = API_BASE + new URL(oFull.photo).pathname; } catch(e) { oFull.photo = ""; }
-                            }
-                        }
-                        oModel.setProperty("/selectedProfile", oFull);
-                    }
-                })
-                .catch(function() { /* keep stub data on error */ });
-
             this._loadProfileRatings(sProviderId);
         },
 
