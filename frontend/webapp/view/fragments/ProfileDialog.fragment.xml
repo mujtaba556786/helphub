@@ -44,6 +44,14 @@
                     <Button text="Ask AI"  icon="sap-icon://da"            type="Default"    press="onOpenChat"/>
                 </HBox>
 
+                <!-- ── Edit Profile shortcut (only for own profile) ── -->
+                <HBox justifyContent="Center"
+                    class="sapUiMediumMarginBeginEnd sapUiSmallMarginBottom"
+                    visible="{= String(${appData>/selectedProfile/id}) === String(${appData>/user/id})}">
+                    <Button text="{i18n>editProfile}" icon="sap-icon://edit" type="Emphasized"
+                        press="onEditProfileFromDialog" width="100%"/>
+                </HBox>
+
                 <!-- ── Info card ── -->
                 <VBox class="hhInfoCard">
                     <HBox alignItems="Center" class="hhInfoRow">

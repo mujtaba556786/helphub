@@ -717,15 +717,27 @@ sap.ui.define([
             var oVal = { name: "None", street: "None", houseNumber: "None", city: "None", state: "None", postalCode: "None", country: "None" };
             var bValid = true;
 
+            // Name is always required
             if (!oUser.name || !oUser.name.trim()) { oVal.name = "Error"; bValid = false; }
-            if (!oAddr.street || !oAddr.street.trim()) { oVal.street = "Error"; bValid = false; }
-            if (!oAddr.houseNumber || !oAddr.houseNumber.trim()) { oVal.houseNumber = "Error"; bValid = false; }
-            if (!oAddr.city || !oAddr.city.trim()) { oVal.city = "Error"; bValid = false; }
-            if (!oAddr.state || !oAddr.state.trim()) { oVal.state = "Error"; bValid = false; }
-            if (!oAddr.country || !oAddr.country.trim()) { oVal.country = "Error"; bValid = false; }
 
-            var sPostal = (oAddr.postalCode || "").trim();
-            if (!sPostal || !/^[A-Za-z0-9\s\-]{3,10}$/.test(sPostal)) { oVal.postalCode = "Error"; bValid = false; }
+            // Address fields are optional unless the user has started filling in
+            // any address field — in that case all required address fields must
+            // be complete so the address is usable for map / location search.
+            var bHasAnyAddress = (oAddr.street     || "").trim() ||
+                                 (oAddr.houseNumber || "").trim() ||
+                                 (oAddr.city        || "").trim() ||
+                                 (oAddr.state       || "").trim() ||
+                                 (oAddr.country     || "").trim() ||
+                                 (oAddr.postalCode  || "").trim();
+            if (bHasAnyAddress) {
+                if (!oAddr.street      || !oAddr.street.trim())      { oVal.street      = "Error"; bValid = false; }
+                if (!oAddr.houseNumber || !oAddr.houseNumber.trim()) { oVal.houseNumber = "Error"; bValid = false; }
+                if (!oAddr.city        || !oAddr.city.trim())        { oVal.city        = "Error"; bValid = false; }
+                if (!oAddr.state       || !oAddr.state.trim())       { oVal.state       = "Error"; bValid = false; }
+                if (!oAddr.country     || !oAddr.country.trim())     { oVal.country     = "Error"; bValid = false; }
+                var sPostal = (oAddr.postalCode || "").trim();
+                if (!sPostal || !/^[A-Za-z0-9\s\-]{3,10}$/.test(sPostal)) { oVal.postalCode = "Error"; bValid = false; }
+            }
 
             oModel.setProperty("/validation", oVal);
 
