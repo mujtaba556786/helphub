@@ -105,7 +105,13 @@ sap.ui.define([
             // ── Apply user data to model after successful auth ─────────────────
             function applyUser(u) {
                 var sAvatar = u.avatar || "";
-                if (sAvatar && sAvatar.startsWith("/uploads/")) sAvatar = API_BASE + sAvatar;
+                if (sAvatar) {
+                    if (sAvatar.indexOf("://") === -1) {
+                        sAvatar = API_BASE + sAvatar;
+                    } else if (sAvatar.indexOf("localhost") !== -1 || sAvatar.indexOf("127.0.0.1") !== -1) {
+                        try { sAvatar = API_BASE + new URL(sAvatar).pathname; } catch(e) { sAvatar = ""; }
+                    }
+                }
 
                 // Derive initials from the user's display name so the header
                 // Avatar always shows something meaningful when no photo is set.

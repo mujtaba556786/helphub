@@ -74,9 +74,13 @@ sap.ui.define([
                     .split(" ").map(function(p) { return p[0]; })
                     .join("").substring(0, 2).toUpperCase();
             }
-            // Resolve relative photo URLs (API returns "/uploads/…") to full URLs
-            if (oProvider.photo && oProvider.photo.indexOf("://") === -1) {
-                oProvider.photo = API_BASE + oProvider.photo;
+            // Resolve photo URLs — relative paths, and localhost URLs from local dev uploads
+            if (oProvider.photo) {
+                if (oProvider.photo.indexOf("://") === -1) {
+                    oProvider.photo = API_BASE + oProvider.photo;
+                } else if (oProvider.photo.indexOf("localhost") !== -1 || oProvider.photo.indexOf("127.0.0.1") !== -1) {
+                    try { oProvider.photo = API_BASE + new URL(oProvider.photo).pathname; } catch(e) { oProvider.photo = ""; }
+                }
             }
 
             // Normalise any embedded mock reviews (format: {user, stars, comment})
@@ -236,9 +240,13 @@ sap.ui.define([
                                 .map(function(p) { return p[0]; })
                                 .join("").substring(0, 2).toUpperCase();
                         }
-                        // Resolve relative photo URL from the full-profile API response
-                        if (oFull.photo && oFull.photo.indexOf("://") === -1) {
-                            oFull.photo = API_BASE + oFull.photo;
+                        // Resolve photo URL — relative paths and localhost URLs from local dev uploads
+                        if (oFull.photo) {
+                            if (oFull.photo.indexOf("://") === -1) {
+                                oFull.photo = API_BASE + oFull.photo;
+                            } else if (oFull.photo.indexOf("localhost") !== -1 || oFull.photo.indexOf("127.0.0.1") !== -1) {
+                                try { oFull.photo = API_BASE + new URL(oFull.photo).pathname; } catch(e) { oFull.photo = ""; }
+                            }
                         }
                         oModel.setProperty("/selectedProfile", oFull);
                     }
