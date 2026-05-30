@@ -74,6 +74,10 @@ sap.ui.define([
                     .split(" ").map(function(p) { return p[0]; })
                     .join("").substring(0, 2).toUpperCase();
             }
+            // Resolve relative photo URLs (API returns "/uploads/…") to full URLs
+            if (oProvider.photo && oProvider.photo.indexOf("://") === -1) {
+                oProvider.photo = API_BASE + oProvider.photo;
+            }
 
             // Normalise any embedded mock reviews (format: {user, stars, comment})
             // so the dialog has something to show while the API fetch is in-flight.
@@ -160,6 +164,13 @@ sap.ui.define([
             }
             oProfile.reviews = oProfile.reviews || [];
             oProfile.rating  = oProfile.rating  || null;
+
+            // Flatten nested address object into a plain city string so the
+            // profile dialog's {appData>/selectedProfile/city} binding works.
+            if (!oProfile.city && oProfile.address && oProfile.address.city) {
+                oProfile.city = oProfile.address.city;
+            }
+
             oModel.setProperty("/selectedProfile", oProfile);
 
             var oStars   = this.byId("newRatingStars");
@@ -224,6 +235,10 @@ sap.ui.define([
                             oFull.initials = (oFull.name || "").split(" ")
                                 .map(function(p) { return p[0]; })
                                 .join("").substring(0, 2).toUpperCase();
+                        }
+                        // Resolve relative photo URL from the full-profile API response
+                        if (oFull.photo && oFull.photo.indexOf("://") === -1) {
+                            oFull.photo = API_BASE + oFull.photo;
                         }
                         oModel.setProperty("/selectedProfile", oFull);
                     }

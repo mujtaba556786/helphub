@@ -61,14 +61,14 @@
                     <HBox alignItems="Center" class="hhInfoRow hhInfoRowLast">
                         <core:Icon src="sap-icon://map"          class="hhInfoIcon"/>
                         <Text text="Location"    class="hhInfoLabel"/>
-                        <Text text="{= ${appData>/selectedProfile/address} || '—'}" class="hhInfoValue" wrapping="true"/>
+                        <Text text="{= ${appData>/selectedProfile/city} || '—'}" class="hhInfoValue" wrapping="true"/>
                     </HBox>
                 </VBox>
 
                 <!-- ── Bio ── -->
                 <VBox class="hhProfSection">
                     <Title text="About" level="H5" class="hhProfSectionTitle"/>
-                    <Text text="{= ${appData>/selectedProfile/hobbies} || 'No bio added yet.'}" wrapping="true" class="hhProfBio"/>
+                    <Text text="{= ${appData>/selectedProfile/bio} || 'No bio added yet.'}" wrapping="true" class="hhProfBio"/>
                 </VBox>
 
                 <!-- ── Reviews ── -->

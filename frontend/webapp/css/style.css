@@ -570,8 +570,8 @@ section { -webkit-overflow-scrolling: touch; }
    Helper Profile Dialog
    ══════════════════════════════════════════════════════════════ */
 
-/* Outer wrapper — no extra margin */
-.hhProfWrap { height: 100%; }
+/* Outer wrapper — let dialog auto-size around content */
+.hhProfWrap { }
 
 /* Hero section */
 .hhProfHero    { padding: 16px 16px 12px; gap: 14px; }
