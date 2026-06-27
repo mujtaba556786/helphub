@@ -38,7 +38,7 @@
          boots. Bump _HH_BUILD whenever JS files change to force a fresh fetch. -->
     <script>
         (function () {
-            var _HH_BUILD = '2.72';
+            var _HH_BUILD = '2.73';
             var _desc = Object.getOwnPropertyDescriptor(HTMLScriptElement.prototype, 'src');
             Object.defineProperty(HTMLScriptElement.prototype, 'src', {
                 get: _desc.get,
@@ -83,7 +83,13 @@
     </script>
     <script>
         (function () {
-            var local = 'resources/sap-ui-core.js';
+            // Mobile (Cordova) ships a self-contained bundle (sap-ui-custom.js)
+            // built via `ui5 build self-contained`. Booting from sap-ui-core.js
+            // triggers fragile module-by-module loading that stalls in the
+            // WebView (white screen). sap-ui-custom.js is one file with the whole
+            // framework + app Component. On the web there is no sap-ui-custom.js,
+            // so the HEAD check 404s and we fall back to the CDN below.
+            var local = 'resources/sap-ui-custom.js';
             var cdn   = 'https://ui5.sap.com/1.120/resources/sap-ui-core.js';
             var src   = cdn;
             try {
