@@ -459,6 +459,14 @@ app.use((err, req, res, next) => {
     res.status(status).json({ success: false, error: err.message });
 });
 
+// ── Serve React admin panel (built) ──────────────────────────────────────────
+// MUST come before the SAPUI5 handlers below: the '/' static + the .js/.css 404
+// catch-all would otherwise intercept /admin/*.js and blank it out (white page).
+app.use('/admin', express.static(path.join(__dirname, 'dist')));
+app.get('/admin/*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+});
+
 // ── Serve SAPUI5 frontend (dynamic config.js + static files) ─────────────────
 app.get('/config.js', (req, res) => {
     const apiBase = process.env.API_BASE_URL ||
@@ -475,12 +483,6 @@ app.use((req, res, next) => {
         return res.status(404).type(req.path.endsWith('.js') ? 'application/javascript' : 'text/css').send('');
     }
     next();
-});
-
-// ── Serve React admin panel (built) ──────────────────────────────────────────
-app.use('/admin', express.static(path.join(__dirname, 'dist')));
-app.get('/admin/*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
 // ── Start ─────────────────────────────────────────────────────────────────────
