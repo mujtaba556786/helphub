@@ -3,17 +3,25 @@ const crypto = require('crypto');
 const pool   = require('../db/pool');
 const { calculateTrustScore } = require('./TrustService');
 
-const JWT_SECRET          = process.env.JWT_SECRET     || 'helpmate-dev-secret';
-const REFRESH_SECRET      = process.env.REFRESH_SECRET || 'helpmate-refresh-secret';
-const CURRENT_TERMS_VERSION = '1.0';
-
-// In production the secrets MUST be set explicitly. Falling back to the hardcoded
-// dev values would let anyone who reads the source forge tokens for any user, so
-// we refuse to boot rather than silently sign with a publicly-known key.
-if (process.env.NODE_ENV === 'production' &&
-    (!process.env.JWT_SECRET || !process.env.REFRESH_SECRET)) {
-    throw new Error('FATAL: JWT_SECRET and REFRESH_SECRET must be set in production (insecure fallback disabled).');
+// Resolve a signing secret. In production we never use the hardcoded dev value
+// (anyone reading the source could forge tokens with it); if the env var is unset
+// we generate a strong RANDOM per-boot secret instead — secure, but sessions reset
+// on each restart, so JWT_SECRET/REFRESH_SECRET SHOULD still be set explicitly so
+// logins persist across deploys. We warn rather than crash to avoid taking the app
+// down if the vars haven't been configured yet.
+function resolveSecret(name, devDefault) {
+    if (process.env[name]) return process.env[name];
+    if (process.env.NODE_ENV === 'production') {
+        console.warn(`[SECURITY] ${name} is not set — using a random per-boot secret. ` +
+            `Set ${name} in the environment so sessions survive restarts.`);
+        return crypto.randomBytes(48).toString('hex');
+    }
+    return devDefault;
 }
+
+const JWT_SECRET          = resolveSecret('JWT_SECRET',     'helpmate-dev-secret');
+const REFRESH_SECRET      = resolveSecret('REFRESH_SECRET', 'helpmate-refresh-secret');
+const CURRENT_TERMS_VERSION = '1.0';
 
 // ── Token helpers ─────────────────────────────────────────────────────────────
 
