@@ -2,42 +2,42 @@
 import { MOCK_USERS, MOCK_SERVICES, MOCK_BOOKINGS, MOCK_STATS, MOCK_REVIEWS } from './mockData';
 import { User, Service, Review, Booking, UserStatus, UserRole } from '../types';
 
-// Direct absolute URL to backend to avoid proxy and CORS issues
-const BASE_URL = 'http://localhost:3000/api';
+// Same-origin: in production the panel is served by Express under /admin and the
+// API lives at /api on the same host; in dev the Vite server proxies /api → :3000.
+const BASE_URL = '/api';
 
-// Shared secret for the backend admin panel — must match ADMIN_PANEL_TOKEN in server.js
-const ADMIN_TOKEN = 'helphub-admin-panel';
+// Admin token is NOT hardcoded anymore. It is returned by POST /api/auth/admin-login
+// after a correct password and kept in memory + sessionStorage for admin API calls.
+let adminToken = (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('adminToken')) || '';
+function setAdminToken(t: string) {
+    adminToken = t || '';
+    try { sessionStorage.setItem('adminToken', adminToken); } catch (e) { /* ignore */ }
+}
+export function isAdminAuthed(): boolean { return !!adminToken; }
+export function adminLogout(): void { setAdminToken(''); }
 
 function capitalizeFirst(s: string): string {
     return s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : s;
 }
 
 export const apiService = {
-    async login(email: string, password: string): Promise<User | null> {
-        if (email === 'admin@servicelink.com' && password === 'admin123') {
-            return MOCK_USERS.find(u => u.email === email) || MOCK_USERS[0];
-        }
-        const mockMatch = MOCK_USERS.find(u => u.email === email);
-        if (mockMatch) return mockMatch;
-
+    // Admin password login. On success the server returns the admin token, which we
+    // store for subsequent x-admin-token calls. No mock/no-password shortcut.
+    async adminLogin(password: string): Promise<boolean> {
         try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 2000);
-            const res = await fetch(`${BASE_URL}/auth/passwordless`, {
+            const res = await fetch(`${BASE_URL}/auth/admin-login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email }),
-                signal: controller.signal
+                body: JSON.stringify({ password })
             });
-            clearTimeout(timeoutId);
             if (res.ok) {
                 const data = await res.json();
-                return data.user;
+                if (data.success && data.token) { setAdminToken(data.token); return true; }
             }
         } catch (e) {
-            console.warn("Backend unreachable, continuing with mock.");
+            console.warn('Admin login request failed', e);
         }
-        return null;
+        return false;
     },
 
     async createUser(userData: Partial<User>): Promise<User | null> {
@@ -114,7 +114,7 @@ export const apiService = {
             const action = status === 'Approved' ? 'approve' : 'reject';
             const res = await fetch(`${BASE_URL}/admin/reviews/${id}/${action}`, {
                 method: 'PUT',
-                headers: { 'x-admin-token': ADMIN_TOKEN }
+                headers: { 'x-admin-token': adminToken }
             });
             return res.ok;
         } catch {
@@ -126,7 +126,7 @@ export const apiService = {
         try {
             const res = await fetch(`${BASE_URL}/admin/reviews/${id}`, {
                 method: 'DELETE',
-                headers: { 'x-admin-token': ADMIN_TOKEN }
+                headers: { 'x-admin-token': adminToken }
             });
             return res.ok;
         } catch {
@@ -201,7 +201,7 @@ export const apiService = {
     async getBookings(): Promise<Booking[]> {
         try {
             const res = await fetch(`${BASE_URL}/bookings`, {
-                headers: { 'x-admin-token': ADMIN_TOKEN }
+                headers: { 'x-admin-token': adminToken }
             });
             if (res.ok) {
                 const data = await res.json();
@@ -227,7 +227,7 @@ export const apiService = {
             const url = status
                 ? `${BASE_URL}/admin/reports?status=${status}&limit=50`
                 : `${BASE_URL}/admin/reports?limit=50`;
-            const res = await fetch(url, { headers: { 'x-admin-token': ADMIN_TOKEN } });
+            const res = await fetch(url, { headers: { 'x-admin-token': adminToken } });
             if (res.ok) {
                 const data = await res.json();
                 return data.reports || [];
@@ -240,7 +240,7 @@ export const apiService = {
         try {
             const res = await fetch(`${BASE_URL}/admin/reports/${id}/action`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json', 'x-admin-token': ADMIN_TOKEN },
+                headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken },
                 body: JSON.stringify({ status })
             });
             return res.ok;
@@ -250,7 +250,7 @@ export const apiService = {
     async getFlaggedUsers(): Promise<any[]> {
         try {
             const res = await fetch(`${BASE_URL}/admin/flagged-users`, {
-                headers: { 'x-admin-token': ADMIN_TOKEN }
+                headers: { 'x-admin-token': adminToken }
             });
             if (res.ok) {
                 const data = await res.json();
@@ -263,7 +263,7 @@ export const apiService = {
     async getBlocks(): Promise<any[]> {
         try {
             const res = await fetch(`${BASE_URL}/admin/blocks`, {
-                headers: { 'x-admin-token': ADMIN_TOKEN }
+                headers: { 'x-admin-token': adminToken }
             });
             if (res.ok) {
                 const data = await res.json();
@@ -277,7 +277,7 @@ export const apiService = {
         try {
             const res = await fetch(`${BASE_URL}/admin/blocks/${id}`, {
                 method: 'DELETE',
-                headers: { 'x-admin-token': ADMIN_TOKEN }
+                headers: { 'x-admin-token': adminToken }
             });
             return res.ok;
         } catch { return false; }
@@ -287,7 +287,7 @@ export const apiService = {
         try {
             const res = await fetch(`${BASE_URL}/admin/users/${id}/action`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json', 'x-admin-token': ADMIN_TOKEN },
+                headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken },
                 body: JSON.stringify({ action })
             });
             return res.ok;
@@ -297,7 +297,7 @@ export const apiService = {
     async getReviews(): Promise<Review[]> {
         try {
             const res = await fetch(`${BASE_URL}/admin/reviews?status=all`, {
-                headers: { 'x-admin-token': ADMIN_TOKEN }
+                headers: { 'x-admin-token': adminToken }
             });
             if (res.ok) {
                 const data = await res.json();

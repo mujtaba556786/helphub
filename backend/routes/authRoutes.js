@@ -18,6 +18,7 @@ router.post('/facebook',        authLimiter, validate(s.facebookLogin),     hand
 router.post('/passwordless',    authLimiter, validate(s.passwordlessLogin), handleAsync(ctrl.passwordlessLogin));
 router.post('/send-magic-link', authLimiter, validate(s.sendMagicLink),     handleAsync(ctrl.sendMagicLink));
 router.post('/verify-otp',      authLimiter, validate(s.verifyOtp),         handleAsync(ctrl.verifyOtp));
+router.post('/admin-login',     authLimiter, validate(s.adminLogin),       handleAsync(ctrl.adminLogin));
 router.get('/magic',            authLimiter,                                 handleAsync(ctrl.magicLinkCallback));
 router.get('/me',                                                             handleAsync(ctrl.getMe));
 router.post('/refresh',         authLimiter, validate(s.refreshToken),      handleAsync(ctrl.refreshToken));
