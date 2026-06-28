@@ -180,6 +180,24 @@ async function verifyOtp(req, res) {
     }
 }
 
+// Admin panel login: validates a password against ADMIN_PASSWORD (constant-time)
+// and returns the admin API token. The token is never shipped in the client build.
+async function adminLogin(req, res) {
+    const { password } = req.body;
+    const expected = process.env.ADMIN_PASSWORD;
+    if (!expected) {
+        return res.status(503).json({ success: false, error: 'Admin login is not configured on the server.' });
+    }
+    const a = crypto.createHash('sha256').update(String(password || '')).digest();
+    const b = crypto.createHash('sha256').update(String(expected)).digest();
+    if (!crypto.timingSafeEqual(a, b)) {
+        return res.status(401).json({ success: false, error: 'Incorrect password.' });
+    }
+    const token = process.env.ADMIN_PANEL_TOKEN || 'helphub-admin-panel';
+    console.log('[AUTH] Admin panel login');
+    res.json({ success: true, token });
+}
+
 async function magicLinkCallback(req, res) {
     const { token } = req.query;
     if (!token) return res.status(400).send('Missing token.');
@@ -231,6 +249,6 @@ function getTermsVersion(req, res) {
 
 module.exports = {
     googleLogin, facebookLogin, passwordlessLogin,
-    sendMagicLink, verifyOtp, magicLinkCallback,
+    sendMagicLink, verifyOtp, adminLogin, magicLinkCallback,
     getMe, refreshToken, logout, acceptTerms, getTermsVersion
 };

@@ -8,7 +8,8 @@ interface AuthViewProps {
 }
 
 const AuthView: React.FC<AuthViewProps> = ({ onLogin }) => {
-  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
   const [step, setStep] = useState<'LOGIN' | 'ONBOARDING' | 'PENDING'>('LOGIN');
   const [loading, setLoading] = useState(false);
   const [user, setUser] = useState<User | null>(null);
@@ -16,23 +17,29 @@ const AuthView: React.FC<AuthViewProps> = ({ onLogin }) => {
   const [onboardingBio, setOnboardingBio] = useState('');
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
 
-  const handleLogin = async (e?: React.FormEvent, isQuickAdmin: boolean = false) => {
+  const handleLogin = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
+    setError('');
     setLoading(true);
 
-    const loginEmail = isQuickAdmin ? 'admin@servicelink.com' : email;
-    const loggedUser = await apiService.login(loginEmail, '');
-    
-    if (loggedUser) {
-      setUser(loggedUser);
-      if (loggedUser.onboarded) {
-        if (loggedUser.status === UserStatus.PENDING_APPROVAL) setStep('PENDING');
-        else onLogin(loggedUser);
-      } else {
-        setStep('ONBOARDING');
-      }
+    const ok = await apiService.adminLogin(password);
+
+    if (ok) {
+      const adminUser: User = {
+        id: 'admin',
+        name: 'Administrator',
+        email: 'admin',
+        role: UserRole.ADMIN,
+        status: UserStatus.ACTIVE,
+        onboarded: true,
+        createdAt: new Date().toISOString(),
+        avatar: '',
+        provider: 'Email'
+      };
+      setUser(adminUser);
+      onLogin(adminUser);
     } else {
-      alert("Login failed. Check your credentials or ensure the server is running (Falling back to mock mode).");
+      setError('Incorrect password, or the server isn’t reachable.');
     }
     setLoading(false);
   };
@@ -97,34 +104,29 @@ const AuthView: React.FC<AuthViewProps> = ({ onLogin }) => {
 
               <form onSubmit={(e) => handleLogin(e)} className="space-y-5">
                 <div className="space-y-2 text-left">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-6">Admin Identifier</label>
-                  <input 
-                    type="email" 
-                    placeholder="name@servicelink.com"
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-6">Admin Password</label>
+                  <input
+                    type="password"
+                    placeholder="••••••••"
+                    autoFocus
                     className="w-full px-8 py-5 bg-slate-50 border border-slate-100 rounded-3xl outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-bold transition-all"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
                   />
                 </div>
-                
-                <button 
-                  disabled={loading} 
+
+                {error && (
+                  <p className="text-red-500 text-xs font-bold text-left ml-6">{error}</p>
+                )}
+
+                <button
+                  disabled={loading || !password}
                   type="submit"
                   className="w-full py-5 bg-slate-900 text-white rounded-[2rem] font-black shadow-2xl hover:bg-black hover:scale-[1.02] active:scale-95 transition-all mt-4 disabled:opacity-50"
                 >
                   {loading ? 'Authenticating...' : 'Sign In to Console'}
                 </button>
               </form>
-
-              <div className="pt-6 border-t border-slate-100">
-                <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-4 italic">Instant Access for Testing</p>
-                <button 
-                  onClick={() => handleLogin(undefined, true)}
-                  className="w-full py-4 bg-indigo-50 text-indigo-600 rounded-2xl font-black border-2 border-indigo-100 hover:bg-indigo-600 hover:text-white hover:border-indigo-600 transition-all shadow-sm"
-                >
-                  Quick Admin Login
-                </button>
-              </div>
             </div>
           )}
 
