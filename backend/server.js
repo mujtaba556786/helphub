@@ -161,6 +161,7 @@ async function initDb() {
             CREATE TABLE IF NOT EXISTS magic_link_tokens (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 token_hash VARCHAR(255) NOT NULL UNIQUE,
+                code_hash VARCHAR(255),
                 email VARCHAR(100) NOT NULL,
                 expires_at DATETIME NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -168,6 +169,8 @@ async function initDb() {
                 INDEX idx_ml_email (email)
             )
         `);
+        // Migration: add code_hash (6-digit OTP) to pre-existing magic_link_tokens tables
+        await connection.query(`ALTER TABLE magic_link_tokens ADD COLUMN code_hash VARCHAR(255)`).catch(() => {});
 
         await connection.query(`
             CREATE TABLE IF NOT EXISTS ratings (

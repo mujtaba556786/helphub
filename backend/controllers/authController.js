@@ -13,11 +13,14 @@ const googleClient      = new OAuth2Client(GOOGLE_CLIENT_ID);
 // To enable on Railway: add RESEND_API_KEY in the Variables tab.
 // Sign up free at https://resend.com — 3,000 emails/month free.
 
-const EMAIL_HTML = (magicUrl) =>
+const EMAIL_HTML = (magicUrl, code) =>
     `<div style="font-family:sans-serif;max-width:420px;margin:auto">
         <h2 style="color:#f97316">HelpMate</h2>
-        <p>Click the button below to sign in. This link expires in <strong>15 minutes</strong> and can only be used once.</p>
-        <a href="${magicUrl}" style="display:inline-block;padding:12px 28px;background:#f97316;color:#fff;border-radius:8px;text-decoration:none;font-weight:bold;font-size:16px;margin:16px 0">Sign in to HelpMate</a>
+        <p>Use either option below to sign in. This expires in <strong>15 minutes</strong> and can only be used once.</p>
+        <p style="margin:8px 0 4px;color:#555"><strong>On the web:</strong> tap the button.</p>
+        <a href="${magicUrl}" style="display:inline-block;padding:12px 28px;background:#f97316;color:#fff;border-radius:8px;text-decoration:none;font-weight:bold;font-size:16px;margin:8px 0 16px">Sign in to HelpMate</a>
+        <p style="margin:8px 0 4px;color:#555"><strong>In the app:</strong> enter this code:</p>
+        <p style="font-size:32px;font-weight:bold;letter-spacing:6px;color:#0f172a;margin:4px 0 16px">${code}</p>
         <p style="color:#888;font-size:12px">If you didn't request this, you can safely ignore this email.</p>
      </div>`;
 
@@ -114,6 +117,11 @@ async function facebookLogin(req, res) {
 }
 
 async function passwordlessLogin(req, res) {
+    // SECURITY: this logs in any email with no ownership proof — testing only.
+    // Disabled unless ALLOW_DEMO_LOGIN=true is explicitly set (never in production).
+    if (process.env.ALLOW_DEMO_LOGIN !== 'true') {
+        return res.status(403).json({ success: false, error: 'Demo login is disabled.' });
+    }
     const { email, role, provider } = req.body;
     if (!email) return res.status(400).json({ success: false, error: 'email is required' });
     const result = await AuthService.loginPasswordless(email, role, provider);
@@ -124,43 +132,51 @@ async function sendMagicLink(req, res) {
     const { email } = req.body;
     if (!email) return res.status(400).json({ success: false, error: 'email is required' });
 
-    // ── Existing verified user: skip email, issue tokens immediately ──────────
-    // A user is "verified" when they already exist in the DB with Active status.
-    // This covers everyone who previously completed a magic-link click or social
-    // login. Logout only deletes the refresh token — the user row stays intact,
-    // so the next login is frictionless.
-    const [existing] = await pool.query(
-        "SELECT * FROM users WHERE email = ? AND status = 'Active' LIMIT 1",
-        [email]
-    );
-    if (existing.length > 0) {
-        const user   = existing[0];
-        const tokens = await AuthService.issueTokens(user);
-        console.log(`[AUTH] Direct login (no email) for existing verified user: ${email}`);
-        return res.json({ success: true, directLogin: true, user, ...tokens });
-    }
-
-    // ── New user: send magic-link email ───────────────────────────────────────
+    // SECURITY: every login must prove email ownership. We always send a one-time
+    // link + 6-digit code; tokens are only issued after the link is clicked
+    // (consumeMagicToken) or the code is entered (consumeMagicCode). There is NO
+    // direct-login shortcut for existing users — that allowed account takeover by
+    // anyone who merely knew the email. Returning users stay signed in via the
+    // stored refresh token (auto-login in Component.js), so this only appears on a
+    // new device or after logout.
     const rawToken    = crypto.randomBytes(32).toString('hex');
     const tokenHash   = crypto.createHash('sha256').update(rawToken).digest('hex');
+    const code        = String(crypto.randomInt(0, 1000000)).padStart(6, '0');
+    const codeHash    = crypto.createHash('sha256').update(code).digest('hex');
     const expiresAt   = new Date(Date.now() + 15 * 60 * 1000);
     const backendBase = process.env.BACKEND_URL || `${req.protocol}://${req.get('host')}`;
 
     await pool.execute('DELETE FROM magic_link_tokens WHERE email = ?', [email]);
     await pool.execute(
-        'INSERT INTO magic_link_tokens (token_hash, email, expires_at) VALUES (?, ?, ?)',
-        [tokenHash, email, expiresAt]
+        'INSERT INTO magic_link_tokens (token_hash, code_hash, email, expires_at) VALUES (?, ?, ?, ?)',
+        [tokenHash, codeHash, email, expiresAt]
     );
 
     const magicUrl = `${backendBase}/api/auth/magic?token=${rawToken}`;
     try {
-        await sendEmail({ to: email, subject: 'Sign in to HelpMate', html: EMAIL_HTML(magicUrl) });
-        console.log(`[AUTH] Magic-link email sent to new user: ${email}`);
-        res.json({ success: true, directLogin: false, message: 'Sign-in link sent — check your inbox.' });
+        await sendEmail({ to: email, subject: 'Sign in to HelpMate', html: EMAIL_HTML(magicUrl, code) });
+        console.log(`[AUTH] Magic-link + code email sent to: ${email}`);
+        res.json({ success: true, directLogin: false, message: 'Sign-in link & code sent — check your inbox.' });
     } catch (err) {
         console.error('[AUTH] Failed to send magic link email:', err.message);
-        console.log(`[DEV] Magic link for ${email}: ${magicUrl}`);
+        console.log(`[DEV] Magic link for ${email}: ${magicUrl}  (code: ${code})`);
         res.status(500).json({ success: false, error: 'Could not send sign-in email. Please try again.' });
+    }
+}
+
+// Verify the 6-digit code from the email (mobile-friendly path) and issue tokens.
+async function verifyOtp(req, res) {
+    const { email, code } = req.body;
+    if (!email || !code) return res.status(400).json({ success: false, error: 'email and code are required' });
+    try {
+        const result = await AuthService.consumeMagicCode(email, code);
+        console.log(`[AUTH] OTP code login for: ${email}`);
+        res.json({ success: true, ...result });
+    } catch (err) {
+        const msg = err.message === 'expired'
+            ? 'This code has expired. Request a new one.'
+            : 'Invalid code. Please check and try again.';
+        res.status(400).json({ success: false, error: msg });
     }
 }
 
@@ -215,6 +231,6 @@ function getTermsVersion(req, res) {
 
 module.exports = {
     googleLogin, facebookLogin, passwordlessLogin,
-    sendMagicLink, magicLinkCallback,
+    sendMagicLink, verifyOtp, magicLinkCallback,
     getMe, refreshToken, logout, acceptTerms, getTermsVersion
 };

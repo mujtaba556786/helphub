@@ -97,17 +97,14 @@ sap.ui.define([
                     MessageToast.show(oData.error || "Could not send link. Try again.");
                     return;
                 }
-                if (oData.directLogin) {
-                    // Existing verified user — backend issued tokens directly.
-                    // No email was sent; log the user in immediately.
-                    that._applySession(oData);
-                } else {
-                    // New user — magic-link email was sent; show the "check inbox" step.
-                    that.byId("stepEmail").setVisible(false);
-                    that.byId("stepLinkSent").setVisible(true);
-                    var sHint = that.getResourceBundle().getText("loginLinkSentHint", [sEmail]);
-                    that.byId("linkSentHint").setText(sHint);
-                }
+                // Link + 6-digit code emailed. Show the "check inbox / enter code"
+                // step. There is no direct-login shortcut anymore — every login
+                // proves email ownership via the link or the code.
+                that._pendingEmail = sEmail;
+                that.byId("stepEmail").setVisible(false);
+                that.byId("stepLinkSent").setVisible(true);
+                var sHint = that.getResourceBundle().getText("loginLinkSentHint", [sEmail]);
+                that.byId("linkSentHint").setText(sHint);
             })
             .catch(function(err) {
                 clearTimeout(oTimeout);
@@ -131,15 +128,22 @@ sap.ui.define([
             this.byId("stepEmail").setVisible(true);
         },
 
-        // ── Demo Login ─────────────────────────────────────────────────────────
-        onDemoLogin: function () {
+        // ── Verify 6-digit code from email (works on web + mobile app) ──────────
+        onVerifyOtp: function () {
+            var sCode  = this.byId("otpInput").getValue().trim();
+            var sEmail = this._pendingEmail || this.byId("emailInput").getValue().trim();
+            if (!/^\d{6}$/.test(sCode)) {
+                MessageToast.show(this.getResourceBundle().getText("loginCodeInvalid"));
+                return;
+            }
+
             var that = this;
             this._oBusyDialog.open();
 
-            fetch(API_BASE + "/api/auth/passwordless", {
+            fetch(API_BASE + "/api/auth/verify-otp", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email: "demo@helphub.app", provider: "Email" })
+                body: JSON.stringify({ email: sEmail, code: sCode })
             })
             .then(function(r) { return r.json(); })
             .then(function(oData) {
@@ -147,7 +151,7 @@ sap.ui.define([
                 if (oData.success) {
                     that._applySession(oData);
                 } else {
-                    MessageToast.show(oData.error || "Demo login failed.");
+                    MessageToast.show(oData.error || that.getResourceBundle().getText("loginCodeInvalid"));
                 }
             })
             .catch(function() {

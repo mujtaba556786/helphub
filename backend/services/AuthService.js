@@ -7,6 +7,14 @@ const JWT_SECRET          = process.env.JWT_SECRET     || 'helpmate-dev-secret';
 const REFRESH_SECRET      = process.env.REFRESH_SECRET || 'helpmate-refresh-secret';
 const CURRENT_TERMS_VERSION = '1.0';
 
+// In production the secrets MUST be set explicitly. Falling back to the hardcoded
+// dev values would let anyone who reads the source forge tokens for any user, so
+// we refuse to boot rather than silently sign with a publicly-known key.
+if (process.env.NODE_ENV === 'production' &&
+    (!process.env.JWT_SECRET || !process.env.REFRESH_SECRET)) {
+    throw new Error('FATAL: JWT_SECRET and REFRESH_SECRET must be set in production (insecure fallback disabled).');
+}
+
 // ── Token helpers ─────────────────────────────────────────────────────────────
 
 function issueAccessToken(user) {
@@ -95,6 +103,34 @@ async function consumeMagicToken(tokenHash) {
     return { user, ...tokens };
 }
 
+// Verify a 6-digit OTP code (the mobile-friendly path — same email also carries a
+// click-link consumed by consumeMagicToken). Single-use: the row is deleted on
+// success or expiry. Brute force is bounded by the 15-min expiry + the auth rate
+// limiter on the route.
+async function consumeMagicCode(email, code) {
+    const [[record]] = await pool.query(
+        'SELECT * FROM magic_link_tokens WHERE email = ? ORDER BY created_at DESC LIMIT 1',
+        [email]
+    );
+    if (!record || !record.code_hash) {
+        const err = new Error('invalid'); err.statusCode = 400; throw err;
+    }
+    if (new Date() > new Date(record.expires_at)) {
+        await pool.execute('DELETE FROM magic_link_tokens WHERE id = ?', [record.id]);
+        const err = new Error('expired'); err.statusCode = 400; throw err;
+    }
+    const codeHash = crypto.createHash('sha256').update(String(code)).digest('hex');
+    if (codeHash !== record.code_hash) {
+        const err = new Error('invalid'); err.statusCode = 400; throw err;
+    }
+    await pool.execute('DELETE FROM magic_link_tokens WHERE email = ?', [email]);
+
+    const user = await findOrCreateEmailUser(record.email);
+    calculateTrustScore(user.id).catch(() => {});
+    const tokens = await issueTokens(user);
+    return { user, ...tokens };
+}
+
 async function refreshAccessToken(refreshToken) {
     let payload;
     try {
@@ -164,7 +200,7 @@ async function acceptTerms(userId) {
 
 module.exports = {
     issueTokens, upsertSocialUser,
-    loginPasswordless, consumeMagicToken,
+    loginPasswordless, consumeMagicToken, consumeMagicCode,
     refreshAccessToken, logout, getMe, acceptTerms,
     CURRENT_TERMS_VERSION
 };
