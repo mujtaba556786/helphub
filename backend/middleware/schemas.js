@@ -24,6 +24,11 @@ const sendMagicLink = z.object({
     email
 });
 
+const verifyOtp = z.object({
+    email,
+    code: z.string().trim().regex(/^\d{6}$/, 'Code must be 6 digits')
+});
+
 const refreshToken = z.object({
     refreshToken: z.string().min(1, 'refreshToken is required')
 });
@@ -156,7 +161,7 @@ const actionUser = z.object({
 
 module.exports = {
     // auth
-    googleLogin, facebookLogin, passwordlessLogin, sendMagicLink, refreshToken, logout,
+    googleLogin, facebookLogin, passwordlessLogin, sendMagicLink, verifyOtp, refreshToken, logout,
     // users
     updateUser, onboardUser, updateProfile, updateStatus,
     // ratings

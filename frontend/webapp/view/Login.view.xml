@@ -28,16 +28,18 @@
                     <Label text="{i18n>loginEmailLabel}"/>
                     <Input id="emailInput" type="Email" placeholder="{i18n>loginEmailPlaceholder}" class="sapUiSmallMarginBottom"/>
                     <Button text="{i18n>loginSendLink}" type="Emphasized" width="100%" press="onSendMagicLink"/>
-                    <Button text="{i18n>loginDemoLogin}" icon="sap-icon://person-placeholder" width="100%" type="Ghost" class="sapUiSmallMarginTop" press="onDemoLogin"/>
                 </VBox>
 
-                <!-- Step 2: Link sent confirmation -->
+                <!-- Step 2: Link sent + enter 6-digit code -->
                 <VBox id="stepLinkSent" class="sapUiMediumMargin" visible="false">
                     <VBox alignItems="Center" class="sapUiSmallMarginBottom">
                         <Title text="{i18n>loginCheckInbox}" level="H3"/>
                         <Text id="linkSentHint" text="" class="grayText textCenter sapUiTinyMarginTop sapUiSmallMarginBottom"/>
                         <Text text="{i18n>loginClickLink}" class="grayText textCenter"/>
                     </VBox>
+                    <Label text="{i18n>loginCodeLabel}" class="sapUiSmallMarginTop"/>
+                    <Input id="otpInput" type="Number" maxLength="6" placeholder="{i18n>loginCodePlaceholder}" class="sapUiTinyMarginBottom" submit="onVerifyOtp"/>
+                    <Button text="{i18n>loginVerifyCode}" type="Emphasized" width="100%" press="onVerifyOtp"/>
                     <Button text="{i18n>loginResendLink}" type="Transparent" width="100%" class="sapUiSmallMarginTop" press="onResendMagicLink"/>
                     <Button text="{i18n>loginDifferentEmail}" type="Ghost" width="100%" class="sapUiTinyMarginTop" press="onBackToEmail"/>
                 </VBox>

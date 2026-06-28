@@ -40,7 +40,11 @@ sap.ui.define([
         if (matchUrl(sUrl, "/api/auth/me")) {
             return makeResponse({ success: true, user: MockData.USER });
         }
-        if (matchUrl(sUrl, "/api/auth/passwordless") || matchUrl(sUrl, "/api/auth/send-magic-link")) {
+        if (matchUrl(sUrl, "/api/auth/send-magic-link")) {
+            // New flow: link + 6-digit code emailed, no tokens returned here.
+            return makeResponse({ success: true, directLogin: false, message: "Sign-in link & code sent — check your inbox." });
+        }
+        if (matchUrl(sUrl, "/api/auth/verify-otp") || matchUrl(sUrl, "/api/auth/passwordless")) {
             return makeResponse({ success: true, user: MockData.USER, accessToken: MockData.ACCESS_TOKEN, refreshToken: MockData.REFRESH_TOKEN });
         }
         if (matchUrl(sUrl, "/api/auth/refresh")) {
