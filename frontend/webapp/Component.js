@@ -51,7 +51,25 @@ sap.ui.define([
         init() {
             UIComponent.prototype.init.apply(this, arguments);
 
-            this.setModel(models.createDeviceModel(), "device");
+            const oDeviceModel = models.createDeviceModel();
+            this.setModel(oDeviceModel, "device");
+
+            // Cordova WebView (the packaged APK) does not reliably report as a "phone",
+            // so dialogs bound to stretch="{device>/system/phone}" stayed as floating
+            // modals (bottom nav showing through, content clipped). Force phone mode once
+            // Cordova is ready — deviceready always fires in the APK — and also on resize
+            // for narrow non-Cordova viewports. setProperty re-evaluates the bindings, so
+            // even already-loaded dialogs update.
+            const forcePhone = function () {
+                oDeviceModel.setProperty("/system/phone", true);
+                oDeviceModel.setProperty("/system/desktop", false);
+            };
+            document.addEventListener("deviceready", forcePhone, false);
+            const applyNarrow = function () {
+                if (window.cordova || (window.innerWidth && window.innerWidth <= 820)) forcePhone();
+            };
+            applyNarrow();
+            window.addEventListener("resize", applyNarrow);
 
             // Create appData BEFORE router so the magic-link flag is readable
             // by Login.view the moment the router renders it.

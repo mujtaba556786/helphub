@@ -6,6 +6,8 @@ sap.ui.define([
 
     return {
         createDeviceModel: function () {
+            // NB: phone-mode is also force-applied in Component.init (deviceready +
+            // narrow-viewport) because UI5's detection is unreliable in the Cordova APK.
             var oModel = new JSONModel(Device);
             oModel.setDefaultBindingMode("OneWay");
             return oModel;
