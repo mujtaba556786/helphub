@@ -3,7 +3,6 @@
     xmlns:core="sap.ui.core">
 
     <Dialog id="dmChatDialog" title="{appData>/currentDmOtherName}"
-        contentHeight="65vh" contentWidth="92%"
         verticalScrolling="false"
         stretch="{device>/system/phone}">
 
