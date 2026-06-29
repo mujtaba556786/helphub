@@ -2,25 +2,9 @@ const jwt    = require('jsonwebtoken');
 const crypto = require('crypto');
 const pool   = require('../db/pool');
 const { calculateTrustScore } = require('./TrustService');
+// Shared with middleware/auth.js so sign and verify always use the same key.
+const { JWT_SECRET, REFRESH_SECRET } = require('../config/secrets');
 
-// Resolve a signing secret. In production we never use the hardcoded dev value
-// (anyone reading the source could forge tokens with it); if the env var is unset
-// we generate a strong RANDOM per-boot secret instead — secure, but sessions reset
-// on each restart, so JWT_SECRET/REFRESH_SECRET SHOULD still be set explicitly so
-// logins persist across deploys. We warn rather than crash to avoid taking the app
-// down if the vars haven't been configured yet.
-function resolveSecret(name, devDefault) {
-    if (process.env[name]) return process.env[name];
-    if (process.env.NODE_ENV === 'production') {
-        console.warn(`[SECURITY] ${name} is not set — using a random per-boot secret. ` +
-            `Set ${name} in the environment so sessions survive restarts.`);
-        return crypto.randomBytes(48).toString('hex');
-    }
-    return devDefault;
-}
-
-const JWT_SECRET          = resolveSecret('JWT_SECRET',     'helpmate-dev-secret');
-const REFRESH_SECRET      = resolveSecret('REFRESH_SECRET', 'helpmate-refresh-secret');
 const CURRENT_TERMS_VERSION = '1.0';
 
 // ── Token helpers ─────────────────────────────────────────────────────────────

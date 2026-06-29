@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const pool = require('../db/pool');
+const { JWT_SECRET } = require('../config/secrets');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'helpmate-dev-secret';
 const ADMIN_PANEL_TOKEN = process.env.ADMIN_PANEL_TOKEN || 'helphub-admin-panel';
 
 const handleAsync = (fn) => (req, res, next) => {
