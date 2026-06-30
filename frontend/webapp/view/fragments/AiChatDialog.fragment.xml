@@ -5,7 +5,7 @@
     <Dialog id="chatDialog" title="{i18n>aiChat}"
         contentHeight="65vh" contentWidth="92%"
         verticalScrolling="false"
-        stretch="{device>/system/phone}">
+        stretch="true">
 
 <content>
             <FlexBox direction="Column" height="100%" fitContainer="true">
