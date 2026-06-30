@@ -4,7 +4,7 @@
 
     <Dialog id="notificationsDialog"
         title="{i18n>notifications}"
-        stretch="{device>/system/phone}"
+        stretch="true"
         contentWidth="400px"
         class="hhNotifDialog">
 

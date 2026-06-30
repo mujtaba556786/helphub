@@ -5,7 +5,7 @@
     <Dialog id="taskDetailDialog" title="{i18n>taskDetails}"
         contentWidth="92%"
         verticalScrolling="true"
-        stretch="{device>/system/phone}">
+        stretch="true">
 
         <!-- Task title pinned below header — never hidden -->
         <subHeader>

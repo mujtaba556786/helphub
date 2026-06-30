@@ -6,7 +6,7 @@
     <Dialog id="profileDialog"
         title="{appData>/selectedProfile/name}"
         verticalScrolling="true"
-        stretch="{device>/system/phone}">
+        stretch="true">
 
         <content>
             <VBox>

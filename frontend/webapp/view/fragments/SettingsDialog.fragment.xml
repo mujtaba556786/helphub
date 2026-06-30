@@ -7,7 +7,7 @@
         title="{i18n>settingsTab}"
         contentWidth="380px"
         verticalScrolling="true"
-        stretch="{device>/system/phone}">
+        stretch="true">
 
         <content>
             <VBox>
