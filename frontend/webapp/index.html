@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <!-- Cordova framework — REQUIRED in the APK so window.cordova/deviceready exist.
+         Without this tag Cordova never initialises (no plugins, no deviceready), which
+         broke phone-mode detection for dialogs. 404s harmlessly on the plain web build. -->
+    <script src="cordova.js"></script>
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -38,7 +43,7 @@
          boots. Bump _HH_BUILD whenever JS files change to force a fresh fetch. -->
     <script>
         (function () {
-            var _HH_BUILD = '2.77';
+            var _HH_BUILD = '2.78';
             var _desc = Object.getOwnPropertyDescriptor(HTMLScriptElement.prototype, 'src');
             Object.defineProperty(HTMLScriptElement.prototype, 'src', {
                 get: _desc.get,
@@ -128,5 +133,20 @@
         data-settings='{"id" : "helphub"}'
         data-handle-validation="true"
     ></div>
+
+    <!-- TEMP diagnostics stamp — confirms which build is installed + device flags.
+         Take a screenshot of the bottom-left text. Remove once dialogs verified. -->
+    <div id="hhDiag" style="position:fixed;left:0;bottom:0;z-index:2147483647;background:rgba(0,0,0,0.8);color:#0f0;font:11px/1.4 monospace;padding:2px 6px;pointer-events:none">diag…</div>
+    <script>
+        (function () {
+            function upd() {
+                var ph = (window.sap && sap.ui && sap.ui.Device) ? sap.ui.Device.system.phone : "?";
+                var el = document.getElementById("hhDiag");
+                if (el) el.textContent = "build " + (window._HH_BUILD || "?") +
+                    " | w" + window.innerWidth + " | cordova:" + (!!window.cordova) + " | phone:" + ph;
+            }
+            setInterval(upd, 1000); upd();
+        })();
+    </script>
 </body>
 </html>
