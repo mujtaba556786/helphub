@@ -28,7 +28,6 @@
                     <Label text="{i18n>loginEmailLabel}"/>
                     <Input id="emailInput" type="Email" placeholder="{i18n>loginEmailPlaceholder}" class="sapUiSmallMarginBottom"/>
                     <Button text="{i18n>loginSendLink}" type="Emphasized" width="100%" press="onSendMagicLink"/>
-                    <Button text="Demo Login (test)" icon="sap-icon://person-placeholder" type="Ghost" width="100%" class="sapUiSmallMarginTop" visible="{appData>/showDemoLogin}" press="onDemoLogin"/>
                 </VBox>
 
                 <!-- Step 2: Link sent + enter 6-digit code -->
