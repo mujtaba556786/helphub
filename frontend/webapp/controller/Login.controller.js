@@ -12,32 +12,6 @@ sap.ui.define([
 
         onInit: function () {
             this._oBusyDialog = new BusyDialog({ title: "Please wait…" });
-            // Testing-only Demo Login button visibility (see config.js DEMO_LOGIN)
-            this.getModel("appData").setProperty("/showDemoLogin", Config.DEMO_LOGIN === true);
-        },
-
-        // ── Demo Login (TESTING ONLY) — one tap, no email/OTP ───────────────────
-        onDemoLogin: function () {
-            var that = this;
-            this._oBusyDialog.open();
-            fetch(API_BASE + "/api/auth/passwordless", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email: "demo@helphub.app", provider: "Email" })
-            })
-            .then(function (r) { return r.json(); })
-            .then(function (oData) {
-                that._oBusyDialog.close();
-                if (oData.success) {
-                    that._applySession(oData);
-                } else {
-                    MessageToast.show(oData.error || "Demo login is disabled.");
-                }
-            })
-            .catch(function () {
-                that._oBusyDialog.close();
-                MessageToast.show("Could not reach the server.");
-            });
         },
 
         // ── Apply session data from backend response ────────────────────────────
@@ -121,6 +95,12 @@ sap.ui.define([
                 that._oBusyDialog.close();
                 if (!oData.success) {
                     MessageToast.show(oData.error || "Could not send link. Try again.");
+                    return;
+                }
+                if (oData.directLogin) {
+                    // TESTING: whitelisted email is auto-verified server-side — no
+                    // email/code needed. Log in immediately.
+                    that._applySession(oData);
                     return;
                 }
                 // Link + 6-digit code emailed. Show the "check inbox / enter code"
