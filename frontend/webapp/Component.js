@@ -51,6 +51,24 @@ sap.ui.define([
         init() {
             UIComponent.prototype.init.apply(this, arguments);
 
+            // Hide the bottom navigation bar whenever ANY dialog is open. Even a
+            // full-screen (stretch) dialog was letting the fixed bottom nav show
+            // through/underneath. Toggle a body class on Dialog open/close; CSS then
+            // hides .hhBottomNav while a dialog is up. Counter handles stacked dialogs.
+            sap.ui.require(["sap/m/Dialog"], function (Dialog) {
+                var fnOpen = Dialog.prototype.open, fnClose = Dialog.prototype.close, iOpen = 0;
+                Dialog.prototype.open = function () {
+                    iOpen++;
+                    document.body.classList.add("hhDialogOpen");
+                    return fnOpen.apply(this, arguments);
+                };
+                Dialog.prototype.close = function () {
+                    iOpen = Math.max(0, iOpen - 1);
+                    if (iOpen === 0) { document.body.classList.remove("hhDialogOpen"); }
+                    return fnClose.apply(this, arguments);
+                };
+            });
+
             const oDeviceModel = models.createDeviceModel();
             this.setModel(oDeviceModel, "device");
 
