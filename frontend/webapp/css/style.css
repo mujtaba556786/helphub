@@ -58,6 +58,11 @@
     align-items: stretch !important;
     z-index: 0 !important;
 }
+/* Hide the bottom nav while any dialog is open (class toggled in Component.js) so it
+   cannot show through or under a full-screen dialog. */
+body.hhDialogOpen .hhBottomNav.sapMBar {
+    display: none !important;
+}
 .hhBottomNav .sapMBarMiddle,
 .hhBottomNav .sapMBarPH {
     display: flex !important;
