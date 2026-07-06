@@ -63,6 +63,12 @@
 body.hhDialogOpen .hhBottomNav.sapMBar {
     display: none !important;
 }
+/* SAP positions the dialog title bar (.sapMDialogTitleGroup) absolutely at top:0
+   (~40px). The scrollable content had no matching top padding, so the title
+   overlapped and hid the first field/label. Offset the content so it clears the title. */
+.sapMDialog .sapMDialogSection {
+    padding-top: 2.75rem !important;
+}
 .hhBottomNav .sapMBarMiddle,
 .hhBottomNav .sapMBarPH {
     display: flex !important;
