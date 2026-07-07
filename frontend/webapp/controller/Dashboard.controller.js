@@ -675,7 +675,12 @@ sap.ui.define([
             .then(function(r) { return r.json(); })
             .then(function(oData) {
                 if (oData.success) {
-                    that.getModel("appData").setProperty("/user/photo", API_BASE + oData.avatarUrl);
+                    // avatarUrl is a full https URL (Cloudinary) OR a "/uploads/…" path.
+                    // Only prepend API_BASE to relative paths — prepending it to a full
+                    // URL produced a broken src, so the new photo never showed.
+                    var sUrl = oData.avatarUrl || "";
+                    if (sUrl && !/^https?:\/\//i.test(sUrl)) { sUrl = API_BASE + sUrl; }
+                    that.getModel("appData").setProperty("/user/photo", sUrl);
                     MessageToast.show("Profile photo updated.");
                 } else {
                     MessageToast.show("Upload failed: " + (oData.error || "Unknown error"));
