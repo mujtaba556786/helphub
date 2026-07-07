@@ -65,7 +65,8 @@ sap.ui.define([
             oModel.setProperty("/isLoggedIn", true);
 
             MessageToast.show("Welcome, " + (oUser.name || "User") + "!");
-            this.navTo("dashboard");
+            // Replace (not push) so the Back button can't return to the login page.
+            this.navTo("dashboard", {}, true);
         },
 
         // ── Send magic link to email ───────────────────────────────────────────
