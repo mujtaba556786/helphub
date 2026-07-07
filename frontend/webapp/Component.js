@@ -69,6 +69,42 @@ sap.ui.define([
                 };
             });
 
+            // Android hardware Back button (Cordova). Default behaviour popped the
+            // router history back to the login page. Handle it: close an open
+            // dialog/popover first, then step back within the in-app NavContainer,
+            // and on the main page require a double-tap to exit — never navigate to login.
+            sap.ui.require([
+                "sap/m/InstanceManager", "sap/ui/core/Element", "sap/m/MessageToast"
+            ], function (InstanceManager, Element, MessageToast) {
+                var iLastBack = 0;
+                document.addEventListener("backbutton", function () {
+                    if (InstanceManager.hasOpenDialog()) {
+                        var aDlg = InstanceManager.getOpenDialogs();
+                        aDlg[aDlg.length - 1].close();
+                        return;
+                    }
+                    if (InstanceManager.hasOpenPopover()) {
+                        InstanceManager.closeAllPopovers();
+                        return;
+                    }
+                    var oNav = Element.registry.filter(function (el) {
+                        return el.isA && el.isA("sap.m.NavContainer");
+                    })[0];
+                    if (oNav && oNav.getCurrentPage() &&
+                        oNav.getCurrentPage().getId().indexOf("dashboardPage") === -1) {
+                        oNav.back();
+                        return;
+                    }
+                    var iNow = Date.now();
+                    if (iNow - iLastBack < 2000) {
+                        if (navigator.app && navigator.app.exitApp) { navigator.app.exitApp(); }
+                    } else {
+                        iLastBack = iNow;
+                        MessageToast.show("Press back again to exit");
+                    }
+                }, false);
+            });
+
             const oDeviceModel = models.createDeviceModel();
             this.setModel(oDeviceModel, "device");
 
