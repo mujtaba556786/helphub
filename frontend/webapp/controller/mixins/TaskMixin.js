@@ -89,17 +89,23 @@ sap.ui.define([
             var oList = new List({
                 mode: "SingleSelectMaster",
                 showSeparators: "None",
+                // In SingleSelectMaster the item "press" event doesn't fire on tap
+                // (selection consumes it), so the filter did nothing. Use the list's
+                // selectionChange and read the category from the item's custom data.
+                selectionChange: function(oEvt) {
+                    var oItem = oEvt.getParameter("listItem");
+                    oModel.setProperty("/taskCategoryFilter", oItem.data("cat"));
+                    that._loadTasksFeed();
+                    oPopover.close();
+                },
                 items: aCategories.map(function(cat) {
-                    return new StandardListItem({
+                    var oLI = new StandardListItem({
                         title: cat.label,
                         icon:  cat.icon,
-                        selected: cat.value === sCurrent,
-                        press: function() {
-                            oModel.setProperty("/taskCategoryFilter", cat.value);
-                            that._loadTasksFeed();
-                            oPopover.close();
-                        }
+                        selected: cat.value === sCurrent
                     });
+                    oLI.data("cat", cat.value);
+                    return oLI;
                 })
             });
 
