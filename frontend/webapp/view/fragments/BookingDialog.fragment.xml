@@ -20,7 +20,7 @@
                 <Label text="{i18n>service}" required="true"/>
                 <Text text="{appData>/selectedProfile/serviceType}" class="fontBold sapUiTinyMarginBottom"/>
                 <Label text="{i18n>preferredDate}" required="true"/>
-                <DatePicker id="bookingDate" value="{appData>/bookingForm/date}" valueFormat="yyyy-MM-dd" displayFormat="MMM dd, yyyy" width="100%" class="sapUiTinyMarginBottom"/>
+                <DatePicker id="bookingDate" value="{appData>/bookingForm/date}" minDate="{appData>/today}" valueFormat="yyyy-MM-dd" displayFormat="MMM dd, yyyy" width="100%" class="sapUiTinyMarginBottom"/>
                 <Label text="{i18n>preferredTime}"/>
                 <Input id="bookingTime" value="{appData>/bookingForm/time}" placeholder="{i18n>timePlaceholder}" width="100%" class="sapUiTinyMarginBottom"/>
                 <Label text="{i18n>messageToHelper}"/>

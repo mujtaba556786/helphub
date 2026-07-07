@@ -16,6 +16,9 @@ sap.ui.define([
         createAppDataModel: function () {
     return new JSONModel({
         isLoggedIn: false,
+        // Today at midnight — used as minDate on date pickers so only today/future
+        // dates can be picked (no past dates for tasks/bookings).
+        today: new Date(new Date().setHours(0, 0, 0, 0)),
         user: {
             id: "",
             name: "",
