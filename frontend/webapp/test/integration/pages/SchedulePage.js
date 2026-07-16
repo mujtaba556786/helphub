@@ -38,18 +38,27 @@ sap.ui.define([
                     });
                 },
 
-                iPressBookingFilter: function (sStatus) {
+                iOpenBookingStatusMenu: function () {
                     return this.waitFor({
-                        controlType: "sap.m.Button",
+                        id: "bookingStatusBtn",
                         viewName: DASHBOARD_VIEW,
-                        matchers: function (oBtn) {
-                            var aData = oBtn.getCustomData();
-                            return aData.some(function (d) {
-                                return d.getKey() === "status" && d.getValue() === sStatus;
-                            });
+                        actions: new Press(),
+                        errorMessage: "Booking status filter button not found"
+                    });
+                },
+
+                iPressBookingFilter: function (sStatus) {
+                    // Open the popover, then press the matching status list item.
+                    this.iOpenBookingStatusMenu();
+                    return this.waitFor({
+                        controlType: "sap.m.StandardListItem",
+                        // Popover content is not inside the view — search globally by custom data.
+                        matchers: function (oItem) {
+                            var oData = oItem.data("status");
+                            return oData === sStatus;
                         },
                         actions: new Press(),
-                        errorMessage: "Booking filter button '" + sStatus + "' not found"
+                        errorMessage: "Booking filter option '" + sStatus + "' not found in status popover"
                     });
                 }
             },
@@ -115,23 +124,26 @@ sap.ui.define([
                     });
                 },
 
-                iSeeAllFilterChips: function () {
+                iSeeAllStatusFilterOptions: function () {
                     var aStatuses = ["all", "pending", "confirmed", "completed", "declined", "cancelled"];
                     var that = this;
+                    // Open the popover once, then assert each status option is present as a list item.
+                    this.waitFor({
+                        id: "bookingStatusBtn",
+                        viewName: DASHBOARD_VIEW,
+                        actions: new Press(),
+                        errorMessage: "Booking status filter button not found"
+                    });
                     aStatuses.forEach(function (sStatus) {
                         that.waitFor({
-                            controlType: "sap.m.Button",
-                            viewName: DASHBOARD_VIEW,
-                            matchers: function (oBtn) {
-                                var aData = oBtn.getCustomData();
-                                return aData.some(function (d) {
-                                    return d.getKey() === "status" && d.getValue() === sStatus;
-                                });
+                            controlType: "sap.m.StandardListItem",
+                            matchers: function (oItem) {
+                                return oItem.data("status") === sStatus;
                             },
                             success: function () {
-                                Opa5.assert.ok(true, "Filter chip '" + sStatus + "' exists");
+                                Opa5.assert.ok(true, "Status filter option '" + sStatus + "' exists in popover");
                             },
-                            errorMessage: "Filter chip '" + sStatus + "' not found"
+                            errorMessage: "Status filter option '" + sStatus + "' not found in popover"
                         });
                     });
                     return this;

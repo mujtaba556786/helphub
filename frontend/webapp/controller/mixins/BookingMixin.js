@@ -1,8 +1,11 @@
 sap.ui.define([
     "sap/m/MessageToast",
     "sap/m/MessageBox",
+    "sap/m/Popover",
+    "sap/m/List",
+    "sap/m/StandardListItem",
     "helphub/config"
-], function(MessageToast, MessageBox, Config) {
+], function(MessageToast, MessageBox, Popover, List, StandardListItem, Config) {
     "use strict";
 
     var API_BASE = Config.API_BASE;
@@ -136,11 +139,62 @@ sap.ui.define([
             .catch(function() { MessageToast.show("Could not update booking."); });
         },
 
-        onBookingFilter: function(oEvent) {
-            var sStatus = oEvent.getSource().data("status");
-            var oModel = this.getModel("appData");
-            oModel.setProperty("/bookingStatusFilter", sStatus);
-            this._applyBookingFilter();
+        // Status options for the filter popover — order + icons mirror the old chip row.
+        _aBookingStatusOptions: [
+            { value: "all",       key: "filterAll",       icon: "sap-icon://filter" },
+            { value: "pending",   key: "filterPending",   icon: "sap-icon://pending" },
+            { value: "confirmed", key: "filterConfirmed", icon: "sap-icon://status-positive" },
+            { value: "completed", key: "filterCompleted", icon: "sap-icon://sys-enter-2" },
+            { value: "declined",  key: "filterDeclined",  icon: "sap-icon://status-negative" },
+            { value: "cancelled", key: "filterCancelled", icon: "sap-icon://sys-cancel" }
+        ],
+
+        onBookingStatusMenu: function(oEvent) {
+            var oModel   = this.getModel("appData");
+            var oBundle  = this.getOwnerComponent().getModel("i18n").getResourceBundle();
+            var that     = this;
+            var sCurrent = oModel.getProperty("/bookingStatusFilter") || "all";
+
+            var oList = new List({
+                mode: "SingleSelectMaster",
+                showSeparators: "None",
+                // SingleSelectMaster consumes item "press"; read the status from
+                // the list's selectionChange instead (same pattern as Tasks).
+                selectionChange: function(oEvt) {
+                    var oItem = oEvt.getParameter("listItem");
+                    oModel.setProperty("/bookingStatusFilter", oItem.data("status"));
+                    that._applyBookingFilter();
+                    oPopover.close();
+                },
+                items: this._aBookingStatusOptions.map(function(opt) {
+                    var oLI = new StandardListItem({
+                        title:    oBundle.getText(opt.key),
+                        icon:     opt.icon,
+                        selected: opt.value === sCurrent
+                    });
+                    oLI.data("status", opt.value);
+                    return oLI;
+                })
+            });
+
+            var oPopover = new Popover({
+                title:        oBundle.getText("bookingFilterByStatus"),
+                placement:    "Bottom",
+                contentWidth: "220px",
+                content:      [oList],
+                afterClose:   function() { oPopover.destroy(); }
+            });
+            oPopover.openBy(oEvent.getSource());
+        },
+
+        formatBookingFilterLabel: function(sFilter) {
+            var oBundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
+            if (!sFilter || sFilter === "all") {
+                return oBundle.getText("bookingFilterByStatus") + " ▾";
+            }
+            var oOpt = this._aBookingStatusOptions.filter(function(o) { return o.value === sFilter; })[0];
+            var sLabel = oOpt ? oBundle.getText(oOpt.key) : sFilter;
+            return oBundle.getText("bookingFilterStatusPrefix") + " " + sLabel + " ✕";
         },
 
         _applyBookingFilter: function() {

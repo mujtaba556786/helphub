@@ -4,7 +4,7 @@
  * Scenarios covered:
  *  1. My Schedule tab shows the bookings list control
  *  2. Bookings list is populated (has items from mock data)
- *  3. All 6 status filter chips are present (all / pending / confirmed / completed / declined / cancelled)
+ *  3. Status filter popover lists all 6 options (all / pending / confirmed / completed / declined / cancelled)
  *  4. Confirmed booking shows a "Success" state badge
  *  5. Pending booking shows a "Warning" state badge
  *  6. Completed booking shows a "None" state badge (grey/neutral)
@@ -50,12 +50,12 @@ sap.ui.define([
 
     // ── 3. Filter chips ───────────────────────────────────────────────────
 
-    opaTest("All 6 booking status filter chips are present", function (Given, When, Then) {
+    opaTest("The status filter popover lists all 6 status options", function (Given, When, Then) {
         Given.iStartMyUIComponent({ componentConfig: { name: "helphub", manifest: true } });
 
         When.onTheDashboard.iPressNavTab("mySchedule");
 
-        Then.onTheSchedulePage.iSeeAllFilterChips();
+        Then.onTheSchedulePage.iSeeAllStatusFilterOptions();
         Then.iTeardownMyUIComponent();
     });
 
