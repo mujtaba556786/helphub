@@ -359,26 +359,14 @@ xmlns:l="sap.ui.layout"
                                             visible="{= ${appData>/user/role} === 'provider'}"
                                             class="fiEarningsChip"/>
                                     </HBox>
-                                    <!-- Status filters -->
-                                    <HBox alignItems="Center" class="fiScheduleFilters">
-                                        <Button icon="sap-icon://filter"           text="{i18n>filterAll}"       type="{= (${appData>/bookingStatusFilter} || 'all') === 'all' ? 'Emphasized' : 'Default'}" press="onBookingFilter" class="hhNotifChip">
-                                            <customData><core:CustomData key="status" value="all"/></customData>
-                                        </Button>
-                                        <Button icon="sap-icon://pending"          text="{i18n>filterPending}"   type="{= ${appData>/bookingStatusFilter} === 'pending' ? 'Emphasized' : 'Default'}" press="onBookingFilter" class="hhNotifChip">
-                                            <customData><core:CustomData key="status" value="pending"/></customData>
-                                        </Button>
-                                        <Button icon="sap-icon://status-positive"  text="{i18n>filterConfirmed}" type="{= ${appData>/bookingStatusFilter} === 'confirmed' ? 'Emphasized' : 'Default'}" press="onBookingFilter" class="hhNotifChip">
-                                            <customData><core:CustomData key="status" value="confirmed"/></customData>
-                                        </Button>
-                                        <Button icon="sap-icon://sys-enter-2"      text="{i18n>filterCompleted}" type="{= ${appData>/bookingStatusFilter} === 'completed' ? 'Emphasized' : 'Default'}" press="onBookingFilter" class="hhNotifChip">
-                                            <customData><core:CustomData key="status" value="completed"/></customData>
-                                        </Button>
-                                        <Button icon="sap-icon://status-negative"  text="{i18n>filterDeclined}"  type="{= ${appData>/bookingStatusFilter} === 'declined' ? 'Emphasized' : 'Default'}" press="onBookingFilter" class="hhNotifChip">
-                                            <customData><core:CustomData key="status" value="declined"/></customData>
-                                        </Button>
-                                        <Button icon="sap-icon://sys-cancel"       text="{i18n>filterCancelled}" type="{= ${appData>/bookingStatusFilter} === 'cancelled' ? 'Emphasized' : 'Default'}" press="onBookingFilter" class="hhNotifChip">
-                                            <customData><core:CustomData key="status" value="cancelled"/></customData>
-                                        </Button>
+                                    <!-- Status filter (popover dropdown — mirrors Tasks category filter) -->
+                                    <HBox class="hhCatDropWrap">
+                                        <Button
+                                            id="bookingStatusBtn"
+                                            text="{path:'appData>/bookingStatusFilter', formatter:'.formatBookingFilterLabel'}"
+                                            type="{= (${appData>/bookingStatusFilter} || 'all') === 'all' ? 'Default' : 'Emphasized'}"
+                                            press="onBookingStatusMenu"
+                                            class="hhCatDropBtn"/>
                                     </HBox>
                                     <List id="bookingsList" items="{appData>/filteredBookings}" noDataText="{i18n>noBookingsYet}" showSeparators="None" class="fiCardList">
                                         <CustomListItem class="fiBookingCard">
